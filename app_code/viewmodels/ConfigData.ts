@@ -1,3 +1,4 @@
+/**Business object for the app configuration */
 export class ConfigData
 {
     private _releaseMode: string;

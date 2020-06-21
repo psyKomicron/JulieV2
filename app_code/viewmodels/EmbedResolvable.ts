@@ -1,5 +1,6 @@
 import { EmbedField } from "discord.js";
 
+/**Business object representing a MessageEmbed object from the discord.js API */
 export class EmbedResolvable
 {
     private _author: string;
