@@ -1,0 +1,23 @@
+# node modules
+node_modules
+
+# visual studio
+# directories
+.vs
+bin
+obj
+# files
+*.sln
+*.njsproj
+
+# Typescript
+*.js
+*.js.map
+
+# program generated
+files
+imgs
+*.png
+*.jpg
+*.pdf
+*.txt
