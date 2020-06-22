@@ -3,10 +3,28 @@ import readline = require('readline');
 import { performance } from "perf_hooks";
 import { Printer } from '../console/Printer';
 import { Tree } from '../bot/command_modules/moderation/completion_tree/Tree';
+import { Tools } from '../helpers/Tools';
 
 export class Test
 {
     public static execute()
+    {
+        let res: RegExpMatchArray = "https://www.youtube.com/watch?v=I0T8jivPjJk".match(Tools.getUrlRegex());
+        console.log(JSON.stringify(res));
+        let urls = [
+            "https://www.youtube.com/watch?v=I0T8jivPjJk",
+            "https://www.youtube.com/watch?v=x8IToLUJStg&list=PLFbJRoyE4bhlm44b16EPDw7pJZrY_bw9Y&index=21",
+            "https://twitter.com/home",
+            "https://twitter.com/CLONEKID_/status/1275079599261548548",
+            "https://iut-dijon fr/zimbra/#1"
+        ];
+        urls.forEach(url =>
+        {
+            console.log(`${url} : ${Printer.info(Tools.isUrl(url))}`);
+        });
+    }
+
+    private static testTree()
     {
         let tree = new Tree();
         let file = fs.readFileSync("./files/dico.txt").toString();
