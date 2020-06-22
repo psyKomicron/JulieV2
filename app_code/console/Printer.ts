@@ -96,7 +96,7 @@ ${Printer.error("-------------------------------------")}`;
         }
     }
 
-    public static info(content: string | number): string
+    public static info(content: string | number | boolean): string
     {
         return this.pGreen(`${content}`);
     }
