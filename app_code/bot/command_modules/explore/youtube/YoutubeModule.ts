@@ -1,9 +1,13 @@
 import { youtube_v3 } from 'googleapis';
 import { EmptyTokenError } from '../../../../errors/dal_errors/EmptyTokenError';
+import { YoutubeItem } from '../../../../viewmodels/copy_books/YoutubeItem';
+import { Tools } from '../../../../helpers/Tools';
+import { YoutubeQuestion } from '../../../../viewmodels/YoutubeQuestion';
+import { YoutubeProxy } from '../../../../helpers/proxies/YoutubeProxy';
 
 export class YoutubeModule
 {
-    private service: youtube_v3.Youtube;
+    private service: YoutubeProxy;
 
     public constructor(apiKey: string)
     {
@@ -25,65 +29,39 @@ export class YoutubeModule
     public async searchVideos(keyword: string, maxResults: number, lang: string): Promise<SearchResults>
     {
         const youtubeUrl = "https://www.youtube.com/watch?v=";
-        let opt = {
-            part: "snippet",
-            order: "viewCount",
-            q: keyword,
-            type: "video",
-            relevanceLanguage: lang,
-            maxResults: maxResults
-        }
+        let opt = new YoutubeQuestion()
+            .setPart("snippet")
+            .setOrder("viewCount")
+            .setKeyword(keyword)
+            .setType("video")
+            .setRelevanceLanguage(lang)
+            .setMaxResults(maxResults);
+
         let items = new Array<YoutubeItem>();
         let searchResults: SearchResults = { totalResults: 0, items: items }
-        let res = await this.service.search.list(opt);
+        let res = await this.service.search(opt);
+
+        // change according to proxy service
         searchResults.totalResults = res.data.pageInfo.totalResults;
         res.data.items.forEach(item =>
         {
-            items.push({
-                videoURL: youtubeUrl + item.id.videoId,
-                itemID: item.id.videoId,
-                title: this.stringify(item.snippet.title),
-                kind: item.kind,
-                description: this.stringify(item.snippet.description),
-                thumbnails: [
+
+            items.push(new YoutubeItem()
+                .setVideoURL(youtubeUrl + item.id.videoId)
+                .setItemID(item.id.videoId)
+                .setTitle(Tools.cleanHtml(item.snippet.title))
+                .setKind(item.kind)
+                .setDescription(Tools.cleanHtml(item.snippet.description))
+                .setThumbnails([
                     item.snippet.thumbnails.default.url,
                     item.snippet.thumbnails.medium.url,
                     item.snippet.thumbnails.high.url
-                ]
-            })
+                ])
+            );
         })
-        return searchResults;
-    }
+        // end
 
-    /**
-     * Cleans a string from html symbols, and replace them with their values.
-     * @param value String to clean
-     */
-    public stringify(value: string)
-    {
-        // regex for html codes : /(&[A-z]+;)|(&#[0-9]+;)/g
-        // replace const symbols
-        const lookup = [
-            { "regex": /(&amp;)/g, "replace": "&" },
-            { "regex": /(&quote;)/g, "replace": "\"" }
-        ]
-        for (var i = 0; i < lookup.length; i++)
-        {
-            if (value.match(lookup[i].regex))
-            {
-                value = value.replace(lookup[i].regex, lookup[i].replace);
-            }
-        }
-        // replace ascii specials chars
-        for (var j = 32; j < 101; j++)
-        {
-            let regex = new RegExp(`&#[${j}]+;`);
-            if (value.match(regex))
-            {
-                value = value.replace(regex, String.fromCharCode(j));
-            }
-        }
-        return value;
+        return searchResults;
     }
 }
 
@@ -93,20 +71,4 @@ export interface SearchResults
     totalResults: number;
     /**Array of search results originating from the request to Youtube's API, transformed for easier use*/
     items: Array<YoutubeItem>;
-}
-
-export interface YoutubeItem
-{
-    /**HTTPS link leading to this item */
-    videoURL: string;
-    /**Kind of this item (e.g. 'youtube#video') */
-    kind?: string;
-    /**ID of the item. Is undefined when this item is not a video*/
-    itemID: string;
-    /**Title of this item */
-    title: string;
-    /**Description of this item (e.g. classic youtube video description) */
-    description?: string;
-    /**List of the thumbnails URIs of this item*/
-    thumbnails?: Array<string>;
 }
