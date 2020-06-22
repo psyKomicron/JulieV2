@@ -17,7 +17,6 @@ obj
 # program generated
 files
 imgs
-app_code/tests
 *.png
 *.jpg
 *.pdf
