@@ -14,7 +14,7 @@ import { YoutubeModule, SearchResults } from '../../command_modules/explore/yout
 import { PlayLogger } from '../../command_modules/logger/loggers/PlayLogger';
 import { Printer } from '../../../console/Printer';
 import { WrongArgumentError } from '../../../errors/command_errors/WrongArgumentError';
-import { TokenReader, EmojiReader } from '../../../helpers/dal/Readers';
+import { TokenReader, EmojiReader } from '../../../dal/Readers';
 import { EmbedFactory } from '../../../helpers/factories/EmbedFactory';
 import { EmbedResolvable } from '../../../viewmodels/EmbedResolvable';
 import { CommandSyntaxError } from '../../../errors/command_errors/CommandSyntaxError';

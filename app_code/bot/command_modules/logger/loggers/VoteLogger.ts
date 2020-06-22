@@ -2,7 +2,7 @@ import { Logger } from "../Logger";
 import { Message } from "discord.js";
 import { VoteCommand } from "../../../commands/commands/VoteCommand";
 import { Printer } from "../../../../console/Printer";
-import { EmojiReader } from "../../../../helpers/dal/Readers";
+import { EmojiReader } from "../../../../dal/Readers";
 
 export class VoteLogger extends Logger
 {

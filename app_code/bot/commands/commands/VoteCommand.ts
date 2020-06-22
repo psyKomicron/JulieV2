@@ -11,7 +11,7 @@ import
 } from 'discord.js';
 import { VoteLogger } from '../../command_modules/logger/loggers/VoteLogger';
 import { Printer } from '../../../console/Printer';
-import { EmojiReader } from '../../../helpers/dal/Readers';
+import { EmojiReader } from '../../../dal/Readers';
 import { WrongArgumentError } from '../../../errors/command_errors/WrongArgumentError';
 
 export class VoteCommand extends Command
