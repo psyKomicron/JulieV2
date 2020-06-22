@@ -1,6 +1,7 @@
 import readline = require('readline');
 import { clearInterval } from 'timers';
-import { FileSystem as fs, TokenReader } from "../helpers/dal/Readers";
+import { FileSystem as fs } from '../dal/FileSystem';
+import { TokenReader } from '../dal/TokenReader';
 import { Client, Message } from 'discord.js';
 import { Moderator } from './command_modules/moderation/Moderator';
 import { DefaultLogger } from './command_modules/logger/loggers/DefaultLogger';
@@ -8,6 +9,7 @@ import { Logger } from './command_modules/logger/Logger';
 import { Printer } from '../console/Printer';
 import { ExecutionError } from '../errors/ExecutionError';
 import { CommandFactory } from '../helpers/factories/CommandFactory';
+import { Tools } from '../helpers/Tools';
 
 export class Bot 
 {
@@ -79,13 +81,7 @@ export class Bot
         {
             console.log("\ncommand requested by : " + Printer.info(message.author.tag));
             let substr = 0;
-            let name = "";
-            // replace with a regex
-            while (substr < content.length && content[substr] != "-" && content[substr] != " ")
-            {
-                name += content[substr];
-                substr++;
-            }
+            let name = Tools.getCommandName(content);
             try
             {
                 let handled = this.logger.handle(message);
@@ -128,13 +124,4 @@ export class Bot
             }
         }
     }
-}
-
-export enum FileType
-{
-    PDF = "pdf",
-    IMG = "image",
-    VIDEO = "video",
-    CODE = "code",
-    FILE = "all",
 }
