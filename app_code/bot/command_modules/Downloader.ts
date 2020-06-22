@@ -1,5 +1,5 @@
 import request = require('request');
-import { FileSystem as fs } from "../../helpers/dal/Readers";
+import { FileSystem as fs } from "../../dal/Readers";
 import { ProgressBar } from '../../console/effects/ProgressBar';
 
 export class Downloader
