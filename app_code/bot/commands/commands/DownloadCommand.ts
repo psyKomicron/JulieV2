@@ -1,8 +1,9 @@
 import ytdl = require('ytdl-core');
 import { Command } from "../Command";
-import { FileType, Bot } from '../../Bot';
+import { FileType } from '../../../helpers/enums/FileType';
+import { Bot } from '../../Bot';
 import { Channel, Message, TextChannel, Snowflake, Collection } from 'discord.js';
-import { EmojiReader, FileSystem as fs } from '../../../helpers/dal/Readers';
+import { EmojiReader, FileSystem as fs } from '../../../dal/Readers';
 import { Printer } from '../../../console/Printer';
 import { EmbedResolvable } from '../../../viewmodels/EmbedResolvable';
 import { EmbedFactory } from '../../../helpers/factories/EmbedFactory';
@@ -28,7 +29,7 @@ export class DownloadCommand extends Command
             let limit = this.values.limit;
             if (limit < 0)
             {
-                return Promise.reject(new Error("Given limit is not integer"));
+                throw new Error("Given limit is not integer");
             }
             let type = this.values.type;
             let channel = this.values.channel;
@@ -168,10 +169,16 @@ export class DownloadCommand extends Command
         urls.forEach(url =>
         {
             if (type == FileType.IMG) // image files (png, jpg, gif)
+            {
                 if (this.isImage(url))
+                {
                     filteredUrls.push(url);
+                }
+            }
             if (type == FileType.FILE)
+            {
                 filteredUrls.push(url);
+            }
         });
         return filteredUrls;
     }
