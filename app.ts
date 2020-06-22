@@ -4,7 +4,7 @@ import { Printer } from './app_code/console/Printer';
 import { Test } from './app_code/tests/test_app';
 import { StarEffect } from './app_code/console/effects/StarEffect';
 import { Bot } from './app_code/bot/Bot';
-import { TokenReader } from './app_code/helpers/dal/Readers';
+import { TokenReader } from './app_code/dal/Readers';
 
 const release = TokenReader.getToken("release");
 Printer.info(`release version : ${release}`);
