@@ -1,8 +1,14 @@
 # DesmoBot
-
-## Commands
-|Name      | Command Syntax                                                                                                                            | Description |
-|:--------:|:-----------------------------------------------------------------------------------------------------------------------------------------:|:------------|
+## Coming soon™
+### Moderation
+Simple (to complex if I can) moderations functionnalities (timing out...) and proxy functionnalities such as ban, kick, and other.
+### Twitch connection
+Still an idea, but the goal is to have some interaction with the Twitch API
+### Crawler
+🤖
+## Commands (not up to date)
+|Name      | Command Syntax | Description |
+|:--------:|:--------------|:------------|
 | Delete   |`/delete -n [number of messages] -c [channel snowflake/id] -u [discord username (ex: user#1234)]` | Deletes a given number of messages in a given channel. If `-u` is used, deletes only the messages send by the specified user|
 | Download |`/download -n [number of files] -c [channel snowflake/id] -t [type of the files] -s [timeout for the http server in seconds]` | Downloads a given number of a given type of files in a given channel. `-s` option is no longer supported|
 | Embed    | `/embed -c [channel snowflake/id] [add -d to delete the message after]` | Creates a `MessageEmbed` (look at discordjs documentation) from a json file attached to the message. The channel in wich the message will be sent can be specified & the message can be deleted after execution adding `-d` to the command|
