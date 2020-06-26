@@ -7,7 +7,7 @@ export class YoutubeQuestion
     private _type: string;
     private _relevanceLanguage: string;
     private _maxResults: number;
-
+    
     public get token() { return this._token; }
     public set token(token: string) { this._token = token; }
 
