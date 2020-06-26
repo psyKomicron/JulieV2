@@ -3,7 +3,7 @@ import { Command } from '../Command';
 import { Downloader } from '../../command_modules/Downloader';
 import { Printer } from '../../../console/Printer';
 import { EmbedFactory } from '../../../helpers/factories/EmbedFactory';
-import { FileSystem as fs } from '../../../dal/Readers';
+import { FileSystem as fs } from '../../../dal/FileSystem';
 import { Message, TextChannel, GuildChannelManager, Channel } from 'discord.js';
 
 export class EmbedCommand extends Command
