@@ -13,7 +13,7 @@ export class YoutubeModule
     {
         if (!apiKey.match(/([ ])/g))
         {
-            this.service = new youtube_v3.Youtube({ auth: apiKey });
+            this.service = new YoutubeProxy(apiKey); //new youtube_v3.Youtube({ auth: apiKey });
         }
         else throw new EmptyTokenError("Provided key is empty", this.name);
     }
