@@ -2,7 +2,7 @@ import { youtube_v3 } from 'googleapis';
 import { EmptyTokenError } from '../../../../errors/dal_errors/EmptyTokenError';
 import { YoutubeItem } from '../../../../viewmodels/copy_books/YoutubeItem';
 import { Tools } from '../../../../helpers/Tools';
-import { YoutubeQuestion } from '../../../../viewmodels/YoutubeQuestion';
+import { YoutubeInput } from '../../../../viewmodels/YoutubeQuestion';
 import { YoutubeProxy } from '../../../../helpers/proxies/YoutubeProxy';
 
 export class YoutubeModule
@@ -29,7 +29,7 @@ export class YoutubeModule
     public async searchVideos(keyword: string, maxResults: number, lang: string): Promise<SearchResults>
     {
         const youtubeUrl = "https://www.youtube.com/watch?v=";
-        let opt = new YoutubeQuestion()
+        let opt = new YoutubeInput()
             .setPart("snippet")
             .setOrder("viewCount")
             .setKeyword(keyword)
@@ -57,10 +57,9 @@ export class YoutubeModule
                     item.snippet.thumbnails.medium.url,
                     item.snippet.thumbnails.high.url
                 ])
-            );
+            );  
         })
         // end
-
         return searchResults;
     }
 }
