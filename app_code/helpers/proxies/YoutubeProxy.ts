@@ -1,46 +1,62 @@
-import { YoutubeQuestion } from "../../viewmodels/YoutubeQuestion";
-import { YoutubeResponse } from "../../viewmodels/YoutubeReponse";
+import { YoutubeInput } from "../../viewmodels/YoutubeQuestion";
+import { YoutubeOutput } from "../../viewmodels/YoutubeReponse";
 import { youtube_v3 } from "googleapis";
 
 export class YoutubeProxy
 {
     private youtubeV3: youtube_v3.Youtube;
-    private question: YoutubeQuestion;
-    private response: YoutubeResponse;
+    private question: YoutubeInput;
+    private response: YoutubeOutput;
 
     public constructor(apiKey: string)
     {
         this.youtubeV3 = new youtube_v3.Youtube({auth: apiKey});
     }
 
-    /**
-     * Just a remote call for searchWithoutParams
-     * @param input
-     */
-    public search(input: YoutubeQuestion): Promise<YoutubeResponse>
+    public async search(input: YoutubeInput): Promise<youtube_v3.Schema$SearchListResponse>
     {
-        this.question = input;
-        return this.searchWithoutParams();
-    }
-
-    public async searchWithoutParams(): Promise<YoutubeResponse>
-    {
-        if (this.response)
+        
+        if (this.question && input.keyword == this.question.keyword)
         {
             return this.response;
         }
         else
         {
-            let searchResults = new Array<YoutubeResponse>();
+            this.question == input;
+            //let searchResults = new Array<YoutubeOutput>();
             let response = await this.youtubeV3.search.list(this.flattenQuestion());
-            response.data.items.forEach(element => 
+            if (response.data.kind == "youtube#videoListResponse")
             {
-                searchResults.push(new YoutubeResponse()
-                .set)
-            });
+                response.data.items.forEach(item =>
+                {
+
+                });
+            }
+            else
+            {
+                throw new Error("Wrong return type from youtube");
+            }
         }
-        return undefined;
     }
+    /*
+    searchResults.totalResults = res.data.pageInfo.totalResults;
+        res.data.items.forEach(item =>
+        {
+
+            items.push(new YoutubeItem()
+                .setVideoURL(youtubeUrl + item.id.videoId)
+                .setItemID(item.id.videoId)
+                .setTitle(Tools.cleanHtml(item.snippet.title))
+                .setKind(item.kind)
+                .setDescription(Tools.cleanHtml(item.snippet.description))
+                .setThumbnails([
+                    item.snippet.thumbnails.default.url,
+                    item.snippet.thumbnails.medium.url,
+                    item.snippet.thumbnails.high.url
+                ])
+            );
+        })
+    */
 
     private flattenQuestion(): Object
     {
