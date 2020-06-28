@@ -1,5 +1,5 @@
 
-export class YoutubeResponse
+export class YoutubeOutput
 {
 
 }
