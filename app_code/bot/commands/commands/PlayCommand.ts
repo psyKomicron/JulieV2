@@ -10,7 +10,7 @@ import
 
     GuildChannelManager
 } from "discord.js";
-import { YoutubeModule, SearchResults } from '../../command_modules/explore/youtube/YoutubeModule';
+import { YoutubeModule } from '../../command_modules/explore/youtube/YoutubeModule';
 import { PlayLogger } from '../../command_modules/logger/loggers/PlayLogger';
 import { Printer } from '../../../console/Printer';
 import { WrongArgumentError } from '../../../errors/command_errors/WrongArgumentError';
@@ -18,9 +18,11 @@ import { TokenReader, EmojiReader } from '../../../dal/Readers';
 import { EmbedFactory } from '../../../helpers/factories/EmbedFactory';
 import { EmbedResolvable } from '../../../viewmodels/EmbedResolvable';
 import { CommandSyntaxError } from '../../../errors/command_errors/CommandSyntaxError';
+import { YoutubeOutput } from '../../../viewmodels/YoutubeOuput';
 
 export class PlayCommand extends Command
 {
+    private timeout: NodeJS.Timeout;
     private message: Message;
     private connection: VoiceConnection;
     private dispacher: StreamDispatcher;
@@ -40,7 +42,6 @@ export class PlayCommand extends Command
         this.message = message;
         if (!message.content.match(/([-])/g))
         {
-            // call to parseMessage() to log the command
             this.parseMessage(message);
             this.videos = this.getSimpleParams(message.content).videos;
         }
@@ -79,7 +80,7 @@ export class PlayCommand extends Command
         else if (this.videos)
         {
             let youtube = new YoutubeModule(TokenReader.getToken("youtube"));
-            let results = new Array<SearchResults>();
+            let results = new Array<YoutubeOutput>();
             for (var k = 0; k < this.videos.length; k++)
             {
                 await youtube.searchVideos(this.videos[i], 30, "en");
@@ -169,6 +170,7 @@ export class PlayCommand extends Command
         {
             if (video.match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
             {
+                message.reply(Printer.normal("Added song to queue"));
                 this.videos.push(video);
             }
         });
@@ -178,6 +180,7 @@ export class PlayCommand extends Command
     {
         if (!this.dispacher.paused)
         {
+            this.startTimeout();
             this.dispacher.pause(true);
         }
     }
@@ -186,6 +189,7 @@ export class PlayCommand extends Command
     {
         if (this.dispacher.paused)
         {
+            clearTimeout(this.timeout);
             this.dispacher.resume();
         }
     }
@@ -196,6 +200,10 @@ export class PlayCommand extends Command
         {
             this.currentVideo++;
             this.playStream(this.currentVideo);
+        }
+        else
+        {
+            this.leave();
         }
     }
 
@@ -214,7 +222,6 @@ export class PlayCommand extends Command
             });
             this.dispacher.on("start", () =>
             {
-
                 this.message.channel.send(EmbedFactory.build(new EmbedResolvable()
                     .setColor(16711680)
                     .setDescription(this.videos[index])
@@ -232,10 +239,19 @@ export class PlayCommand extends Command
                 {
                     this.next();
                 }
+                /*else
+                {
+                    this.leave();
+                }*/
             });
         } catch (error)
         {
+            this.leave();
             console.log(error);
+        }
+        finally
+        {
+            this.deleteMessage(this.message);
         }
     }
 
@@ -281,6 +297,11 @@ export class PlayCommand extends Command
             }
         });
         return { videos: videos, channel: channel };
+    }
+
+    private startTimeout(): void
+    {
+        this.timeout = setTimeout(() => this.leave(), 180000);
     }
 }
 
