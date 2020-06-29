@@ -29,6 +29,7 @@ export class CommandFactory
             case "embed":
                 command = new EmbedCommand(bot);
                 break;
+            case "search":
             case "e":
             case "explore":
                 command = new ExploreCommand(bot);
