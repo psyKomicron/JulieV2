@@ -44,7 +44,9 @@ export abstract class Explorer
             .catch(e =>
             {
                 if (e instanceof Error)
+                {
                     console.error(e.message.substr(0, 30) + "[...]");
+                }
             });
     }
 
