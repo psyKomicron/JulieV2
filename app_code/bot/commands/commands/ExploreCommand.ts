@@ -35,7 +35,7 @@ export class ExploreCommand extends Command
                 e = new WikiExplorer(this.keyword, this);
                 break;
             default:
-                throw new WrongArgumentError(this);
+                e = new YTExplorer(this.keyword, this);
         }
         e?.explore();
         this.deleteMessage(message, 1000);
