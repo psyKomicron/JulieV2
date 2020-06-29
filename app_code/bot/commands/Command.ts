@@ -1,6 +1,6 @@
 import { Bot } from "../Bot";
 import { EventEmitter } from "events";
-import { FileSystem as fs } from "../../dal/Readers";
+import { FileSystem as fs } from "../../dal/FileSystem";
 import { Message, TextChannel, GuildChannel, GuildChannelManager } from 'discord.js';
 
 export abstract class Command extends EventEmitter
