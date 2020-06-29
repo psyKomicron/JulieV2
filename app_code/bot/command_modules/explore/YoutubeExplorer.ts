@@ -1,6 +1,6 @@
 import { Explorer } from "./Explorer";
 import { YoutubeModule } from "./youtube/YoutubeModule";
-import { TokenReader } from "../../../dal/Readers";
+import { TokenReader } from "../../../dal/TokenReader";
 import { EmptyTokenError } from "../../../errors/dal_errors/EmptyTokenError";
 import { Printer } from "../../../console/Printer";
 import { EmbedFactory } from "../../../helpers/factories/EmbedFactory";
