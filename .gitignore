@@ -15,6 +15,7 @@ obj
 *.js.map
 
 # program generated
+release
 files
 imgs
 *.png
