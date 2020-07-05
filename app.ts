@@ -4,7 +4,8 @@ import { Printer } from './app_code/console/Printer';
 import { Test } from './app_code/tests/test_app';
 import { StarEffect } from './app_code/console/effects/StarEffect';
 import { Bot } from './app_code/bot/Bot';
-import { TokenReader } from './app_code/dal/Readers';
+import { TokenReader } from './app_code/dal/readers/TokenReader';
+import { ReleaseType, Tools } from './app_code/helpers/Tools';
 
 const release = TokenReader.getToken("release");
 Printer.info(`release version : ${release}`);
@@ -17,12 +18,13 @@ if (release)
         });
     r1.question(Printer.info("launch configuration : "), (answer) => 
     {
-        if (answer == "test")
+        if (Tools.parse(answer) == ReleaseType.TEST)
         {
             Test.execute();
         }
         else
         {
+            console.log("starting prod application");
             Printer.startUp();
             let loadingEffect = new StarEffect("", [-17, -1]);
             let id = loadingEffect.start();
@@ -31,7 +33,7 @@ if (release)
                 new Bot(id);
             } catch (e)
             {
-                console.error(e);
+                console.error(Printer.normal(e));
             }
         }
     })
