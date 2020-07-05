@@ -1,5 +1,5 @@
-import { Printer } from '../console/Printer';
-import { FileSystem } from './FileSystem';
+import { Printer } from '../../console/Printer';
+import { FileSystem } from '../FileSystem';
 
 export class EmojiReader
 {
