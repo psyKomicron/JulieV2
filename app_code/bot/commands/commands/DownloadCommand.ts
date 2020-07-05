@@ -4,7 +4,7 @@ import { FileType } from '../../../helpers/enums/FileType';
 import { Bot } from '../../Bot';
 import { Channel, Message, TextChannel, Snowflake, Collection } from 'discord.js';
 import { FileSystem as fs } from '../../../dal/FileSystem';
-import { EmojiReader } from '../../../dal/EmojiReader';
+import { EmojiReader } from '../../../dal/readers/EmojiReader';
 import { Printer } from '../../../console/Printer';
 import { EmbedResolvable } from '../../../viewmodels/EmbedResolvable';
 import { EmbedFactory } from '../../../helpers/factories/EmbedFactory';
