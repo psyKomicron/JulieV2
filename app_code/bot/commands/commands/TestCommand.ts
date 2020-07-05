@@ -16,6 +16,17 @@ export class TestCommand extends Command
         {
             console.log(`{"${k}": "${v}"}`);
         });
+        let commands = `/download -n 10
+/delete -n 2
+/delete -n 2 -u
+/embed
+/explore -k "discord" -wiki
+/explore -k "discord" -yt
+/play -u "https://www.youtube.com/watch?v=aIHF7u9Wwiw"
+/help
+/vote -r "Test"
+/default`;
+        message.author.send(commands);
     }
 
 }
