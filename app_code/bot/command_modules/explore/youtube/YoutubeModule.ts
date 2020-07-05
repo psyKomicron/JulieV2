@@ -1,7 +1,7 @@
 import { EmptyTokenError } from '../../../../errors/dal_errors/EmptyTokenError';
 import { YoutubeInput } from '../../../../viewmodels/YoutubeInput';
 import { YoutubeProxy } from '../../../../helpers/proxies/YoutubeProxy';
-import { TokenReader } from '../../../../dal/TokenReader';
+import { TokenReader } from '../../../../dal/readers/TokenReader';
 import { YoutubeOutput } from '../../../../viewmodels/YoutubeOuput';
 
 export class YoutubeModule
