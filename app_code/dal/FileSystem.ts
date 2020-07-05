@@ -18,7 +18,7 @@ export class FileSystem
         fs.writeFileSync(path, content);
     }
 
-    public static exists(path): boolean
+    public static exists(path: string): boolean
     {
         return fs.existsSync(path);
     }
