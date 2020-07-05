@@ -1,7 +1,7 @@
 import readline = require('readline');
 import { clearInterval } from 'timers';
 import { FileSystem as fs } from '../dal/FileSystem';
-import { TokenReader } from '../dal/TokenReader';
+import { TokenReader } from '../dal/readers/TokenReader';
 import { Client, Message } from 'discord.js';
 import { Moderator } from './command_modules/moderation/Moderator';
 import { DefaultLogger } from './command_modules/logger/loggers/DefaultLogger';
@@ -34,15 +34,7 @@ export class Bot
 
     private init(id: NodeJS.Timeout): void
     {
-        // initiate directories
-        const directories = ["./files", "./files/downloads", "./files/logs"];
-        for (var i = 0; i < directories.length; i++)
-        {
-            if (!fs.exists(directories[i]))
-            {
-                fs.mkdir(directories[i]);
-            }
-        }
+        
         // initiate bot
         this._client.on("ready", () =>
         {
