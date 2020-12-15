@@ -7,7 +7,6 @@ import
     VoiceChannel, VoiceConnection,
     StreamDispatcher,
     EmbedField,
-
     GuildChannelManager
 } from "discord.js";
 import { YoutubeModule } from '../../command_modules/explore/youtube/YoutubeModule';
@@ -170,7 +169,7 @@ export class PlayCommand extends Command
         {
             if (video.match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
             {
-                message.reply(Printer.normal("Added song to queue"));
+                message.reply("Added song to queue");
                 this.videos.push(video);
             }
         });

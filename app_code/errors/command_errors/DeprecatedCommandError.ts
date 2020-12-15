@@ -4,6 +4,6 @@ export class DeprecatedCommandError extends ExecutionError
 {
     public constructor()
     {
-        super("DeprecatedCommandError", "Method/Command used is considered");
+        super("DeprecatedCommandError", "Method/Command used is considered deprecated");
     }
 }

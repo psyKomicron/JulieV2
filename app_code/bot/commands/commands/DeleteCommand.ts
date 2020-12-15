@@ -21,9 +21,9 @@ export class DeleteCommand extends Command
         console.log(Printer.title("deleting messages"));
         if (this.delete_values[1] != undefined && this.delete_values[2] == "")
         {
-            console.log(Printer.args(
+            Printer.args(
                 ["number of messages", "channel name", "target user"],
-                [`${this.delete_values[0]}`, `${this.delete_values[1].name}`, `${this.delete_values[2]}`]));
+                [`${this.delete_values[0]}`, `${this.delete_values[1].name}`, `${this.delete_values[2]}`]);
             let channel = this.delete_values[1];
             channel.bulkDelete(this.delete_values[0])
                 .then(response =>

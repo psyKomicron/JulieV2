@@ -16,15 +16,14 @@ if (release)
             input: process.stdin,
             output: process.stdout
         });
-    r1.question(Printer.info("launch configuration : "), (answer) => 
+    r1.question(Printer.pGreen("launch configuration : "), (answer) => 
     {
-        if (Tools.parse(answer) == ReleaseType.TEST)
+        if (Tools.getRelease(answer) == ReleaseType.TEST)
         {
             Test.execute();
         }
         else
         {
-            console.log("starting prod application");
             Printer.startUp();
             let loadingEffect = new StarEffect("", [-17, -1]);
             let id = loadingEffect.start();
@@ -33,7 +32,7 @@ if (release)
                 new Bot(id);
             } catch (e)
             {
-                console.error(Printer.normal(e));
+                console.error(e);
             }
         }
     })

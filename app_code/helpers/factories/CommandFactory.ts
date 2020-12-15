@@ -10,6 +10,7 @@ import { ReplyCommand } from "../../bot/commands/commands/ReplyCommand";
 import { TestCommand } from "../../bot/commands/commands/TestCommand";
 import { VoteCommand } from "../../bot/commands/commands/VoteCommand";
 import { DefaultCommand } from "../../bot/commands/commands/DefaultCommand";
+import { AddUserCommand } from "../../bot/commands/commands/AddUserCommand";
 
 export class CommandFactory
 {
@@ -53,6 +54,10 @@ export class CommandFactory
             case "v":
             case "vote":
                 command = new VoteCommand(bot);
+                break;
+            case "a":
+            case "add":
+                command = new AddUserCommand(bot);
                 break;
             default:
                 command = new DefaultCommand(bot);

@@ -12,7 +12,7 @@ export class DefaultCommand extends Command
 
     public async execute(message: Message): Promise<void> 
     {
-        console.log(Printer.title("default"));
+        Printer.title("default");
         message.reply("unknown command !");
     }
 }

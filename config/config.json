@@ -1,0 +1,10 @@
+{
+    "prefix": "/",
+    "authorizedusers": [
+        "psyKomicron#6527", "desmoclublyon#3056", "marquez#5719", "Onyxt#9305"
+        ],
+    "verbose": 3,
+    "startdirectories": [
+        "./files", "./files/downloads", "./files/logs"
+        ]
+}

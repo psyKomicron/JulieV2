@@ -1,13 +1,47 @@
 import fs = require('fs');
+import ytdl = require('ytdl-core');
 import readline = require('readline');
 import { performance } from "perf_hooks";
 import { Printer } from '../console/Printer';
 import { Tree } from '../bot/command_modules/moderation/completion_tree/Tree';
 import { Tools } from '../helpers/Tools';
+import { Config } from '../dal/Config';
 
 export class Test
 {
     public static execute()
+    {
+        let rl = readline.createInterface(
+            {
+                input: process.stdin,
+                output: process.stdout
+            });
+        rl.question("link : ", (answer) =>
+        {
+            ytdl(answer, { quality: "highestaudio" })
+                .pipe(fs.createWriteStream("./files/downloads/file.mp3", { flags: "w" }))
+                .on("finish", () =>
+                {
+                    console.log("Finished downloading file");
+                    this.execute();
+                })
+                .on("error", (error) =>
+                {
+                    throw error;
+                });
+        });
+
+/*        try
+        {
+            let configOb = new Config();
+        }
+        catch (e)
+        {
+            console.error(e);
+        }*/
+    }
+
+    private static testRegex()
     {
         let res: RegExpMatchArray = "https://www.youtube.com/watch?v=I0T8jivPjJk".match(Tools.getUrlRegex());
         console.log(JSON.stringify(res));
@@ -16,7 +50,7 @@ export class Test
             "https://www.youtube.com/watch?v=x8IToLUJStg&list=PLFbJRoyE4bhlm44b16EPDw7pJZrY_bw9Y&index=21",
             "https://twitter.com/home",
             "https://twitter.com/CLONEKID_/status/1275079599261548548",
-            "https://iut-dijon fr/zimbra/#1"
+            "https://iut-dijonfr/zimbra/#1"
         ];
         urls.forEach(url =>
         {

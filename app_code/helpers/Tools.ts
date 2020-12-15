@@ -59,4 +59,35 @@ export class Tools
         }
         return value;
     }
+
+    /**Parse a string (from a environement variable) and returns an enum type for easier conditions */
+    public static getRelease(value: string)
+    {
+        switch (value)
+        {
+            case "alpha":
+                return ReleaseType.ALPHA;
+            case "test":
+                return ReleaseType.TEST;
+            default:
+                return ReleaseType.PROD;
+        }
+    }
+
+    public throwHtmlError(responseStatus: number)
+    {
+        switch (responseStatus)
+        {
+
+            default:
+        }
+    }
+}
+
+/**Enumeration for ReleaseTypeParser */
+export enum ReleaseType
+{
+    ALPHA = "alpha",
+    TEST = "test",
+    PROD = ""
 }

@@ -74,12 +74,12 @@ export class EmbedCommand extends Command
                 }
             }, 1000);
         }
-        else
+        else // no url provided
         {
-            console.log(Printer.args(
-                [Printer.error("json file url"), "delete after execution"],
+            Printer.args(
+                [Printer.pRed("json file url"), "delete after execution"],
                 [`${Printer.error(fileUrl)}`, `${this.values[1]}`]
-            ));
+            );
             throw new Error("No valid uri/url for the json file");
         }
         // 3 -delete original message with 1 sec delay

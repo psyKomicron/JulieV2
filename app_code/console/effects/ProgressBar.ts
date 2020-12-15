@@ -47,7 +47,7 @@ export class ProgressBar
             {
                 progress += "=";
             }
-            process.stdout.write(`${Printer.warn(progress)} ${Printer.normal(round)}%\n`);
+            process.stdout.write(`${Printer.pYell(progress)} ${round}%\n`);
             this.lastValue = value;
         }
         else throw new Error("Bar has not been started");
@@ -65,7 +65,7 @@ export class ProgressBar
             {
                 progress += "=";
             }
-            process.stdout.write(`${Printer.info(progress)} ${Printer.normal(round)}%\n`);
+            process.stdout.write(`${Printer.pGreen(progress)} ${round}%\n`);
         }
         else throw new Error("Bar has not been started");
     }

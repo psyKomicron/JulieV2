@@ -36,7 +36,7 @@ export abstract class LoadingEffect
         this.timeout = setInterval(() =>
         {
             readline.moveCursor(process.stdout, -this.effectLength, 0);
-            process.stdout.write(Printer.normal(this.effects[i % size]));
+            process.stdout.write(this.effects[i % size]);
             i++;
         }, this.speed);
         return this.timeout;

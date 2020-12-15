@@ -61,51 +61,56 @@ export class DownloadCommand extends Command
         {
             if (this.values.directDownloadURI)
             {
-                console.log(Printer.title("downloading"));
-                console.log(Printer.args(
-                    ["downloading"],
-                    [`${this.values.directDownloadURI}`]
-                ));
-                try
-                {
-                    message.react(EmojiReader.getEmoji("thinking"));
-                    ytdl(this.values.directDownloadURI, { quality: "highestaudio" })
-                        .pipe(fs.createWriteStream("./files/downloads/file.mp3", { flags: "w" }))
-                        .on("finish", () =>
-                        {
-                            console.log("Finished downloading file");
-                            message.react(EmojiReader.getEmoji("green_check"));
-                            this.deleteMessage(message, 3000);
-
-                            let data = new EmbedResolvable();
-                            data.setTitle("Youtube")
-                            data.setColor(16711680)
-                            data.setFooter("powered by psyKomicron")
-                            data.setDescription("Video");
-
-                            let embed = EmbedFactory.build(data);
-                            embed.attachFiles([{ attachment: fs.readFile("./files/downloads/file.mp3"), name: "file.mp3" }]);
-                            // cannot be sent if the bot hasn't Nitro
-                            /*this.message.channel.send(embed)
-                                .catch(error =>
-                                {
-                                    console.error(error);
-                                });*/
-                        })
-                        .on("error", (error) =>
-                        {
-                            throw error;
-                        });
-                } catch (error)
-                {
-                    message.react(EmojiReader.getEmoji("red_cross"));
-                    console.error(error);
-                }
+                this.downloadVideo(message);
             }
             else
             {
                 throw new WrongArgumentError(this, "No URI were provided");
             }
+        }
+    }
+
+    private async downloadVideo(message: Message)
+    {
+        console.log(Printer.title("downloading"));
+        console.log(Printer.args(
+            ["downloading"],
+            [`${this.values.directDownloadURI}`]
+        ));
+        try
+        {
+            message.react(EmojiReader.getEmoji("thinking"));
+            ytdl(this.values.directDownloadURI, { quality: "highestaudio" })
+                .pipe(fs.createWriteStream("./files/downloads/file.mp3", { flags: "w" }))
+                .on("finish", () =>
+                {
+                    console.log("Finished downloading file");
+                    message.react(EmojiReader.getEmoji("green_check"));
+                    this.deleteMessage(message, 3000);
+
+                    let data = new EmbedResolvable();
+                    data.setTitle("Youtube")
+                    data.setColor(16711680)
+                    data.setFooter("powered by psyKomicron")
+                    data.setDescription("Video");
+
+                    let embed = EmbedFactory.build(data);
+                    embed.attachFiles([{ attachment: fs.readFile("./files/downloads/file.mp3"), name: "file.mp3" }]);
+                    // cannot be sent if the bot hasn't Nitro
+                    /*this.message.channel.send(embed)
+                        .catch(error =>
+                        {
+                            console.error(error);
+                        });*/
+                })
+                .on("error", (error) =>
+                {
+                    throw error;
+                });
+        } catch (error)
+        {
+            message.react(EmojiReader.getEmoji("red_cross"));
+            console.error(error);
         }
     }
 
