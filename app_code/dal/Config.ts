@@ -19,8 +19,10 @@ export class Config //extends EventEmitter
         {
             // get prefix
             this.prefix = config["prefix"];
+
             // get verbose level
             this.verbose = config["verbose"];
+
             // check directories
             let directories = config["startdirectories"];
             directories.forEach(dir =>
@@ -31,6 +33,7 @@ export class Config //extends EventEmitter
                 }
                 this.startDirectories.push(dir);
             });
+
             // get authorized users
             let users = config["authorizedusers"];
             users.forEach(user =>
