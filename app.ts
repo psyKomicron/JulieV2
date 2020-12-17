@@ -6,6 +6,7 @@ import { StarEffect } from './app_code/console/effects/StarEffect';
 import { Bot } from './app_code/bot/Bot';
 import { TokenReader } from './app_code/dal/readers/TokenReader';
 import { ReleaseType, Tools } from './app_code/helpers/Tools';
+import { Config } from './app_code/dal/Config';
 
 const release = TokenReader.getToken("release");
 Printer.info(`release version : ${release}`);
@@ -24,6 +25,7 @@ if (release)
         }
         else
         {
+            Config.init();
             Printer.startUp();
             let loadingEffect = new StarEffect("", [-17, -1]);
             let id = loadingEffect.start();
