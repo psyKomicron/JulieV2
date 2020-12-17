@@ -2,8 +2,8 @@ import { ExecutionError } from "../ExecutionError";
 
 export class EmptyTokenError extends ExecutionError
 {
-    public constructor(message: string, name: string)
+    public constructor(message: string)
     {
-        super(message, name);
+        super(message, "EmptyTokenError");
     }
 }

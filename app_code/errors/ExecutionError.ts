@@ -6,4 +6,9 @@ export abstract class ExecutionError extends Error
         super(message);
         this.name = name;
     }
+
+    public toString(): string
+    {
+        return this.name + " thrown at : \n" + this.stack + "\nMessage : " + this.message; 
+    }
 }
