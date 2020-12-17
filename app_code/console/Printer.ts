@@ -67,37 +67,40 @@ export class Printer
      */
     public static args(contents: string[], values: string[], inline: boolean = false): void
     {
-        if (contents.length == values.length && this.level >= 2)
+        if (contents.length == values.length)
         {
-            let maxLength = -1;
-            for (let i = 0; i < contents.length; i++)
+            if (this.level >= 2)
             {
-                if (contents[i].length > maxLength) maxLength = contents[i].length;
-            }
-            maxLength += 4;
-            let lines = "";
-            for (let i = 0; i < contents.length; i++)
-            {
-                let arg = "(-) " + contents[i];
-                while (arg.length < maxLength) arg += " ";
-                if (i != contents.length - 1)
+                let maxLength = -1;
+                for (let i = 0; i < contents.length; i++)
                 {
-                    if (inline && i % 3 != 0)
+                    if (contents[i].length > maxLength) maxLength = contents[i].length;
+                }
+                maxLength += 4;
+                let lines = "";
+                for (let i = 0; i < contents.length; i++)
+                {
+                    let arg = "(-) " + contents[i];
+                    while (arg.length < maxLength) arg += " ";
+                    if (i != contents.length - 1)
                     {
-                        arg += ` : ${Printer.getName(values[i])} `;
+                        if (inline && i % 3 != 0)
+                        {
+                            arg += ` : ${Printer.getName(values[i])} `;
+                        }
+                        else
+                        {
+                            arg += ` : ${Printer.getName(values[i])} \n`;
+                        }
                     }
                     else
                     {
-                        arg += ` : ${Printer.getName(values[i])} \n`;
+                        arg += ` : ${Printer.getName(values[i])}`;
                     }
+                    lines += arg;
                 }
-                else
-                {
-                    arg += ` : ${Printer.getName(values[i])}`;
-                }
-                lines += arg;
+                console.log(lines);
             }
-            console.log(lines);
         }
         else
         {
