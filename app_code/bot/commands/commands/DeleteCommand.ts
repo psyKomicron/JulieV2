@@ -18,7 +18,7 @@ export class DeleteCommand extends Command
     public async execute(message: Message): Promise<void> 
     {
         this.delete_values = this.getParams(this.parseMessage(message), message);
-        console.log(Printer.title("deleting messages"));
+        Printer.title("deleting messages");
         if (this.delete_values[1] != undefined && this.delete_values[2] == "")
         {
             Printer.args(
@@ -64,8 +64,10 @@ export class DeleteCommand extends Command
                 return username == this.delete_values[2];
             });
         }
+
         let messagesToDelete: Array<Message> = new Array();
         messages.forEach(message => { if (message != undefined) messagesToDelete.push(message) });
+
         while (messagesToDelete.length < this.delete_values[0]) 
         {
             let lastMessageID = await messages.last()?.id;
@@ -142,7 +144,6 @@ export class DeleteCommand extends Command
                         channel = resolvedChannel;
                     }
                     break;
-                default:
             }
         });
         return [messages, channel, username];
