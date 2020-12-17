@@ -29,10 +29,14 @@ export abstract class LoadingEffect
     public start(): NodeJS.Timeout
     {
         if (this.title != "")
+        {
             console.log(this.title);
+
+        }
         let size = this.effects.length;
         readline.moveCursor(process.stdout, this.position[0], this.position[1]);
         let i = 0;
+
         this.timeout = setInterval(() =>
         {
             readline.moveCursor(process.stdout, -this.effectLength, 0);

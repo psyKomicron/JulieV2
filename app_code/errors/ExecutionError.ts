@@ -9,6 +9,6 @@ export abstract class ExecutionError extends Error
 
     public toString(): string
     {
-        return this.name + " thrown at : \n" + this.stack + "\nMessage : " + this.message; 
+        return this.stack; 
     }
 }

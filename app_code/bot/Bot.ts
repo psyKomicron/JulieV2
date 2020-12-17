@@ -10,6 +10,7 @@ import { ExecutionError } from '../errors/ExecutionError';
 import { CommandFactory } from '../helpers/factories/CommandFactory';
 import { Tools } from '../helpers/Tools';
 import { Config } from '../dal/Config';
+import { LoadingEffect } from '../console/effects/LoadingEffect';
 
 export class Bot 
 {
@@ -22,28 +23,25 @@ export class Bot
     // discord
     private readonly _client: Client = new Client();
 
-    public constructor(id: NodeJS.Timeout) 
+    public constructor(id: LoadingEffect) 
     {
         this.moderator = Moderator.get(this);
         try
         {
-            Config.init();
             // bot parameters
             this.verbose = Config.getVerbose();
             this.parents = Config.getAuthorizedUsers();
             this.prefix = Config.getPrefix();
+
             // events init & login
             this.init(id);
-        } catch (error)
+        }
+        catch (error)
         {
-            if (error instanceof ExecutionError)
-            {
-                Printer.clearPrint(Printer.pRed(error.message));
-            }
-            else
-            {
-                Printer.error(error);
-            }
+            id.stop();
+            Printer.clear();
+            Printer.error(error.toString());
+            Printer.error("\nFatal error, application will not start. Press CTRL+C to stop");
         }
     }
 
@@ -51,15 +49,15 @@ export class Bot
 
     public get logger(): Logger { return this._logger; }
 
-    private init(id: NodeJS.Timeout): void
+    private init(id: LoadingEffect): void
     {
-        
+
         // initiate bot
         this._client.on("ready", () =>
         {
-            clearInterval(id);
+            id.stop();
             readline.moveCursor(process.stdout, -4, 0);
-            process.stdout.write(`READY\n`);
+            process.stdout.write("READY\n");
             Printer.error("-------------------------------------");
         });
         this._client.on("message", (message) => { this.onMessage(message); });
@@ -70,7 +68,9 @@ export class Bot
         });
 
         // login
-        this._client.login(TokenReader.getToken("discord"));
+        let token: string = TokenReader.getToken("discord");
+        this._client.login(token);
+        token = "";
     }
 
     private onMessage(message: Message): void 
@@ -79,17 +79,12 @@ export class Bot
         try
         {
             this.moderator.execute(message);
-        } catch (error)
-        {
-            if (error instanceof ExecutionError)
-            {
-                console.error(error.message);
-            }
-            else
-            {
-                Printer.error(error.toString());
-            }
         }
+        catch (error)
+        {
+            Printer.error(error.toString());
+        }
+
         let content = message.content;
         if (content.startsWith(this.prefix) && this.parents.includes(message.author.tag))
         {
@@ -104,7 +99,7 @@ export class Bot
                     command.execute(message)
                         .catch(error =>
                         {
-                            this.handleError(error, message);
+                            this.handleErrorForClient(error, message);
                         })
                         .then(() =>
                         {
@@ -116,12 +111,12 @@ export class Bot
                 }
             } catch (error)
             {
-                this.handleError(error, message);
+                this.handleErrorForClient(error, message);
             }
         }
     }
 
-    private handleError(error: Error, message: Message): void
+    private handleErrorForClient(error: Error, message: Message): void
     {
         if (error instanceof ExecutionError)
         {

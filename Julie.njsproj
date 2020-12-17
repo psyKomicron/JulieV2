@@ -210,9 +210,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\viewmodels\YoutubeInput.ts" />
     <TypeScriptCompile Include="app_code\viewmodels\YoutubeOuput.ts" />
-    <TypeScriptCompile Include="app_code\website\WebServer.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="app_code\" />
@@ -239,15 +236,8 @@
     <Folder Include="app_code\helpers\enums\" />
     <Folder Include="app_code\helpers\proxies\" />
     <Folder Include="app_code\viewmodels\copy_books\" />
-    <Folder Include="app_code\website\" />
     <Folder Include="app_code\viewmodels\" />
     <Folder Include="app_code\tests\" />
-    <Folder Include="app_code\website\pug\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="app_code\website\pug\index.pug">
-      <SubType>Code</SubType>
-    </Content>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
 </Project>

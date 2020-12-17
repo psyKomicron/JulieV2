@@ -5,6 +5,12 @@ import { Config } from '../dal/Config';
 export class Printer
 {
     private static level: number;
+    private static lines: number = 0;
+
+    public static init(): void
+    {
+        this.level = Config.getVerbose();
+    }
 
     public static startUp(): void
     {
@@ -12,7 +18,10 @@ export class Printer
         this.printEscCode(EscapeCodes.HIDE_CURSOR);
         readline.cursorTo(process.stdout, 0, 0);
         process.stdout.write(this.appTitle());
-        this.level = Config.getVerbose();
+        if (!this.level)
+        {
+            this.init();
+        }
     }
 
     public static print(content: any): void
@@ -20,8 +29,8 @@ export class Printer
         if (this.level > 1)
         {
             console.log(content);
+            this.lines++;
         }
-        console.log(content);
     }
 
     public static clearPrint(content: string, position: [number, number] = null): void
@@ -36,6 +45,7 @@ export class Printer
             readline.clearLine(process.stdout, 0);
         }
         console.log(content);
+        this.lines++;
     }
 
     /**
@@ -50,12 +60,16 @@ export class Printer
             if (Command.commands > 10)
             {
                 this.printEscCode(EscapeCodes.CLEAR_SCREEN);
+                this.lines = 0;
                 readline.cursorTo(process.stdout, 0, 0);
             }
             let tac: string = "";
             let max = 15 - (content.toString().length / 2);
             for (let i = 0; i < max; i++) tac += "-";
+
             console.log(`${tac}  ${content}  ${tac}`);
+
+            this.lines++;
         }
     }
 
@@ -125,6 +139,7 @@ export class Printer
         if (this.level > 2)
         {
             console.log(this.pYell(`${content}`));
+            this.lines++;
         }
     }
 
@@ -135,6 +150,7 @@ export class Printer
     public static error(content: string): void
     {
         console.error(this.pRed(content));
+        this.lines++;
     }
 
     public static hideCursor(): void
@@ -154,8 +170,11 @@ export class Printer
 
     public static clear(): void
     {
-        this.printEscCode(EscapeCodes.CLEAR_SCREEN);
+        readline.cursorTo(process.stdout, 0, this.lines);
+        process.stdout.write("><");
+        console.log(EscapeCodes.CLEAR_SCREEN);
         readline.cursorTo(process.stdout, 0, 0);
+        this.lines = 0;
     }
 
     public static pRed(content: string): string
@@ -224,10 +243,28 @@ export class Printer
 
     private static appTitle(): string
     {
-        let str = Printer.pRed("-------------------------------------\n");
-        str += `${Printer.pRed(">>>>>")} Desmo Bot with TypeScript ${Printer.pRed("<<<<<")}\n`;
-        str += `${Printer.pRed(">>>>>")}                           ${Printer.pRed("<<<<<")}
-${Printer.pRed("-------------------------------------")}`;
+        let spaces = 4;
+        let title = "STARTING UP";
+        let right = "<<<<<";
+        let left = ">>>>>";
+        let dash = this.repeat("-", title.length + right.length * 2 + spaces * 2); //37
+
+        let str = dash + "\n";
+        str += left + this.repeat(" ", spaces) + title + this.repeat(" ", spaces) + right + "\n";
+        str += left + this.repeat(" ", title.length + spaces * 2) + right + "\n";
+        str += dash;
+
+        this.lines += 4;
+        return this.pRed(str);
+    }
+
+    private static repeat(c: string, times: number): string
+    {
+        let str = c;
+        for (let i = 1; i < times; i++)
+        {
+            str += c;
+        }
         return str;
     }
 }

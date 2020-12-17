@@ -7,11 +7,16 @@ import { Bot } from './app_code/bot/Bot';
 import { TokenReader } from './app_code/dal/readers/TokenReader';
 import { ReleaseType, Tools } from './app_code/helpers/Tools';
 import { Config } from './app_code/dal/Config';
+import { EmptyTokenError } from './app_code/errors/dal_errors/EmptyTokenError';
 
-const release = TokenReader.getToken("release");
-Printer.info(`release version : ${release}`);
-if (release)
+Config.init();
+Printer.init();
+try
 {
+    const release = TokenReader.getToken("release");
+
+    Printer.info(`release version : ${release}`);
+
     let r1 = readline.createInterface(
         {
             input: process.stdin,
@@ -25,28 +30,36 @@ if (release)
         }
         else
         {
-            Config.init();
             Printer.startUp();
-            let loadingEffect = new StarEffect("", [-17, -1]);
-            let id = loadingEffect.start();
+            let loadingEffect = new StarEffect([-17, -1]);
+            loadingEffect.start();
             try
             {
-                new Bot(id);
+                new Bot(loadingEffect);
             } catch (e)
             {
                 console.error(e);
             }
         }
-    })
+    });
 }
-else
+catch (error)
 {
+    if (error instanceof EmptyTokenError)
+    {
+        Printer.warn(error.name);
+    }
+    else
+    {
+        throw error;
+    }
+
     Printer.startUp();
-    let loadingEffect = new StarEffect("", [-17, -1]);
-    let id = loadingEffect.start();
+    let loadingEffect = new StarEffect([-17, -1]);
+    loadingEffect.start();
     try
     {
-        new Bot(id);
+        new Bot(loadingEffect);
     } catch (e)
     {
         console.error(e);

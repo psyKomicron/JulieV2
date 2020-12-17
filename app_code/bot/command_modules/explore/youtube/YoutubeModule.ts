@@ -18,7 +18,7 @@ export class YoutubeModule
         }
         else
         {
-            throw new EmptyTokenError("Provided youtube auth key is empty", this.name);
+            throw new EmptyTokenError("Provided youtube auth key is empty");
         }
     }
 
