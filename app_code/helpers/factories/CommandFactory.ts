@@ -11,6 +11,7 @@ import { TestCommand } from "../../bot/commands/commands/TestCommand";
 import { VoteCommand } from "../../bot/commands/commands/VoteCommand";
 import { DefaultCommand } from "../../bot/commands/commands/DefaultCommand";
 import { AddUserCommand } from "../../bot/commands/commands/AddUserCommand";
+import { ChannelCleanerCommand } from "../../bot/commands/commands/ChannelCleanerCommand";
 
 export class CommandFactory
 {
@@ -58,6 +59,9 @@ export class CommandFactory
             case "a":
             case "add":
                 command = new AddUserCommand(bot);
+                break;
+            case "clean":
+                command = new ChannelCleanerCommand(bot);
                 break;
             default:
                 command = new DefaultCommand(bot);
