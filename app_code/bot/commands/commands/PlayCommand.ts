@@ -13,11 +13,12 @@ import { YoutubeModule } from '../../command_modules/explore/youtube/YoutubeModu
 import { PlayLogger } from '../../command_modules/logger/loggers/PlayLogger';
 import { Printer } from '../../../console/Printer';
 import { WrongArgumentError } from '../../../errors/command_errors/WrongArgumentError';
-import { TokenReader, EmojiReader } from '../../../dal/Readers';
+import { EmojiReader } from '../../../dal/readers/EmojiReader';
 import { EmbedFactory } from '../../../helpers/factories/EmbedFactory';
 import { EmbedResolvable } from '../../../viewmodels/EmbedResolvable';
 import { CommandSyntaxError } from '../../../errors/command_errors/CommandSyntaxError';
 import { YoutubeOutput } from '../../../viewmodels/YoutubeOuput';
+import { TokenReader } from '../../../dal/readers/TokenReader';
 
 export class PlayCommand extends Command
 {
