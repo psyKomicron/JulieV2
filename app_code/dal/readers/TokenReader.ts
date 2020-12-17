@@ -1,3 +1,4 @@
+import { EmptyTokenError } from "../../errors/dal_errors/EmptyTokenError";
 
 export class TokenReader
 {
@@ -18,7 +19,7 @@ export class TokenReader
         }
         if (!tokenValue)
         {
-            console.error("Could not get token env variable");
+            throw new EmptyTokenError("Could not get token from env variable");
         }
         return tokenValue;
     }
