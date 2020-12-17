@@ -2,8 +2,8 @@ import { ExecutionError } from "../ExecutionError";
 
 export class DeprecatedCommandError extends ExecutionError
 {
-    public constructor()
+    public constructor(friendlyName: string)
     {
-        super("DeprecatedCommandError", "Method/Command used is considered deprecated");
+        super("Command is not currently up to date. For now consider not using it until it is updated. :)", friendlyName);
     }
 }
