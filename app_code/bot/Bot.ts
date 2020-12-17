@@ -75,17 +75,6 @@ export class Bot
 
     private onMessage(message: Message): void 
     {
-        /*
-         * // printing bot parameters
-        Printer.args(
-            ["prefix", "verbose level"],
-            [this.prefix, `${this.verbose}`]
-        );
-        let users: string = "";
-        this.parents.forEach(parent => users += parent + "\n");
-        Printer.info("authorized users :");
-        Printer.print(users);
-        */
         // asynchronously moderates a message
         try
         {
@@ -98,7 +87,7 @@ export class Bot
             }
             else
             {
-                console.error(error);
+                Printer.error(error.toString());
             }
         }
         let content = message.content;
@@ -116,6 +105,13 @@ export class Bot
                         .catch(error =>
                         {
                             this.handleError(error, message);
+                        })
+                        .then(() =>
+                        {
+                            if (command.deleteAfterExecution)
+                            {
+                                command.deleteMessage(message, 300);
+                            }
                         });
                 }
             } catch (error)
@@ -131,13 +127,13 @@ export class Bot
         {
             if (this.verbose)
             {
-                console.error(Printer.error(error.message));
+                Printer.error(error.message);
                 message.author.send(`Command (\`${error.name}\`) failed. Message : \n${error.message}`);
             }
         }
-        else if (this.verbose)
+        else if (this.verbose > 2)
         {
-            console.error(error);
+            Printer.error(error.toString());
             message.author.send("Uh oh... Something went wrong ! Try again !");
         }
     }
