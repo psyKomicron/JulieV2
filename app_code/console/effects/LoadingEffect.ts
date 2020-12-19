@@ -31,7 +31,6 @@ export abstract class LoadingEffect
         if (this.title != "")
         {
             console.log(this.title);
-
         }
         let size = this.effects.length;
         readline.moveCursor(process.stdout, this.position[0], this.position[1]);

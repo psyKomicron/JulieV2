@@ -171,10 +171,19 @@ export class Printer
     public static clear(): void
     {
         readline.cursorTo(process.stdout, 0, this.lines);
-        process.stdout.write("><");
         console.log(EscapeCodes.CLEAR_SCREEN);
         readline.cursorTo(process.stdout, 0, 0);
         this.lines = 0;
+    }
+
+    public static repeat(c: string, times: number): string
+    {
+        let str = c;
+        for (let i = 1; i < times; i++)
+        {
+            str += c;
+        }
+        return str;
     }
 
     public static pRed(content: string): string
@@ -256,16 +265,6 @@ export class Printer
 
         this.lines += 4;
         return this.pRed(str);
-    }
-
-    private static repeat(c: string, times: number): string
-    {
-        let str = c;
-        for (let i = 1; i < times; i++)
-        {
-            str += c;
-        }
-        return str;
     }
 }
 

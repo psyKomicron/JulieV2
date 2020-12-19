@@ -24,7 +24,7 @@ export class Bot
     // discord
     private readonly _client: Client = new Client();
 
-    public constructor(id: LoadingEffect) 
+    public constructor(effect: LoadingEffect) 
     {
         this.moderator = Moderator.get(this);
         try
@@ -35,11 +35,11 @@ export class Bot
             this.prefix = Config.getPrefix();
 
             // events init & login
-            this.init(id);
+            this.init(effect);
         }
         catch (error)
         {
-            id.stop();
+            effect.stop();
             Printer.clear();
             Printer.error(error.toString());
             Printer.error("\nFatal error, application will not start. Press CTRL+C to stop");
@@ -69,9 +69,9 @@ export class Bot
         this._client.on("ready", () =>
         {
             id.stop();
-            readline.moveCursor(process.stdout, -4, 0);
+            readline.moveCursor(process.stdout, -3, 0);
             process.stdout.write("READY\n");
-            Printer.error("-------------------------------------");
+            Printer.error(Printer.repeat("-", 27));
         });
 
         this._client.on("message", (message) => { this.onMessage(message); });
@@ -83,9 +83,7 @@ export class Bot
         });
 
         // login
-        let token: string = TokenReader.getToken("discord");
-        this._client.login(token);
-        token = "";
+        this._client.login(TokenReader.getToken("discord"));
     }
 
     private onMessage(message: Message): void 
@@ -120,24 +118,15 @@ export class Bot
                         {
                             if (command.deleteAfterExecution)
                             {
-                                this.handleError(error, message);
-                            })
-                            .then(() =>
-                            {
-                                if (command.deleteAfterExecution)
-                                {
-                                    command.deleteMessage(message, 300);
-                                }
-                            });
-                    }
-                } catch (error)
+                                command.deleteMessage(message, 300);
+                            }
+                        });
+                } 
+                catch (error)
                 {
-                    this.handleError(error, message);
+                    this.handleErrorForClient(error, message);
                 }
-            } catch (error)
-            {
-                this.handleErrorForClient(error, message);
-            }
+            } 
         }
     }
 

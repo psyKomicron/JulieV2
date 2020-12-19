@@ -1,10 +1,10 @@
 import readline = require('readline');
-import { clearTimeout } from 'timers';
 import { Bot } from '../../Bot';
 import { Command } from "../Command";
 import { Message, TextChannel, Collection } from 'discord.js';
 import { Printer } from '../../../console/Printer';
 import { ProgressBar } from '../../../console/effects/ProgressBar';
+import { time } from 'console';
 
 export class DeleteCommand extends Command
 {
@@ -23,7 +23,7 @@ export class DeleteCommand extends Command
         {
             Printer.args(
                 ["number of messages", "channel name", "target user"],
-                [`${this.delete_values[0]}`, `${this.delete_values[1].name}`, `${this.delete_values[2]}`]);
+                [`${this.delete_values[0]}`, `${this.delete_values[1].name}`, `${this.delete_values[2] == "" ? "none" : this.delete_values[2]}`]);
             let channel = this.delete_values[1];
             channel.bulkDelete(this.delete_values[0])
                 .then(response =>
@@ -36,6 +36,7 @@ export class DeleteCommand extends Command
                         bar.update(i);
                         i++;
                     });
+                    bar.stop();
                 })
                 .catch(() =>
                 {
@@ -90,22 +91,31 @@ export class DeleteCommand extends Command
                 messages.forEach(message => { if (message != undefined) messagesToDelete.push(message) });
             }
         }
+
         let bar = new ProgressBar(this.delete_values[0], "deleting messages");
         bar.start();
         let alive = true;
+        let timeout: NodeJS.Timeout = setTimeout(() =>
+        {
+            alive = false;
+            readline.moveCursor(process.stdout, 64, -2);
+            console.log(Printer.warn("deleting messages slower than planned, stopping"));
+            readline.moveCursor(process.stdout, 0, 1);
+        }, 10000);
+
         for (let i = 0; i < messages.size && i < this.delete_values[0] && alive; i++)
         {
-            let timeout = setTimeout(() =>
+            if (messagesToDelete[i].deletable)
             {
-                alive = false;
-                readline.moveCursor(process.stdout, 64, -2);
-                console.log(Printer.warn("deleting messages slower than planned, stopping"));
-                readline.moveCursor(process.stdout, 0, 1);
-            }, 10000);
-            if (messagesToDelete[i].deletable) await messagesToDelete[i].delete({ timeout: 100 });
+                await messagesToDelete[i].delete({ timeout: 100 });
+            }
+
             bar.update(i + 1);
-            clearTimeout(timeout);
+            timeout.refresh();
         }
+        clearTimeout(timeout);
+        bar.stop();
+
         console.log("");
     }
 
