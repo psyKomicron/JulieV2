@@ -21,7 +21,7 @@ export class VoteLogger extends Logger
         {
             can = true;
             this.work(message);
-            console.log(Printer.title("handled by vote logger"));
+            Printer.title("handled by vote logger");
         }
         else
         {
@@ -51,7 +51,7 @@ export class VoteLogger extends Logger
                 if (error instanceof RangeError)
                 {
                     message.react(EmojiReader.getEmoji("red_cross"));
-                    console.error(error.message);
+                    Printer.error(error.toString());
                 }
             }
         }

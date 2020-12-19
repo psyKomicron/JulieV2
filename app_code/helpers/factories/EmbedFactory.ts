@@ -1,5 +1,6 @@
 import { MessageEmbed } from 'discord.js';
 import { EmbedResolvable } from '../../viewmodels/EmbedResolvable';
+import { EmojiReader } from '../../dal/readers/EmojiReader';
 
 export class EmbedFactory
 {
@@ -8,8 +9,8 @@ export class EmbedFactory
         let messageEmbed: MessageEmbed = new MessageEmbed()
             .setTitle(resolvable.title)
             .setColor(resolvable.color ?? Math.floor(Math.random() * 16777215))
-            .setDescription(resolvable.description)
-            .setFooter(resolvable.footer);
+            .setDescription(resolvable.description ?? "")
+            .setFooter(resolvable.footer ?? "made by Julie with " + EmojiReader.getEmoji("heart"));
         let fields = resolvable.fields;
         if (fields)
         {

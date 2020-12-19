@@ -2,6 +2,7 @@ import { Command } from "../Command";
 import { Message, Channel, TextChannel, Collection, User } from "discord.js";
 import { Bot } from "../../Bot";
 import { Printer } from "../../../console/Printer";
+import { ProgressBar } from "../../../console/effects/ProgressBar";
 
 export class ChannelCleanerCommand extends Command
 {
@@ -17,15 +18,17 @@ export class ChannelCleanerCommand extends Command
         if (values[1] != undefined)
         {
             Printer.args(["number of unique messages", "channel"], [`${values[0]}`, `${values[1].name}`]);
-            this.cleanChannel(values[1], values[0]);
+            this.cleanChannel(values[1], values[0], message);
         }
     }
 
-    private async cleanChannel(channel: TextChannel, numberPerUser: number): Promise<boolean>
+    private async cleanChannel(channel: TextChannel, numberPerUser: number, message: Message): Promise<void>
     {
         let lastDate = new Date(Date.now());
-        let done = true;
-        let messages: Array<Message> = await this.getMessagesBefore(lastDate, channel);
+        let messages: Array<Message> = await this.getMessagesBefore(lastDate, channel, message);
+
+        let bar = new ProgressBar(messages.length, "cleaning channel [" + channel.name + "]");
+        bar.start();
 
         // start sorting and selecting messages
         for (var i = 0; i < messages.length; i++)
@@ -35,10 +38,9 @@ export class ChannelCleanerCommand extends Command
             if (!this.hasAnyData(message))
             {
                 let messagesByAuthor = new Map<User, number>();
-                for (var j = i + 1; j < messages.length; j++)
+                for (var j = i; j < messages.length; j++)
                 {
                     let author = messages[j].author;
-                    console.log(author.username);
                     if (!this.hasAnyData(messages[j]))
                     {
                         if (messagesByAuthor.has(author))
@@ -47,8 +49,7 @@ export class ChannelCleanerCommand extends Command
 
                             if (messagesByAuthor.get(author) > numberPerUser)
                             {
-                                // this.deleteMessage(messages[j]);
-                                Printer.info(messages[j].toString());
+                                this.deleteMessage(messages[j]);
                             }
                         }
                         else
@@ -63,12 +64,12 @@ export class ChannelCleanerCommand extends Command
                 }
                 i = j;
             }
+            bar.update(i);
         }
-
-        return done;
+        bar.stop();
     }
 
-    private async getMessagesBefore(date: Date, channel: TextChannel): Promise<Array<Message>>
+    private async getMessagesBefore(date: Date, channel: TextChannel, currentMessage: Message): Promise<Array<Message>>
     {
         let messagesToHandle: Array<Message> = new Array();
         let messages: Collection<string, Message> = await channel.messages.fetch();
@@ -83,7 +84,7 @@ export class ChannelCleanerCommand extends Command
 
         messages.forEach((message) =>
         {
-            if (isSameDay(message.createdAt, date))
+            if (isSameDay(message.createdAt, date) && message != currentMessage)
             {
                 messagesToHandle.push(message);
             }

@@ -10,6 +10,7 @@ import { ExecutionError } from '../errors/ExecutionError';
 import { CommandFactory } from '../helpers/factories/CommandFactory';
 import { Tools } from '../helpers/Tools';
 import { Config } from '../dal/Config';
+import { ConfigurationError } from '../errors/dal_errors/ConfigurationError';
 import { LoadingEffect } from '../console/effects/LoadingEffect';
 
 export class Bot 
@@ -51,6 +52,18 @@ export class Bot
 
     private init(id: LoadingEffect): void
     {
+        // config changes
+        Config.on("prefix-change", (newPrefix) =>
+        {
+            if (typeof newPrefix == "string" && newPrefix.length >= 1)
+            {
+                this.prefix = newPrefix;
+            }
+            else
+            {
+                throw new ConfigurationError("Given prefix is not valid.");
+            }
+        });
 
         // initiate bot
         this._client.on("ready", () =>
@@ -60,7 +73,9 @@ export class Bot
             process.stdout.write("READY\n");
             Printer.error("-------------------------------------");
         });
+
         this._client.on("message", (message) => { this.onMessage(message); });
+
         this._client.on("disconnect", (arg_0, arg_1: number) => 
         {
             console.log("Client disconnected :");
@@ -75,25 +90,25 @@ export class Bot
 
     private onMessage(message: Message): void 
     {
-        // asynchronously moderates a message
-        try
-        {
-            this.moderator.execute(message);
-        }
-        catch (error)
-        {
-            Printer.error(error.toString());
-        }
-
         let content = message.content;
-        if (content.startsWith(this.prefix) && this.parents.includes(message.author.tag))
+
+        if (content.startsWith(this.prefix))
         {
-            Printer.info("\ncommand requested by : " + message.author.tag);
-            let name = Tools.getCommandName(content);
             try
             {
-                let handled = this.logger.handle(message);
-                if (!handled)
+                // asynchronously moderates a message
+                this.moderator.execute(message);
+            }
+            catch (error)
+            {
+                Printer.error(error.toString());
+            }
+
+            if (this.parents.includes(message.author.tag))
+            {
+                Printer.info("\ncommand requested by : " + message.author.tag);
+                let name = Tools.getCommandName(content);
+                try
                 {
                     let command = CommandFactory.create(name.substr(1), this);
                     command.execute(message)
@@ -105,9 +120,19 @@ export class Bot
                         {
                             if (command.deleteAfterExecution)
                             {
-                                command.deleteMessage(message, 300);
-                            }
-                        });
+                                this.handleError(error, message);
+                            })
+                            .then(() =>
+                            {
+                                if (command.deleteAfterExecution)
+                                {
+                                    command.deleteMessage(message, 300);
+                                }
+                            });
+                    }
+                } catch (error)
+                {
+                    this.handleError(error, message);
                 }
             } catch (error)
             {

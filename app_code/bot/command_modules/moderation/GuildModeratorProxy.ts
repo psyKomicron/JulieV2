@@ -2,6 +2,7 @@ import { Message, Guild, User } from "discord.js";
 import { Moderator } from "./Moderator";
 import { GuildModerator } from "./guild_mods/GuildModerator";
 import { ExecutionError } from "../../../errors/ExecutionError";
+import { Printer } from "../../../console/Printer";
 
 export class GuildModeratorProxy
 {
@@ -27,14 +28,7 @@ export class GuildModeratorProxy
             this.moderator.sendMessage(status, message.author);
         } catch (error)
         {
-            if (error instanceof ExecutionError)
-            {
-                console.error(error.toString());
-            }
-            else
-            {
-                console.error(error);
-            }
+            Printer.error(error.toString());
         }
     }
 

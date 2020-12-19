@@ -3,9 +3,13 @@ import { ConfigurationError } from '../errors/dal_errors/ConfigurationError';
 import { JSONParser } from '../helpers/JSONParser';
 import { EventEmitter } from 'events';
 
-export class Config //extends EventEmitter
+/**The parameters are loaded into the class attribute with the init() method. */
+export class Config extends EventEmitter
 {
+    private static readonly config = new Config();
     private static readonly path = "./config/config.json";
+    private static isInit: boolean = false;
+
     private static prefix: string;
     private static startDirectories: Array<string> = new Array();
     private static authorizedUsers: Array<string> = new Array();
@@ -13,47 +17,56 @@ export class Config //extends EventEmitter
 
     public static init()
     {
-        let config = JSON.parse(fs.readFile("./config/config.json").toString());
-        const template = { "prefix": "", "authorizedusers": [""], "verbose": 1, "startdirectories": [""] };
-        if (fs.exists("./config/config.json") && JSONParser.matchTemplate(config, template))
+        if (!this.isInit)
         {
-            // get prefix
-            this.prefix = config["prefix"];
+            let config = JSON.parse(fs.readFile("./config/config.json").toString());
 
-            // get verbose level
-            this.verbose = config["verbose"];
+            const template = { "prefix": "", "authorizedusers": [""], "verbose": 1, "startdirectories": [""] };
 
-            // check directories
-            let directories = config["startdirectories"];
-            directories.forEach(dir =>
+            if (fs.exists("./config/config.json"))
             {
-                if (!fs.exists(dir))
+                if (JSONParser.matchTemplate(config, template))
                 {
-                    fs.mkdir(dir);
-                }
-                this.startDirectories.push(dir);
-            });
+                    // get prefix
+                    this.prefix = config["prefix"];
 
-            // get authorized users
-            let users = config["authorizedusers"];
-            users.forEach(user =>
-            {
-                if ((user as string)?.match(/([A-Za-z0-9]+#+[0-9999])\w+/))
-                {
-                    this.authorizedUsers.push(user);
+                    // get verbose level
+                    this.verbose = config["verbose"];
+
+                    // check directories
+                    let directories = config["startdirectories"];
+                    directories.forEach(dir =>
+                    {
+                        if (!fs.exists(dir))
+                        {
+                            fs.mkdir(dir);
+                        }
+                        this.startDirectories.push(dir);
+                    });
+
+                    // get authorized users
+                    let users = config["authorizedusers"];
+                    users.forEach(user =>
+                    {
+                        if ((user as string)?.match(/([A-Za-z0-9]+#+[0-9999])\w+/))
+                        {
+                            this.authorizedUsers.push(user);
+                        }
+                    });
                 }
-            });
+                else
+                {
+                    throw new ConfigurationError("Configuration file is malformed, please check file integrity.");
+                }
+            }
+            else
+            {
+                throw new ConfigurationError("Configuration file is either not present, or not accessible. Please check.");
+            }
         }
         else
         {
-            if (!fs.exists("./config/config.json"))
-            {
-                throw new ConfigurationError();
-            }
-            else if (!JSONParser.matchTemplate(fs.readFile("./config/config.json"), template))
-            {
-                throw new ConfigurationError("Configuration file is malformed, please check file integrity.");
-            }
+            throw new ConfigurationError("Configuration file has already been loaded. Do not instanciate the Config class twice.");
         }
     }
 
@@ -67,6 +80,16 @@ export class Config //extends EventEmitter
         return this.startDirectories;
     }
 
+    public static getVerbose(): number
+    {
+        return this.verbose;
+    }
+
+    public static getAuthorizedUsers(): Array<string>
+    {
+        return this.authorizedUsers;
+    }
+
     public static getPrefix(): string
     {
         return this.prefix;
@@ -75,15 +98,16 @@ export class Config //extends EventEmitter
     public static setPrefix(prefix: string): void
     {
         this.prefix = prefix;
+        this.config.emit("prefix-change", prefix);
     }
 
-    public static getVerbose(): number
+    public static emit(event: string | symbol, ...args: any[]): void
     {
-        return this.verbose;
+        this.config.emit(event, ...args);
     }
 
-    public static getAuthorizedUsers(): string[]
+    public static on(event: string | symbol, listener: (...args: any[]) => void): void
     {
-        return this.authorizedUsers;
+        this.config.on(event, listener);
     }
 }

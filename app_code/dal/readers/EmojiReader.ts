@@ -3,9 +3,9 @@ import { FileSystem } from '../FileSystem';
 
 export class EmojiReader
 {
-    public static getEmoji(name: "green_check" | "green_cross" | "thinking" | "warning" | "red_cross" | "pointing_down" | number): string
+    public static getEmoji(name: "green_check" | "green_cross" | "thinking" | "warning" | "red_cross" | "pointing_down" | "heart" | number): string
     {
-        let res = undefined;
+        let res = "";
         try
         {
             let json = JSON.parse(FileSystem.readFile("./files/emojis/emojis.json").toString());

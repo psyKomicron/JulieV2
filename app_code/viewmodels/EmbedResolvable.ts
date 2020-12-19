@@ -77,105 +77,119 @@ export class EmbedResolvable
     public set video(value: string) { this._video = value; }
 
 
-    public setAuthor(author: string)
+    public setAuthor(author: string): EmbedResolvable
     {
         this.author = author;
         return this;
     }
 
-    public setColor(color: number)
+    public setColor(color: number): EmbedResolvable
     {
         this.color = color;
         return this;
     }
 
-    public setCreatedAt(date: Date)
+    public setCreatedAt(date: Date): EmbedResolvable
     {
         this.createdAt = date;
         return this;
     }
 
-    public setDescription(description: string)
+    public setDescription(description: string): EmbedResolvable
     {
         this.description = description;
         return this;
     }
 
-    public setFields(fields: Array<EmbedField>)
+    public setFields(fields: Array<EmbedField>): EmbedResolvable
     {
         this.fields = fields;
         return this;
     }
 
-    public setFiles(files: any[])
+    public setFiles(files: any[]): EmbedResolvable
     {
         this.files = files;
         return this;
     }
 
-    public setFooter(footer: string)
+    public setFooter(footer: string): EmbedResolvable
     {
         this.footer = footer;
         return this;
     }
 
-    public setHexColor(hexColor: string)
+    public setHexColor(hexColor: string): EmbedResolvable
     {
         this.hexColor = hexColor;
         return this;
     }
 
-    public setImage(imageUrl: string)
+    public setImage(imageUrl: string): EmbedResolvable
     {
         this.image = imageUrl;
         return this;
     }
 
-    public setLength(length: number)
+    public setLength(length: number): EmbedResolvable
     {
         this.length = length;
         return this;
     }
 
-    public setProvider(provider: string)
+    public setProvider(provider: string): EmbedResolvable
     {
         this.provider = provider;
         return this;
     }
 
-    public setThumbnail(thumbnail: string)
+    public setThumbnail(thumbnail: string): EmbedResolvable
     {
         this.thumbnail = thumbnail;
         return this;
     }
 
-    public setTimestamp(timestamp: Date)
+    public setTimestamp(timestamp: Date): EmbedResolvable
     {
         this.timestamp = timestamp;
         return this;
     }
 
-    public setTitle(title: string)
+    public setTitle(title: string): EmbedResolvable
     {
         this.title = title;
         return this;
     }
 
-    public setType(type: string)
+    public setType(type: string): EmbedResolvable
     {
         this.type = type;
         return this;
     }
 
-    public setUrl(url: string)
+    public setUrl(url: string): EmbedResolvable
     {
         this.url = url;
         return this;
     }
 
-    public setVideo(video: string)
+    public setVideo(video: string): EmbedResolvable
     {
         this.video = video;
+        return this;
+    }
+
+    public addField(field: EmbedField): EmbedResolvable
+    {
+        if (this.fields)
+        {
+            this.fields.push(field);
+        }
+        else
+        {
+            this.fields = new Array();
+            this.fields.push(field);
+        }
         return this;
     }
 }

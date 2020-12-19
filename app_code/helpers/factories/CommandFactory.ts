@@ -12,6 +12,7 @@ import { VoteCommand } from "../../bot/commands/commands/VoteCommand";
 import { DefaultCommand } from "../../bot/commands/commands/DefaultCommand";
 import { AddUserCommand } from "../../bot/commands/commands/AddUserCommand";
 import { ChannelCleanerCommand } from "../../bot/commands/commands/ChannelCleanerCommand";
+import { ShowUsersCommand } from "../../bot/commands/commands/ShowUsersCommand";
 
 export class CommandFactory
 {
@@ -58,10 +59,15 @@ export class CommandFactory
                 break;
             case "a":
             case "add":
+            case "adduser":
                 command = new AddUserCommand(bot);
                 break;
+            case "c":
             case "clean":
                 command = new ChannelCleanerCommand(bot);
+                break;
+            case "showusers":
+                command = new ShowUsersCommand(bot);
                 break;
             default:
                 command = new DefaultCommand(bot);

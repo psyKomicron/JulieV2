@@ -22,7 +22,7 @@ export class PlayLogger extends Logger
             message.content.substr(1).match(/(resume)+/g))
         {
             can = true;
-            console.log(Printer.title("handled by play logger"));
+            Printer.title("handled by play logger");
             this.work(message);
         }
 
@@ -49,7 +49,7 @@ export class PlayLogger extends Logger
             {
                 case content.substr(1).match(/(leave)+/g) != null:
                     this.player.leave();
-                    console.log(Printer.info("Disconnecting play logger"));
+                    Printer.info("Disconnecting play logger");
                     this.disconnect();
                     break;
                 case content.substr(1).match(/(play)+/g) != null:

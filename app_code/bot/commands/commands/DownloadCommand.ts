@@ -32,24 +32,29 @@ export class DownloadCommand extends Command
             {
                 throw new Error("Given limit is not integer");
             }
+
             let type = this.values.type;
             let channel = this.values.channel;
             let name = "";
+
             if (channel instanceof TextChannel)
             {
                 name = channel.name;
             }
+
             message.react(EmojiReader.getEmoji("thinking"));
-            console.log(Printer.title("initiating download"));
-            console.log(Printer.args(
+            Printer.title("initiating download");
+            Printer.args(
                 ["downloading", "file type", "channel"],
                 [`${limit}`, `${type}`, `${name}`]
-            ));
+            );
+
             if (limit > 250)
             {
-                console.log(Printer.warn("\n\t/!\\ WARNING : downloading over 250 files can fail /!\\ \n"));
+                Printer.warn("\n\t/!\\ WARNING : downloading over 250 files can fail /!\\ \n");
                 message.react(EmojiReader.getEmoji("warning"));
             }
+
             this.initiateDownload(limit, channel)
                 .then(() =>
                 {
@@ -72,11 +77,11 @@ export class DownloadCommand extends Command
 
     private async downloadVideo(message: Message)
     {
-        console.log(Printer.title("downloading"));
-        console.log(Printer.args(
+        Printer.title("downloading");
+        Printer.args(
             ["downloading"],
             [`${this.values.directDownloadURI}`]
-        ));
+        );
         try
         {
             message.react(EmojiReader.getEmoji("thinking"));
@@ -84,7 +89,7 @@ export class DownloadCommand extends Command
                 .pipe(fs.createWriteStream("./files/downloads/file.mp3", { flags: "w" }))
                 .on("finish", () =>
                 {
-                    console.log("Finished downloading file");
+                    Printer.print("Finished downloading file");
                     message.react(EmojiReader.getEmoji("green_check"));
                     this.deleteMessage(message, 3000);
 
@@ -110,7 +115,7 @@ export class DownloadCommand extends Command
         } catch (error)
         {
             message.react(EmojiReader.getEmoji("red_cross"));
-            console.error(error);
+            Printer.error(error.toString());
         }
     }
 

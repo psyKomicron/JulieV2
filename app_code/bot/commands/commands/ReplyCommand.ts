@@ -22,13 +22,13 @@ export class ReplyCommand extends Command
         {
             this.getFastParams(message);
         }
-        console.log(Printer.title("reply"));
+        Printer.title("reply");
         // fetch message
         let replyMessage = await message.channel.messages.fetch(this.values[1]);
         if (replyMessage instanceof Message)
         {
             // good to go
-            console.log(Printer.args(["message id", "reply content"], [this.values[1], this.values[0]]));
+            Printer.args(["message id", "reply content"], [this.values[1], this.values[0]]);
             let author = message.author.tag;
             let user = replyMessage.author.tag;
             let embed = this.buildEmbed(author, user);

@@ -37,16 +37,10 @@ export class Moderator extends Command
         try
         {
             this.guildModerator.handle(message);
-        } catch (error)
+        }
+        catch (error)
         {
-            if (error instanceof ExecutionError)
-            {
-                console.error(Printer.error(error.toString()));
-            }
-            else
-            {
-                console.error(error);
-            }
+            Printer.error(error.toString());
         }
     }
 

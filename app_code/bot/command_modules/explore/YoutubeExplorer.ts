@@ -20,8 +20,8 @@ export class YTExplorer extends Explorer
         {
             if (e instanceof EmptyTokenError)
             {
-                console.log(Printer.error("YoutubeModule cannot log in with an empty token"));
-                console.error(e.message);
+                Printer.error("YoutubeModule cannot log in with an empty token");
+                Printer.error(e.toString());
             }
         }
     }

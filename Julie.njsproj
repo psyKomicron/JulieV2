@@ -70,6 +70,9 @@
     <TypeScriptCompile Include="app_code\bot\commands\commands\ReplyCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="app_code\bot\commands\commands\ShowUsersCommand.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\bot\commands\commands\TestCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

@@ -48,10 +48,10 @@ export class VoteCommand extends Command
             this.channel = message.channel;
         }
         this.deleteMessage(message);
-        console.log(Printer.title("starting vote"));
-        console.log(Printer.args(
+        Printer.title("starting vote");
+        Printer.args(
             ["timeout", "vote reason", "vote channel id", "holding message (id)"],
-            [`${this.timeout}`, this.title, this.channel?.id, `${this.hostMessageID}`]));
+            [`${this.timeout}`, this.title, this.channel?.id, `${this.hostMessageID}`]);
         if (this.channel instanceof TextChannel)
         {
             let logger = new VoteLogger();

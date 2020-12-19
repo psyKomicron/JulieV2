@@ -33,7 +33,7 @@ export class WikiExplorer extends Explorer
         {
             if (!(error instanceof DiscordAPIError))
             {
-                console.error(error);
+                Printer.error(error.toString());
             }
         }
         this.send(embed);
@@ -69,11 +69,7 @@ export class WikiExplorer extends Explorer
             }
         } catch (error)
         {
-            if (error instanceof Error)
-            {
-                console.error(Printer.error(error.name) + "\n" + error.message);
-            }
-            else console.error(error);
+            Printer.error(error.toString());
         }
         return map;
     }
