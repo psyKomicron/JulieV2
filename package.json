@@ -23,7 +23,7 @@
     "googleapis": "^51.0.0",
     "node-fetch": "^2.6.0",
     "request": "^2.88.2",
-    "ytdl-core": "^2.1.5"
+    "ytdl-core": "^4.2.1"
   },
   "repository": {
     "type": "git",
