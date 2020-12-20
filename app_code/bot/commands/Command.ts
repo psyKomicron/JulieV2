@@ -2,6 +2,7 @@ import { Bot } from "../Bot";
 import { EventEmitter } from "events";
 import { FileSystem as fs } from "../../dal/FileSystem";
 import { Message, TextChannel, GuildChannel, GuildChannelManager } from 'discord.js';
+import { CommandSyntaxError } from "../../errors/command_errors/CommandSyntaxError";
 
 export abstract class Command extends EventEmitter
 {
@@ -44,9 +45,12 @@ export abstract class Command extends EventEmitter
     {
         let rawContent = message.content.substring(1);
         let substr = 0;
+
         while (substr < rawContent.length && rawContent[substr] != "-") { substr++; }
+
         let content = rawContent.substring(substr);
         let commas = 0;
+
         for (var j = 0; j < rawContent.length; j++)
         {
             if (rawContent[j] == "\"")
@@ -54,10 +58,12 @@ export abstract class Command extends EventEmitter
                 commas++;
             }
         }
+
         if (commas % 2 != 0)
         {
-            throw new Error(`Command contains a space, but not incapsulated in \" \" (at character ${j + 1})`);
+            throw new CommandSyntaxError(this, `Command contains a space, but not incapsulated in \" \" (at character ${j + 1})`);
         }
+
         let map = new Map<string, string>();
         let i = 0;
         while (i < content.length)
@@ -87,6 +93,7 @@ export abstract class Command extends EventEmitter
                     }
                     let value = "";
                     let marker = true;
+
                     while (i < content.length && marker)
                     {
                         if ((content.charCodeAt(i) > 47 && content.charCodeAt(i) < 58) ||

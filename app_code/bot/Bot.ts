@@ -105,6 +105,12 @@ export class Bot
             if (this.parents.includes(message.author.tag))
             {
                 Printer.info("\ncommand requested by : " + message.author.tag);
+
+                if (this._logger)
+                {
+                    this._logger.handle(message);
+                }
+
                 let name = Tools.getCommandName(content);
                 try
                 {

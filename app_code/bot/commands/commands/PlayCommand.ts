@@ -40,9 +40,10 @@ export class PlayCommand extends Command
     public async execute(message: Message): Promise<void> 
     {
         this.message = message;
+
         if (!message.content.match(/([-])/g))
         {
-            this.parseMessage(message);
+            // this.parseMessage(message); // command will not be logged
             this.videos = this.getSimpleParams(message.content).videos;
         }
         else
@@ -52,11 +53,11 @@ export class PlayCommand extends Command
             this.videos = params.videos;
         }
 
-        console.log(Printer.title("play"));
-        console.log(Printer.args(["value provided"],
+        Printer.title("play");
+        Printer.args(["values provided"],
             [
                 this.videos.length == 0 ? "" : `${this.videos.length}`,
-            ]));
+            ]);
         let match = true;
         this.videos.forEach(url =>
         {

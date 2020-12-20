@@ -9,6 +9,8 @@ import { Printer } from "../../../console/Printer";
 export class Moderator extends Command
 {
     private static instance: boolean = false;
+    private static moderator: Moderator;
+
     private guildModerator: GuildModeratorProxy;
     private tree: Tree;
 
@@ -23,12 +25,9 @@ export class Moderator extends Command
     {
         if (!Moderator.instance)
         {
-            return new Moderator(bot);
+            this.moderator = new Moderator(bot)
         }
-        else
-        {
-            throw new Error("Angel's already here");
-        }
+        return this.moderator;
     }
 
     public async execute(message: Message): Promise<void>
