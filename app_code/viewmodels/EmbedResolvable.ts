@@ -1,4 +1,4 @@
-import { EmbedField } from "discord.js";
+import { EmbedField, EmbedFieldData } from "discord.js";
 
 /**Business object representing a MessageEmbed object from the discord.js API */
 export class EmbedResolvable
@@ -7,7 +7,7 @@ export class EmbedResolvable
     private _color: number;
     private _createdAt: Date;
     private _description: string;
-    private _fields: Array<EmbedField>;
+    private _fields: Array<EmbedFieldData>;
     private _files: any[];
     private _footer: string;
     // check for hexadecimal format later
@@ -35,8 +35,8 @@ export class EmbedResolvable
     public set description(value: string) { this._description = value; }
 
     /**Not nullable field */
-    public get fields(): Array<EmbedField> { return this._fields; }
-    public set fields(value: Array<EmbedField>) { this._fields = value; }
+    public get fields(): Array<EmbedFieldData> { return this._fields; }
+    public set fields(value: Array<EmbedFieldData>) { this._fields = value; }
 
     public get files(): any[] { return this._files; }
     public set files(value: any[]) { this._files = value; }
@@ -179,7 +179,7 @@ export class EmbedResolvable
         return this;
     }
 
-    public addField(field: EmbedField): EmbedResolvable
+    public addField(field: EmbedFieldData): EmbedResolvable
     {
         if (this.fields)
         {

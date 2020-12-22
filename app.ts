@@ -6,7 +6,7 @@ import { Config } from './app_code/dal/Config';
 
 Config.init();
 Printer.startUp();
-let loadingEffect = new StarEffect([-14, -1]);
+let loadingEffect = new StarEffect([-12, -1]);
 loadingEffect.start();
 try
 {

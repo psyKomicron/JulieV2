@@ -5,14 +5,11 @@ import { YTExplorer } from "../../command_modules/explore/YoutubeExplorer";
 import { WikiExplorer } from "../../command_modules/explore/WikiExplorer";
 import { Explorer } from "../../command_modules/explore/Explorer";
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
-import { WrongArgumentError } from "../../../errors/command_errors/WrongArgumentError";
 import { CommandSyntaxError } from "../../../errors/command_errors/CommandSyntaxError";
 
 export class ExploreCommand extends Command
 {
     private channel: TextChannel;
-    private keyword: string;
-    private domainName: string;
 
     public constructor(bot: Bot)
     {
@@ -21,23 +18,25 @@ export class ExploreCommand extends Command
 
     public async execute(message: Message): Promise<void>
     {
-        this.channel = message.channel instanceof TextChannel ? message.channel : undefined;
-        this.getParams(this.parseMessage(message));
-        console.log(Printer.title("explorer"));
-        console.log(Printer.args(["keyword", "domain name"], [`${this.keyword}`, `${this.domainName}`]));
+        let params: [string, Domain] = this.getParams(this.parseMessage(message));
+        let keyword = params[0];
+        let domain = params[1];
+
+        Printer.title("explorer");
+        Printer.args(["keyword", "domain name"], [`${keyword}`, `${domain}`]);
+
         let e: Explorer;
-        switch (this.domainName)
+        switch (domain)
         {
-            case "youtube":
-                e = new YTExplorer(this.keyword, this);
+            case Domain.YOUTUBE:
+                e = new YTExplorer(keyword, this);
                 break;
-            case "wikipedia":
-                e = new WikiExplorer(this.keyword, this);
+            case Domain.WIKIPEDIA:
+                e = new WikiExplorer(keyword, this);
                 break;
-            default:
-                e = new YTExplorer(this.keyword, this);
         }
-        e?.explore();
+        e.explore();
+
         this.deleteMessage(message, 1000);
     }
 
@@ -50,27 +49,37 @@ export class ExploreCommand extends Command
         return this.channel.send(embed);
     }
 
-    private getParams(args: Map<string, string>): void
+    private getParams(args: Map<string, string>): [string, Domain]
     {
+        let keyword: string = undefined;
+        let domain: Domain = Domain.YOUTUBE;
+
         args.forEach((v, k) =>
         {
             switch (k)
             {
                 case "k":
                 case "keyword":
-                    this.keyword = v;
+                    keyword = v;
                     break;
                 case "yt":
                 case "youtube":
-                    this.domainName = "youtube";
+                    domain = Domain.YOUTUBE;
                     break;
                 case "w":
                 case "wiki":
-                    this.domainName = "wikipedia";
+                    domain = Domain.WIKIPEDIA;
                     break;
                 default:
                     throw new CommandSyntaxError(this);
             }
         });
+        return [keyword, domain];
     }
+}
+
+enum Domain
+{
+    YOUTUBE = "youtube",
+    WIKIPEDIA = "wikipedia"
 }

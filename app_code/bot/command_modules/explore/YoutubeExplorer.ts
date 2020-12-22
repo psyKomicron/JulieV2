@@ -6,6 +6,7 @@ import { Printer } from "../../../console/Printer";
 import { EmbedFactory } from "../../../helpers/factories/EmbedFactory";
 import { EmbedResolvable } from "../../../viewmodels/EmbedResolvable";
 
+/**Class to display results from a search on Youtube for a discord user */
 export class YTExplorer extends Explorer
 {
     public async explore(): Promise<void> 

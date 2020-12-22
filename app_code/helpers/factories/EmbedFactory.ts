@@ -4,6 +4,11 @@ import { EmojiReader } from '../../dal/readers/EmojiReader';
 
 export class EmbedFactory
 {
+    /**
+     * Automatically sets footer, color and description to provide a similar look and feel
+     * for all embeds sends by the bot.
+     * @param resolvable
+     */
     public static build(resolvable: EmbedResolvable): MessageEmbed
     {
         let messageEmbed: MessageEmbed = new MessageEmbed()

@@ -253,7 +253,7 @@ export class Printer
     private static appTitle(): string
     {
         let spaces = 4;
-        let title = "STARTING UP";
+        let title = "Julie V2";
         let right = "<<<<<";
         let left = ">>>>>";
         let dash = this.repeat("-", title.length + right.length * 2 + spaces * 2); //37

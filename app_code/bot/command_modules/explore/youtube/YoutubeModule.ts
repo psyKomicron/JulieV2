@@ -4,6 +4,7 @@ import { YoutubeProxy } from '../../../../helpers/proxies/YoutubeProxy';
 import { TokenReader } from '../../../../dal/readers/TokenReader';
 import { YoutubeOutput } from '../../../../viewmodels/YoutubeOuput';
 
+/**Class to interact with the Youtube API */
 export class YoutubeModule
 {
     private service: YoutubeProxy;
@@ -18,7 +19,7 @@ export class YoutubeModule
         }
         else
         {
-            throw new EmptyTokenError("Provided youtube auth key is empty");
+            throw new EmptyTokenError("Provided youtube authentication key is empty");
         }
     }
 

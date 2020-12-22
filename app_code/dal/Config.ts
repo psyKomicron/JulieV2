@@ -2,6 +2,8 @@ import { FileSystem as fs } from './FileSystem';
 import { ConfigurationError } from '../errors/dal_errors/ConfigurationError';
 import { JSONParser } from '../helpers/JSONParser';
 import { EventEmitter } from 'events';
+import { User } from 'discord.js';
+import { Printer } from '../console/Printer';
 
 /**The parameters are loaded into the class attribute with the init() method. */
 export class Config extends EventEmitter
@@ -90,6 +92,32 @@ export class Config extends EventEmitter
         return this.authorizedUsers;
     }
 
+    public static addAuthorizedUser(user: User)
+    {
+        let configFile = JSON.parse(fs.readFile(this.path).toString());
+
+        if (JSONParser.matchTemplate(configFile, { "prefix": "", "authorizedusers": [""], "verbose": 1, "startdirectories": [""] }))
+        {
+            let authorizedUsers = configFile.authorizedUsers;
+            if (authorizedUsers && authorizedUsers instanceof Array)
+            {
+                try
+                {
+                    authorizedUsers.push(user.tag);
+                    this.emit("added-user", user);
+                }
+                catch (error)
+                {
+                    Printer.error(error.toString());
+                }
+            }
+            else
+            {
+                throw new ConfigurationError("Configuration file is malformed, please check file integrity.");
+            }
+        }
+    }
+
     public static getPrefix(): string
     {
         return this.prefix;
@@ -106,7 +134,7 @@ export class Config extends EventEmitter
         this.config.emit(event, ...args);
     }
 
-    public static on(event: string | symbol, listener: (...args: any[]) => void): void
+    public static on(event: "prefix-change"| "added-user", listener: (...args: any[]) => void): void
     {
         this.config.on(event, listener);
     }

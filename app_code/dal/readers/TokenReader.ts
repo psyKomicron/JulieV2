@@ -14,12 +14,12 @@ export class TokenReader
                 tokenValue = process.env.release;
                 break;
             case "discord":
-                tokenValue = process.env.token;
+                tokenValue = process.env.BOT_KEY;
                 break;
         }
         if (!tokenValue)
         {
-            throw new EmptyTokenError("Could not get token from env variable");
+            throw new EmptyTokenError("Could not get token from env variable. Token name : " + tokenName);
         }
         return tokenValue;
     }

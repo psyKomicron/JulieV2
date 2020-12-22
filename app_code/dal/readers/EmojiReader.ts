@@ -22,11 +22,11 @@ export class EmojiReader
         {
             if ((error as Error).name == "EONENT")
             {
-                console.log(Printer.error(`Cannot find emoji ${name}, maybe it was deleted or hasn't been created`));
+                Printer.error(`Cannot find emoji ${name}, maybe it was deleted or hasn't been created`);
             }
             else
             {
-                console.error(Printer.error((error as Error).message));
+                Printer.error(error.toString());
             }
         }
         return res;

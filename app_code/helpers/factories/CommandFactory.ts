@@ -13,6 +13,7 @@ import { DefaultCommand } from "../../bot/commands/commands/DefaultCommand";
 import { AddUserCommand } from "../../bot/commands/commands/AddUserCommand";
 import { ChannelCleanerCommand } from "../../bot/commands/commands/ChannelCleanerCommand";
 import { ShowUsersCommand } from "../../bot/commands/commands/ShowUsersCommand";
+import { ChangePrefixCommand } from "../../bot/commands/commands/ChangePrefixCommand";
 
 export class CommandFactory
 {
@@ -66,8 +67,13 @@ export class CommandFactory
             case "clean":
                 command = new ChannelCleanerCommand(bot);
                 break;
+            case "su":
             case "showusers":
                 command = new ShowUsersCommand(bot);
+                break;
+            case "changeprefix":
+            case "prefix":
+                command = new ChangePrefixCommand(bot);
                 break;
             default:
                 command = new DefaultCommand(bot);

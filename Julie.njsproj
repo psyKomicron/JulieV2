@@ -43,6 +43,9 @@
     <TypeScriptCompile Include="app_code\bot\commands\commands\AddUserCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="app_code\bot\commands\commands\ChangePrefixCommand.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\bot\commands\commands\ChannelCleanerCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -149,6 +152,9 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\dal\IStreamOptions.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="app_code\errors\command_errors\CommandError.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\errors\command_errors\CommandSyntaxError.ts">
