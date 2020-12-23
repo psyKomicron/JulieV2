@@ -3,6 +3,7 @@ import { Message } from "discord.js";
 import { Config } from "../../../dal/Config";
 import { Bot } from "../../Bot";
 import { Printer } from "../../../console/Printer";
+import { CommandError } from "../../../errors/command_errors/CommandError";
 
 export class AddUserCommand extends Command
 {
@@ -16,6 +17,6 @@ export class AddUserCommand extends Command
         Printer.title("add-user")
 
         let users = Config.getAuthorizedUsers();
-        
+        throw new CommandError("Command not finished yet, give me a some time and try again !", this);
     }
 }
