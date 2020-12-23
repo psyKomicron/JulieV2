@@ -1,7 +1,7 @@
 import readline = require('readline');
 import { clearInterval } from 'timers';
 import { TokenReader } from '../dal/readers/TokenReader';
-import { Client, Message } from 'discord.js';
+import { Client, Message, User } from 'discord.js';
 import { Moderator } from './command_modules/moderation/Moderator';
 import { DefaultLogger } from './command_modules/logger/loggers/DefaultLogger';
 import { Logger } from './command_modules/logger/Logger';
@@ -12,6 +12,7 @@ import { Tools } from '../helpers/Tools';
 import { Config } from '../dal/Config';
 import { ConfigurationError } from '../errors/dal_errors/ConfigurationError';
 import { LoadingEffect } from '../console/effects/LoadingEffect';
+import { CommandError } from '../errors/command_errors/CommandError';
 
 export class Bot 
 {
@@ -46,6 +47,8 @@ export class Bot
         }
     }
 
+    public get prefixLength(): number { return this.prefix.length; }
+
     public get client(): Client { return this._client; }
 
     public get logger(): Logger { return this._logger; }
@@ -55,14 +58,11 @@ export class Bot
         // config changes
         Config.on("prefix-change", (newPrefix) =>
         {
-            if (typeof newPrefix == "string" && newPrefix.length >= 1)
-            {
-                this.prefix = newPrefix;
-            }
-            else
-            {
-                throw new ConfigurationError("Given prefix is not valid.");
-            }
+            this.onPrefixChange(newPrefix);
+        });
+        Config.on("added-user", (user) =>
+        {
+            this.onUserAdd(user);
         });
 
         // initiate bot
@@ -70,8 +70,8 @@ export class Bot
         {
             id.stop();
             readline.moveCursor(process.stdout, -3, 0);
-            process.stdout.write("READY\n");
-            Printer.error(Printer.repeat("-", 27));
+            process.stdout.write("Ready\n");
+            Printer.error(Printer.repeat("-", 26));
         });
 
         this._client.on("message", (message) => { this.onMessage(message); });
@@ -84,6 +84,26 @@ export class Bot
 
         // login
         this._client.login(TokenReader.getToken("discord"));
+    }
+
+    private onPrefixChange(prefix: string): void
+    {
+        if (prefix.length >= 1)
+        {
+            this.prefix = prefix;
+        }
+        else
+        {
+            throw new ConfigurationError("Given prefix is not valid.");
+        }
+    }
+
+    private onUserAdd(user: User)
+    {
+        if (!this.parents.includes(user.tag))
+        {
+            this.parents.push(user.tag);
+        }
     }
 
     private onMessage(message: Message): void 
@@ -114,10 +134,12 @@ export class Bot
                 let name = Tools.getCommandName(content);
                 try
                 {
-                    let command = CommandFactory.create(name.substr(1), this);
+                    let command = CommandFactory.create(name.substr(this.prefix.length), this);
+
                     command.execute(message)
                         .catch(error =>
                         {
+                            Printer.error(error.toString());
                             this.handleErrorForClient(error, message);
                         })
                         .then(() =>
@@ -130,6 +152,7 @@ export class Bot
                 } 
                 catch (error)
                 {
+                    Printer.error(error.toString());
                     this.handleErrorForClient(error, message);
                 }
             } 
@@ -138,17 +161,19 @@ export class Bot
 
     private handleErrorForClient(error: Error, message: Message): void
     {
-        if (error instanceof ExecutionError)
+        if (error instanceof ExecutionError && this.verbose > 3)
         {
-            if (this.verbose)
+            if (error instanceof CommandError)
             {
-                Printer.error(error.message);
+                message.author.send("Uh oh with the " + error.name + "command... Something went wrong ! Try again !")
+            }
+            else
+            {
                 message.author.send(`Command (\`${error.name}\`) failed. Message : \n${error.message}`);
             }
         }
-        else if (this.verbose > 2)
+        else
         {
-            Printer.error(error.toString());
             message.author.send("Uh oh... Something went wrong ! Try again !");
         }
     }
