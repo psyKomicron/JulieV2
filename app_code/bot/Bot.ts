@@ -1,5 +1,4 @@
 import readline = require('readline');
-import { clearInterval } from 'timers';
 import { TokenReader } from '../dal/readers/TokenReader';
 import { Client, Message, User } from 'discord.js';
 import { Moderator } from './command_modules/moderation/Moderator';
