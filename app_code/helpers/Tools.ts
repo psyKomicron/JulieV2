@@ -1,3 +1,5 @@
+import { Message } from "discord.js";
+
 export class Tools
 {
     /**
@@ -71,15 +73,6 @@ export class Tools
                 return ReleaseType.TEST;
             default:
                 return ReleaseType.PROD;
-        }
-    }
-
-    public throwHtmlError(responseStatus: number)
-    {
-        switch (responseStatus)
-        {
-
-            default:
         }
     }
 }
