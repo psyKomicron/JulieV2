@@ -57,6 +57,19 @@ export abstract class Command extends EventEmitter
     }
 
     /**
+     * Resolve a text channel through the Discord API. Returns the channel in wich the message
+     * was sent if the channel cannot be resolved.
+     * @param args
+     * @param message
+     */
+    public resolveDefaultTextChannel(args: Map<string, string>, message: Message): TextChannel
+    {
+        return this.resolveTextChannel(args.get("c"), message.guild.channels)
+            ?? this.resolveTextChannel(args.get("channel"), message.guild.channels)
+            ?? message.channel as TextChannel;
+    }
+
+    /**
      * Resolve a channel (text, voice, category, news, store) through the Discord API.
      * Returns undefined if the id isn't recognized.
      * @param channelID string | Discord.Snowflake representing a Channel id.
