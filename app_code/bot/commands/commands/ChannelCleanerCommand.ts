@@ -110,37 +110,33 @@ export class ChannelCleanerCommand extends Command
 
     private hasAnyData(message: Message): boolean
     {
-        let has: boolean = true;
         let urlRegex = /(https?: \/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
 
         if (message.attachments.size > 0) return true;
-        else if (message.cleanContent.length > 10 && message.cleanContent.match(urlRegex) != undefined) return true;
+        else if (message.cleanContent.match(urlRegex) != undefined) return true;
         else return false;
     }
 
     private getParams(map: Map<string, string>, message: Message): [number, TextChannel]
     {
         let maxMessages = 3;
-        let channel: TextChannel = message.channel instanceof TextChannel ? message.channel : undefined;
-        map.forEach((value, key) =>
+        let channel: TextChannel = undefined;
+
+        if (!Number.isNaN(Number.parseInt(map.get("u"))))
         {
-            switch (key)
-            {
-                case "u":
-                    if (!Number.isNaN(Number.parseInt(value)))
-                    {
-                        maxMessages = Number.parseInt(value);
-                    }
-                    break;
-                case "c":
-                    let resolvedChannel = this.resolveTextChannel(value, message.guild.channels);
-                    if (resolvedChannel)
-                    {
-                        channel = resolvedChannel;
-                    }
-                    break;
-            }
-        });
+            maxMessages = Number.parseInt(map.get("u"));
+        }
+
+        let resolvedChannel = this.resolveTextChannel(map.get("c"), message.guild.channels);
+        if (resolvedChannel)
+        {
+            channel = resolvedChannel;
+        }
+        else
+        {
+            channel = message.channel instanceof TextChannel ? message.channel : undefined;
+        }
+
         return [maxMessages, channel];
     }
 }

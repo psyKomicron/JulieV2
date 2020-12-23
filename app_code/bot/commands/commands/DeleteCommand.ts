@@ -122,40 +122,27 @@ export class DeleteCommand extends Command
     private getParams(map: Map<string, string>, message: Message): [number, TextChannel, string]
     {
         let messages = 10;
+        if (!Number.isNaN(Number.parseInt(map.get("n"))))
+        {
+            messages = Number.parseInt(map["n"]);
+        }
+
+        let username: string = undefined; 
+        if (map.get("u"))
+        {
+            let res = /([A-Za-z0-9]+#+[0-9999])\w+/.exec(map.get("u"));
+            if (res && res[0] == map.get("u"))
+            {
+                username = map.get("u");
+            }
+        }
+
         let channel: TextChannel = undefined;
-        let username = "";
         if (message.channel instanceof TextChannel)
         {
             channel = message.channel;
         }
-        map.forEach((value, key) =>
-        {
-            switch (key)
-            {
-                case "u":
-                    let res = /([A-Za-z0-9]+#+[0-9999])\w+/.exec(value);
-                    if (res && res[0] == value)
-                    {
-                        username = value;
-                    }
-                    break;
-                case "n":
-                    if (!Number.isNaN(Number.parseInt(value)))
-                    {
-                        if (!map.has("u"))
-                            messages = Number.parseInt(value) + 1;
-                        else messages = Number.parseInt(value);
-                    }
-                    break;
-                case "c":
-                    let resolvedChannel = this.resolveTextChannel(value, message.guild.channels);
-                    if (resolvedChannel)
-                    {
-                        channel = resolvedChannel;
-                    }
-                    break;
-            }
-        });
+        
         return [messages, channel, username];
     }
 }

@@ -8,8 +8,6 @@ import { Message, TextChannel, GuildChannelManager, Channel } from 'discord.js';
 
 export class EmbedCommand extends Command
 {
-    private values: [TextChannel, boolean]
-
     public constructor(bot: Bot)
     {
         super("embed builder", bot);
@@ -17,8 +15,8 @@ export class EmbedCommand extends Command
 
     public async execute(message: Message): Promise<void> 
     {
-        this.values = this.getParams(this.parseMessage(message), message.channel, message.guild.channels);
-        if (this.values[0] == undefined)
+        let values = this.getParams(this.parseMessage(message), message.channel, message.guild.channels);
+        if (values[0] == undefined)
         {
             throw "Channel cannot be resolved";
         }
@@ -34,7 +32,7 @@ export class EmbedCommand extends Command
             let jsonName = Downloader.getFileName(fileUrl);
             console.log(Printer.args(
                 ["json file name", "json file url", "delete after execution", "channel"],
-                [`${jsonName}`, `${fileUrl}`, `${this.values[1]}`, `${this.values[0].name}`]
+                [`${jsonName}`, `${fileUrl}`, `${values[1]}`, `${values[0].name}`]
             ));
             let downloader = new Downloader(this.name);
             await downloader.download([fileUrl]);
@@ -47,7 +45,7 @@ export class EmbedCommand extends Command
                     Printer.clearPrint("Object has all required properties", [0, -2]);
                     console.log();
                     let discordEmbed = EmbedFactory.build(json); // throw TypeError
-                    this.values[0].send(discordEmbed);
+                    values[0].send(discordEmbed);
                 }
                 catch (error)
                 {
@@ -78,34 +76,27 @@ export class EmbedCommand extends Command
         {
             Printer.args(
                 [Printer.pRed("json file url"), "delete after execution"],
-                [`${Printer.error(fileUrl)}`, `${this.values[1]}`]
+                [`${Printer.error(fileUrl)}`, `${values[1]}`]
             );
             throw new Error("No valid uri/url for the json file");
         }
-        // 3 -delete original message with 1 sec delay
-        this.deleteMessage(message, 1000);
     }
 
-    private getParams(args: Map<string, string>, defaultChannel: Channel, defaultManager: GuildChannelManager): [TextChannel, boolean]
+    private getParams(map: Map<string, string>, defaultChannel: Channel, defaultManager: GuildChannelManager): [TextChannel, boolean]
     {
         let willDelete: boolean = false;
-        let channel: TextChannel = defaultChannel instanceof TextChannel ? defaultChannel : undefined;
-        args.forEach((value, key) =>
+        let channel: TextChannel = undefined;
+
+        if (map.get("d"))
         {
-            switch (key)
-            {
-                case "d":
-                    willDelete = true;
-                    break;
-                case "c":
-                    if (this.resolveTextChannel(value, defaultManager))
-                    {
-                        channel = this.resolveTextChannel(value, defaultManager);
-                    }
-                    break;
-                default:
-            }
-        });
+            willDelete = true;
+        }
+        let resolvedChannel = this.resolveTextChannel(map.get("c"), defaultManager);
+        if (resolvedChannel)
+        {
+            channel = resolvedChannel;
+        }
+
         return [channel, willDelete];
     }
 }

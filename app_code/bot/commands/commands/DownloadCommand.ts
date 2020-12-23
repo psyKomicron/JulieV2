@@ -203,7 +203,7 @@ export class DownloadCommand extends Command
     private filterMessages(messages: Collection<string, Message>, type: FileType = FileType.IMG): Array<string>
     {
         let filteredArray = new Array<string>();
-        messages.forEach((message, flake) =>
+        messages.forEach((message) =>
         {
             if (message.attachments.size > 0)
             {
@@ -215,19 +215,16 @@ export class DownloadCommand extends Command
             else
             {
                 let content = message.content;
-                if (type == FileType.IMG)
+                let regex =
+                    /(https?: \/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
+                let urls = content.match(regex);
+                if (urls != undefined)
                 {
-                    let regex =
-                        /(https?: \/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
-                    let urls = content.match(regex);
-                    if (urls != undefined)
+                    for (var i = 0; i < urls.length; i++)
                     {
-                        for (var i = 0; i < urls.length; i++)
+                        if (this.isImage(urls[i]))
                         {
-                            if (this.isImage(urls[i]))
-                            {
-                                filteredArray.push(urls[i]);
-                            }
+                            filteredArray.push(urls[i]);
                         }
                     }
                 }
@@ -245,37 +242,31 @@ export class DownloadCommand extends Command
     {
         let limit = 50;
         let type = FileType.IMG;
-        let channel: Channel = message.channel;
+        let channel: Channel;
         let directDownload: boolean = false;
         let directDownloadURI: string;
-        map.forEach((value, key) =>
+
+        if (!Number.isNaN(Number.parseInt(map.get("n"))))
         {
-            switch (key)
-            {
-                case "t":
-                    type = this.getFileType(value);
-                    break;
-                case "n":
-                    if (!Number.isNaN(Number.parseInt(value)))
-                    {
-                        limit = Number.parseInt(value);
-                    }
-                    break;
-                case "c":
-                    if (this.resolveTextChannel(value, message.guild.channels))
-                    {
-                        channel = this.resolveTextChannel(value, message.guild.channels);
-                    }
-                    break;
-                case "v":
-                case "video":
-                    directDownload = true;
-                    directDownloadURI = value;
-                    break;
-                default:
-                    throw new CommandSyntaxError(this);
-            }
-        });
+            limit = Number.parseInt(map.get("n"));
+        }
+
+        let resolvedChannel = this.resolveTextChannel(map.get("c"), message.guild.channels);
+        if (resolvedChannel)
+        {
+            channel = resolvedChannel;
+        }
+        else
+        {
+            channel = message.channel;
+        }
+
+        if (map.get("v") && map.get("video"))
+        {
+            directDownload = true;
+            directDownloadURI = map.get("v") ?? map.get("video");
+        }
+
         return {
             limit: limit,
             type: type,
@@ -295,32 +286,6 @@ export class DownloadCommand extends Command
             Downloader.getFileName(content).endsWith(".bmp") ||
             Downloader.getFileName(content).endsWith(".BMP") ||
             Downloader.getFileName(content).endsWith(".GIF"));
-    }
-
-    private getFileType(name: string): FileType
-    {
-        let type;
-        switch (name)
-        {
-            case "img":
-            case "i":
-                type = FileType.IMG;
-                break;
-            case "file":
-                type = FileType.FILE;
-                break;
-            case "video":
-            case "v":
-                type = FileType.VIDEO;
-                break;
-            case "code":
-            case "c":
-                type = FileType.CODE;
-                break;
-            default:
-                type = FileType.FILE;
-        }
-        return type;
     }
 }
 
