@@ -1,19 +1,19 @@
-import { Bot } from "../../bot/Bot";
-import { Command } from "../../bot/commands/Command";
-import { DownloadCommand } from "../../bot/commands/commands/DownloadCommand";
-import { DeleteCommand } from "../../bot/commands/commands/DeleteCommand";
-import { EmbedCommand } from "../../bot/commands/commands/EmbedCommand";
-import { ExploreCommand } from "../../bot/commands/commands/ExploreCommand";
-import { PlayCommand } from "../../bot/commands/commands/PlayCommand";
-import { HelpCommand } from "../../bot/commands/commands/HelpCommand";
-import { ReplyCommand } from "../../bot/commands/commands/ReplyCommand";
-import { TestCommand } from "../../bot/commands/commands/TestCommand";
-import { VoteCommand } from "../../bot/commands/commands/VoteCommand";
-import { DefaultCommand } from "../../bot/commands/commands/DefaultCommand";
-import { AddUserCommand } from "../../bot/commands/commands/AddUserCommand";
-import { ChannelCleanerCommand } from "../../bot/commands/commands/ChannelCleanerCommand";
-import { ShowUsersCommand } from "../../bot/commands/commands/ShowUsersCommand";
-import { ChangePrefixCommand } from "../../bot/commands/commands/ChangePrefixCommand";
+import { Bot } from "../bot/Bot";
+import { Command } from "../bot/commands/Command";
+import { DownloadCommand } from "../bot/commands/commands/DownloadCommand";
+import { DeleteCommand } from "../bot/commands/commands/DeleteCommand";
+import { EmbedCommand } from "../bot/commands/commands/EmbedCommand";
+import { ExploreCommand } from "../bot/commands/commands/ExploreCommand";
+import { PlayCommand } from "../bot/commands/commands/PlayCommand";
+import { HelpCommand } from "../bot/commands/commands/HelpCommand";
+import { TestCommand } from "../bot/commands/commands/TestCommand";
+import { VoteCommand } from "../bot/commands/commands/VoteCommand";
+import { AddUserCommand } from "../bot/commands/commands/AddUserCommand";
+import { ChannelCleanerCommand } from "../bot/commands/commands/ChannelCleanerCommand";
+import { ShowUsersCommand } from "../bot/commands/commands/ShowUsersCommand";
+import { ChangePrefixCommand } from "../bot/commands/commands/ChangePrefixCommand";
+import { DefaultCommand } from "../bot/commands/commands/DefaultCommand";
+
 
 export class CommandFactory
 {
@@ -45,10 +45,6 @@ export class CommandFactory
             case "h":
             case "help":
                 command = new HelpCommand(bot);
-                break;
-            case "r":
-            case "reply":
-                command = new ReplyCommand(bot);
                 break;
             case "t":
             case "test":

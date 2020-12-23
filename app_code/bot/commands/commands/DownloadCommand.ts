@@ -7,7 +7,7 @@ import { FileSystem as fs } from '../../../dal/FileSystem';
 import { EmojiReader } from '../../../dal/readers/EmojiReader';
 import { Printer } from '../../../console/Printer';
 import { EmbedResolvable } from '../../../viewmodels/EmbedResolvable';
-import { EmbedFactory } from '../../../helpers/factories/EmbedFactory';
+import { EmbedFactory } from '../../../factories/EmbedFactory';
 import { ProgressBar } from '../../../console/effects/ProgressBar';
 import { WrongArgumentError } from '../../../errors/command_errors/WrongArgumentError';
 import { Downloader } from '../../command_modules/Downloader';

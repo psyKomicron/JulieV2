@@ -6,7 +6,7 @@ import { DefaultLogger } from './command_modules/logger/loggers/DefaultLogger';
 import { Logger } from './command_modules/logger/Logger';
 import { Printer } from '../console/Printer';
 import { ExecutionError } from '../errors/ExecutionError';
-import { CommandFactory } from '../helpers/factories/CommandFactory';
+import { CommandFactory } from '../factories/CommandFactory';
 import { Tools } from '../helpers/Tools';
 import { Config } from '../dal/Config';
 import { ConfigurationError } from '../errors/dal_errors/ConfigurationError';

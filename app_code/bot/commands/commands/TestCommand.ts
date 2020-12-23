@@ -35,9 +35,6 @@ export class TestCommand extends Command
             "/default"
         ];
 
-        let reply = "";
-        commands.forEach(v => reply += v + "\n");
-
         message.author.send(commands);
     }
 }

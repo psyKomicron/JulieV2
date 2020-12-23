@@ -70,9 +70,6 @@
     <TypeScriptCompile Include="app_code\bot\commands\commands\PlayCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\ReplyCommand.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\bot\commands\commands\ShowUsersCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -184,10 +181,10 @@
     <TypeScriptCompile Include="app_code\helpers\enums\FileType.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\helpers\factories\CommandFactory.ts">
+    <TypeScriptCompile Include="app_code\factories\CommandFactory.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\helpers\factories\EmbedFactory.ts">
+    <TypeScriptCompile Include="app_code\factories\EmbedFactory.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\helpers\JSONParser.ts">
@@ -240,7 +237,7 @@
     <Folder Include="app_code\errors\command_errors\" />
     <Folder Include="app_code\errors\dal_errors\" />
     <Folder Include="app_code\helpers\" />
-    <Folder Include="app_code\helpers\factories\" />
+    <Folder Include="app_code\factories\" />
     <Folder Include="app_code\dal\" />
     <Folder Include="app_code\helpers\enums\" />
     <Folder Include="app_code\helpers\proxies\" />
