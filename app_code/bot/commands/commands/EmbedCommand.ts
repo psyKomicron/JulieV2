@@ -4,7 +4,7 @@ import { Downloader } from '../../command_modules/Downloader';
 import { Printer } from '../../../console/Printer';
 import { EmbedFactory } from '../../../helpers/factories/EmbedFactory';
 import { FileSystem as fs } from '../../../dal/FileSystem';
-import { Message, TextChannel, GuildChannelManager, Channel } from 'discord.js';
+import { Message, TextChannel} from 'discord.js';
 
 export class EmbedCommand extends Command
 {
@@ -15,7 +15,7 @@ export class EmbedCommand extends Command
 
     public async execute(message: Message): Promise<void> 
     {
-        let values = this.getParams(this.parseMessage(message), message.channel, message.guild.channels);
+        let values = this.getParams(this.parseMessage(message), message);
         if (values[0] == undefined)
         {
             throw "Channel cannot be resolved";
@@ -44,7 +44,7 @@ export class EmbedCommand extends Command
                     let json = JSON.parse(fileContent);
                     Printer.clearPrint("Object has all required properties", [0, -2]);
                     console.log();
-                    let discordEmbed = EmbedFactory.build(json); // throw TypeError
+                    let discordEmbed = EmbedFactory.build(json);
                     values[0].send(discordEmbed);
                 }
                 catch (error)
@@ -54,13 +54,9 @@ export class EmbedCommand extends Command
                         if (error.message == "Cannot use object")
                         {
                             Printer.clearPrint("", [0, -1]);
-                            console.error(Printer.error(error.message));
                         }
                     }
-                    else
-                    {
-                        console.error(error);
-                    }
+                    Printer.error(error.toString());
                 }
                 finally
                 {
@@ -82,20 +78,15 @@ export class EmbedCommand extends Command
         }
     }
 
-    private getParams(map: Map<string, string>, defaultChannel: Channel, defaultManager: GuildChannelManager): [TextChannel, boolean]
+    private getParams(map: Map<string, string>, message: Message): [TextChannel, boolean]
     {
         let willDelete: boolean = false;
-        let channel: TextChannel = undefined;
-
         if (map.get("d"))
         {
             willDelete = true;
         }
-        let resolvedChannel = this.resolveTextChannel(map.get("c"), defaultManager);
-        if (resolvedChannel)
-        {
-            channel = resolvedChannel;
-        }
+
+        let channel = this.resolveDefaultTextChannel(map, message);
 
         return [channel, willDelete];
     }

@@ -18,9 +18,9 @@ export class ExploreCommand extends Command
 
     public async execute(message: Message): Promise<void>
     {
-        let params: [string, Domain] = this.getParams(this.parseMessage(message));
-        let keyword = params[0];
-        let domain = params[1];
+        let params: Params = this.getParams(this.parseMessage(message));
+        let keyword = params.keyword;
+        let domain = params.domain;
 
         Printer.title("explorer");
         Printer.args(["keyword", "domain name"], [`${keyword}`, `${domain}`]);
@@ -49,32 +49,34 @@ export class ExploreCommand extends Command
         return this.channel.send(embed);
     }
 
-    private getParams(args: Map<string, string>): [string, Domain]
+    private getParams(args: Map<string, string>): Params
     {
         let keyword: string = undefined;
-        let domain: Domain = Domain.YOUTUBE;
+        let domain: Domain = undefined;
 
-        args.forEach((v, k) =>
+        if (args.get("k") || args.get("keyword"))
         {
-            switch (k)
+            keyword = args.get("k") ?? args.get("keyword");
+        }
+
+        if (args.has("yt") || args.has("youtube"))
+        {
+            domain = Domain.YOUTUBE;
+        }
+
+        if (args.has("w") || args.has("wiki"))
+        {
+            if (!domain)
             {
-                case "k":
-                case "keyword":
-                    keyword = v;
-                    break;
-                case "yt":
-                case "youtube":
-                    domain = Domain.YOUTUBE;
-                    break;
-                case "w":
-                case "wiki":
-                    domain = Domain.WIKIPEDIA;
-                    break;
-                default:
-                    throw new CommandSyntaxError(this);
+                throw new CommandSyntaxError(this, "Duplicate domain name use. You can set the search to be on Youtube or Wikipedia but not both");
             }
-        });
-        return [keyword, domain];
+            else
+            {
+                domain = Domain.WIKIPEDIA;
+            }
+        }
+
+        return { keyword, domain };
     }
 }
 
@@ -82,4 +84,10 @@ enum Domain
 {
     YOUTUBE = "youtube",
     WIKIPEDIA = "wikipedia"
+}
+
+interface Params
+{
+    keyword: string;
+    domain: Domain;
 }

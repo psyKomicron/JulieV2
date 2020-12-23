@@ -251,15 +251,7 @@ export class DownloadCommand extends Command
             limit = Number.parseInt(map.get("n"));
         }
 
-        let resolvedChannel = this.resolveTextChannel(map.get("c"), message.guild.channels);
-        if (resolvedChannel)
-        {
-            channel = resolvedChannel;
-        }
-        else
-        {
-            channel = message.channel;
-        }
+        channel = this.resolveDefaultTextChannel(map, message);
 
         if (map.get("v") && map.get("video"))
         {

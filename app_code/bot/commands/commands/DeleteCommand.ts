@@ -4,12 +4,9 @@ import { Command } from "../Command";
 import { Message, TextChannel, Collection } from 'discord.js';
 import { Printer } from '../../../console/Printer';
 import { ProgressBar } from '../../../console/effects/ProgressBar';
-import { time } from 'console';
 
 export class DeleteCommand extends Command
 {
-    private delete_values: [number, TextChannel, string];
-
     public constructor(bot: Bot)
     {
         super("delete", bot);
@@ -17,93 +14,109 @@ export class DeleteCommand extends Command
 
     public async execute(message: Message): Promise<void> 
     {
-        this.delete_values = this.getParams(this.parseMessage(message), message);
+        let params: Params = this.getParams(this.parseMessage(message), message);
+
         Printer.title("deleting messages");
-        if (this.delete_values[1] != undefined && this.delete_values[2] == "")
+
+        if (params.channel != undefined && !params.username) // bulk delete
         {
             Printer.args(
                 ["number of messages", "channel name", "target user"],
-                [`${this.delete_values[0]}`, `${this.delete_values[1].name}`, `${this.delete_values[2] == "" ? "none" : this.delete_values[2]}`]);
-            let channel = this.delete_values[1];
-            channel.bulkDelete(this.delete_values[0])
+                [`${params.messages}`, `${params.channel.name}`, `${params.username ? "none" : params.username}`]);
+
+            let channel: TextChannel = params.channel;
+
+            channel.bulkDelete(params.messages)
                 .then(response =>
                 {
                     let bar = new ProgressBar(response.size, "deleting messages");
                     bar.start();
+
                     let i = 1;
                     response.forEach(() =>
                     {
                         bar.update(i);
                         i++;
                     });
+
                     bar.stop();
                 })
                 .catch(() =>
                 {
-                    this.overrideDelete(channel)
+                    this.overrideDelete(channel, params)
                         .catch(console.error);
                 });
         }
-        else if (this.delete_values[1] != undefined && this.delete_values[2] != "")
+        // channel defined && username filled (username validation done before)
+        else if (params.channel != undefined && params.username) // target delete
         {
             console.log(Printer.args(
                 ["number of messages", "channel name", "method", "target user"],
-                [`${this.delete_values[0]}`, `${this.delete_values[1].name}`, "target delete", `${this.delete_values[2]}`]));
-            let channel = this.delete_values[1];
-            this.overrideDelete(channel);
+                [`${params.messages}`, `${params.channel.name}`, "target delete", `${params.username}`]));
+
+            let channel = params[1];
+            this.overrideDelete(channel, params);
         }
     }
 
-    private async overrideDelete(channel: TextChannel): Promise<void>
+    /**
+     * Deletes messages even if they are too old to be deleted by the Discord API directly.
+     * Can be used to delete a specific user messages.
+     * @param channel
+     * @param params
+     */
+    private async overrideDelete(channel: TextChannel, params: Params): Promise<void>
     {
         let messages: Collection<string, Message> = await channel.messages.fetch();
-        if (this.delete_values[2] != "")
+
+        let userFilterFunction = (message: Message, username: string) => message.author.tag == username;
+        let messageFilterFunction = (message: Message, collection: Array<Message>) =>
         {
-            messages = messages.filter((message) =>
+            if (message)
             {
-                let username = message.author.tag;
-                return username == this.delete_values[2];
-            });
+                collection.push(message);
+            }
+        };
+
+        if (params.username)
+        {
+            messages = messages.filter(message => userFilterFunction(message, params.username));
         }
 
         let messagesToDelete: Array<Message> = new Array();
-        messages.forEach(message => { if (message != undefined) messagesToDelete.push(message) });
+        messages.forEach(message => messageFilterFunction(message, messagesToDelete));
 
-        while (messagesToDelete.length < this.delete_values[0]) 
+        while (messagesToDelete.length < params.messages) 
         {
             let lastMessageID = await messages.last()?.id;
             if (lastMessageID == undefined)
             {
-                console.log(Printer.warn("not more messages to parse, breaking"));
+                Printer.warn("not more messages to parse, breaking");
                 break;
             }
             else
             {
                 messages = await channel.messages.fetch({ limit: 50, before: lastMessageID });
-                if (this.delete_values[2] != "")
+                if (params.username)
                 {
-                    messages = messages.filter((message) =>
-                    {
-                        let username = `${message.author.username.replace(" ", "")}#${message.author.discriminator}`;
-                        return username == this.delete_values[2];
-                    });
+                    messages = messages.filter((message) => userFilterFunction(message, params.username));
                 }
-                messages.forEach(message => { if (message != undefined) messagesToDelete.push(message) });
+                messages.forEach(message => messageFilterFunction(message, messagesToDelete));
             }
         }
 
-        let bar = new ProgressBar(this.delete_values[0], "deleting messages");
+        let bar = new ProgressBar(params[0], "deleting messages");
         bar.start();
         let alive = true;
         let timeout: NodeJS.Timeout = setTimeout(() =>
         {
             alive = false;
             readline.moveCursor(process.stdout, 64, -2);
-            console.log(Printer.warn("deleting messages slower than planned, stopping"));
+            Printer.warn("deleting messages slower than planned, stopping");
             readline.moveCursor(process.stdout, 0, 1);
         }, 10000);
 
-        for (let i = 0; i < messages.size && i < this.delete_values[0] && alive; i++)
+        for (let i = 0; i < messages.size && i < params[0] && alive; i++)
         {
             if (messagesToDelete[i].deletable)
             {
@@ -116,15 +129,15 @@ export class DeleteCommand extends Command
         clearTimeout(timeout);
         bar.stop();
 
-        console.log("");
+        Printer.print("");
     }
 
-    private getParams(map: Map<string, string>, message: Message): [number, TextChannel, string]
+    private getParams(map: Map<string, string>, message: Message): Params
     {
         let messages = 10;
         if (!Number.isNaN(Number.parseInt(map.get("n"))))
         {
-            messages = Number.parseInt(map["n"]);
+            messages = Number.parseInt(map.get("n"));
         }
 
         let username: string = undefined; 
@@ -137,12 +150,15 @@ export class DeleteCommand extends Command
             }
         }
 
-        let channel: TextChannel = undefined;
-        if (message.channel instanceof TextChannel)
-        {
-            channel = message.channel;
-        }
+        let channel = this.resolveDefaultTextChannel(map, message);
         
-        return [messages, channel, username];
+        return { messages, channel, username };
     }
+}
+
+interface Params
+{
+    messages: number;
+    channel: TextChannel;
+    username?: string;
 }
