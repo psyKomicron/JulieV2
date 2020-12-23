@@ -18,13 +18,12 @@ export class ChangePrefixCommand extends Command
     {
         Printer.title("changing prefix");
         let prefix = undefined;
-        this.parseMessage(message).forEach((value, key) =>
+        let value = this.parseMessage(message).get("p");
+
+        if (value.length <= 10 && value.length > 0)
         {
-            if (key == "u" && value.length <= 10 && value.length > 0)
-            {
-                prefix = value;
-            }
-        });
+            prefix = value;
+        }
 
         Printer.args(["prefix"], [prefix]);
 
