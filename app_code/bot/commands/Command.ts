@@ -39,30 +39,45 @@ export abstract class Command extends EventEmitter
         }
     }
 
+    /**
+     * Resolve a text channel through the Discord API. Returns undefined if the id isn't
+     * recognized.
+     * @param channelID string-Discord.Snowflake representing a Discord.TextChannel id.
+     * @returns The resolved TextChannel
+     */
+    public resolveTextChannel(channelID: string, manager: GuildChannelManager): TextChannel
+    {
+        let channel: TextChannel;
+        let resolvedChannel = manager.resolve(channelID);
+        if (resolvedChannel && resolvedChannel instanceof TextChannel)
+        {
+            channel = resolvedChannel;
+        }
+        return channel;
+    }
+
+    /**
+     * Resolve a channel (text, voice, category, news, store) through the Discord API.
+     * Returns undefined if the id isn't recognized.
+     * @param channelID string | Discord.Snowflake representing a Channel id.
+     * @returns The resolved GuildChannel.
+     */
+    public resolveChannel(channelID: string, manager: GuildChannelManager): GuildChannel
+    {
+        let channel: GuildChannel;
+        let resolvedChannel = manager.resolve(channelID);
+        if (resolvedChannel)
+        {
+            channel = resolvedChannel;
+        }
+        return channel;
+    }
+
     /**Parse the command message content to get parameters and returns a map of
      the arguments name paired with their values */
     public parseMessage(message: Message): Map<string, string>
     {
-        let rawContent = message.content.substring(1);
-        let substr = 0;
-
-        while (substr < rawContent.length && rawContent[substr] != "-") { substr++; }
-
-        let content = rawContent.substring(substr);
-        let commas = 0;
-
-        for (var j = 0; j < rawContent.length; j++)
-        {
-            if (rawContent[j] == "\"")
-            {
-                commas++;
-            }
-        }
-
-        if (commas % 2 != 0)
-        {
-            throw new CommandSyntaxError(this, `Command contains a space, but not incapsulated in \" \" (at character ${j + 1})`);
-        }
+        let content: string = this.preParseMessage(message.cleanContent.substring(this.bot.prefixLength));
 
         let map = new Map<string, string>();
         let i = 0;
@@ -118,38 +133,37 @@ export abstract class Command extends EventEmitter
         return map;
     }
 
-    /**
-     * Resolve a text channel through the Discord API. Returns undefined if the id isn't
-     * recognized.
-     * @param channelID string-Discord.Snowflake representing a Discord.TextChannel id.
-     * @returns The resolved TextChannel
-     */
-    public resolveTextChannel(channelID: string, manager: GuildChannelManager): TextChannel
+    private preParseMessage(rawContent: string): string
     {
-        let channel: TextChannel;
-        let resolvedChannel = manager.resolve(channelID);
-        if (resolvedChannel && resolvedChannel instanceof TextChannel)
-        {
-            channel = resolvedChannel;
-        }
-        return channel;
-    }
+        let substr = 0;
 
-    /**
-     * Resolve a channel (text, voice, category, news, store) through the Discord API.
-     * Returns undefined if the id isn't recognized.
-     * @param channelID string | Discord.Snowflake representing a Channel id.
-     * @returns The resolved GuildChannel.
-     */
-    public resolveChannel(channelID: string, manager: GuildChannelManager): GuildChannel
-    {
-        let channel: GuildChannel;
-        let resolvedChannel = manager.resolve(channelID);
-        if (resolvedChannel)
+        // getting to the first argument
+        while (substr < rawContent.length)
         {
-            channel = resolvedChannel;
+            if (rawContent[substr] == " ")
+            {
+                while (substr < rawContent.length && rawContent[substr] != "-") substr++;
+                break;
+            }
+            substr++;
         }
-        return channel;
+
+        let commas: boolean;
+
+        for (var j = 0; j < rawContent.length; j++)
+        {
+            if (rawContent[j] == "\"")
+            {
+                commas = !commas;
+            }
+        }
+
+        if (commas)
+        {
+            throw new CommandSyntaxError(this, `Command contains a space, but not incapsulated in \" \" (at character ${j + 1})`);
+        }
+
+        return rawContent.substring(substr);
     }
 
     /**
