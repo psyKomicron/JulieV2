@@ -3,6 +3,7 @@ import { EventEmitter } from "events";
 import { FileSystem as fs } from "../../dal/FileSystem";
 import { Message, TextChannel, GuildChannel, GuildChannelManager } from 'discord.js';
 import { CommandSyntaxError } from "../../errors/command_errors/CommandSyntaxError";
+import { WrongArgumentError } from "../../errors/command_errors/WrongArgumentError";
 
 export abstract class Command extends EventEmitter
 {
@@ -18,7 +19,7 @@ export abstract class Command extends EventEmitter
 
     protected get bot(): Bot { return this._bot; }
 
-    protected constructor(name: string, bot: Bot, deleteAfterExecution: boolean = false)
+    protected constructor(name: string, bot: Bot, deleteAfterExecution: boolean = true)
     {
         super();
         Command._commands++;
@@ -40,32 +41,15 @@ export abstract class Command extends EventEmitter
     }
 
     /**
-     * Resolve a text channel through the Discord API. Returns undefined if the id isn't
-     * recognized.
-     * @param channelID string-Discord.Snowflake representing a Discord.TextChannel id.
-     * @returns The resolved TextChannel
-     */
-    public resolveTextChannel(channelID: string, manager: GuildChannelManager): TextChannel
-    {
-        let channel: TextChannel;
-        let resolvedChannel = manager.resolve(channelID);
-        if (resolvedChannel && resolvedChannel instanceof TextChannel)
-        {
-            channel = resolvedChannel;
-        }
-        return channel;
-    }
-
-    /**
      * Resolve a text channel through the Discord API. Returns the channel in wich the message
      * was sent if the channel cannot be resolved.
      * @param args
      * @param message
      */
-    public resolveDefaultTextChannel(args: Map<string, string>, message: Message): TextChannel
+    public resolveTextChannel(args: Map<string, string>, message: Message): TextChannel
     {
-        return this.resolveTextChannel(args.get("c"), message.guild.channels)
-            ?? this.resolveTextChannel(args.get("channel"), message.guild.channels)
+        return this.resolveFromID(args.get("c"), message.guild.channels)
+            ?? this.resolveFromID(args.get("channel"), message.guild.channels)
             ?? message.channel as TextChannel;
     }
 
@@ -146,6 +130,35 @@ export abstract class Command extends EventEmitter
         return map;
     }
 
+    protected getValue(args: Map<string, string>, names: Array<string>, ignoreOther: boolean = false): string
+    {
+        let filled: boolean = false;
+        let res: string = "";
+
+        for (var i = 0; i < names.length; i++)
+        {
+            let value = args.get(names[i]);
+            if (value)
+            {
+                if (ignoreOther)
+                {
+                    return value;
+                }
+                else if (!filled)
+                {
+                    res = value;
+                    filled = true;
+                }
+                else
+                {
+                    throw new WrongArgumentError(this, "Duplicate argument in command : " + names[i]);
+                }
+            }
+        }
+
+        return res;
+    }
+
     private preParseMessage(rawContent: string): string
     {
         let substr = 0;
@@ -177,6 +190,23 @@ export abstract class Command extends EventEmitter
         }
 
         return rawContent.substring(substr);
+    }
+
+    /**
+     * Resolve a text channel through the Discord API. Returns undefined if the id isn't
+     * recognized.
+     * @param channelID string-Discord.Snowflake representing a Discord.TextChannel id.
+     * @returns The resolved TextChannel
+     */
+    private resolveFromID(channelID: string, manager: GuildChannelManager): TextChannel
+    {
+        let channel: TextChannel;
+        let resolvedChannel = manager.resolve(channelID);
+        if (resolvedChannel && resolvedChannel instanceof TextChannel)
+        {
+            channel = resolvedChannel;
+        }
+        return channel;
     }
 
     /**

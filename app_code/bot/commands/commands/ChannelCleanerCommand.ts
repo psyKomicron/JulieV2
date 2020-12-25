@@ -127,15 +127,7 @@ export class ChannelCleanerCommand extends Command
             maxMessages = Number.parseInt(map.get("u"));
         }
 
-        let resolvedChannel = this.resolveTextChannel(map.get("c"), message.guild.channels);
-        if (resolvedChannel)
-        {
-            channel = resolvedChannel;
-        }
-        else
-        {
-            channel = message.channel instanceof TextChannel ? message.channel : undefined;
-        }
+        let resolvedChannel = this.resolveTextChannel(map, message);
 
         return [maxMessages, channel];
     }
