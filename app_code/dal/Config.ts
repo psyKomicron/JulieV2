@@ -8,26 +8,28 @@ import { Printer } from '../console/Printer';
 /**The parameters are loaded into the class attribute with the init() method. */
 export class Config extends EventEmitter
 {
+    // self
     private static readonly config = new Config();
-    private static readonly path = "./config/config.json";
     private static isInit: boolean = false;
-
+    private static readonly configTemplate = { "prefix": "", "authorizedusers": [""], "verbose": 1, "startdirectories": [""] };
+    // external
     private static prefix: string;
     private static startDirectories: Array<string> = new Array();
     private static authorizedUsers: Array<string> = new Array();
     private static verbose: number;
+        // paths
+    private static readonly path = "./config/config.json";
+    private static readonly emojisFilePath: string = "./config/emojis.json";
+    private static readonly downloadPath: string = "./files/downloads/";
 
     public static init()
     {
         if (!this.isInit)
         {
-            let config = JSON.parse(fs.readFile("./config/config.json").toString());
-
-            const template = { "prefix": "", "authorizedusers": [""], "verbose": 1, "startdirectories": [""] };
-
-            if (fs.exists("./config/config.json"))
+            if (fs.exists(this.path))
             {
-                if (JSONParser.matchTemplate(config, template))
+                let config = JSON.parse(fs.readFile(this.path).toString());
+                if (JSONParser.matchTemplate(config, this.configTemplate))
                 {
                     // get prefix
                     this.prefix = config["prefix"];
@@ -96,7 +98,7 @@ export class Config extends EventEmitter
     {
         let configFile = JSON.parse(fs.readFile(this.path).toString());
 
-        if (JSONParser.matchTemplate(configFile, { "prefix": "", "authorizedusers": [""], "verbose": 1, "startdirectories": [""] }))
+        if (JSONParser.matchTemplate(configFile, this.configTemplate))
         {
             let authorizedUsers = configFile.authorizedUsers;
             if (authorizedUsers && authorizedUsers instanceof Array)
