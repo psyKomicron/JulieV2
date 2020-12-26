@@ -251,7 +251,7 @@ export class DownloadCommand extends Command
             limit = Number.parseInt(map.get("n"));
         }
 
-        channel = this.resolveDefaultTextChannel(map, message);
+        channel = this.resolveTextChannel(map, message);
 
         if (map.get("v") && map.get("video"))
         {

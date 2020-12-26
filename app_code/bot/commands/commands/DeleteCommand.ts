@@ -150,7 +150,7 @@ export class DeleteCommand extends Command
             }
         }
 
-        let channel = this.resolveDefaultTextChannel(map, message);
+        let channel = this.resolveTextChannel(map, message);
         
         return { messages, channel, username };
     }

@@ -5,6 +5,7 @@ import { Printer } from '../../../console/Printer';
 import { EmbedFactory } from '../../../helpers/factories/EmbedFactory';
 import { FileSystem as fs } from '../../../dal/FileSystem';
 import { Message, TextChannel} from 'discord.js';
+import { WrongArgumentError } from '../../../errors/command_errors/WrongArgumentError';
 
 export class EmbedCommand extends Command
 {
@@ -18,7 +19,7 @@ export class EmbedCommand extends Command
         let values = this.getParams(this.parseMessage(message), message);
         if (values[0] == undefined)
         {
-            throw "Channel cannot be resolved";
+            throw new WrongArgumentError(this,  "Channel cannot be resolved");
         }
         // 1 -get & download file
         // 2 -check message & parse
@@ -27,6 +28,7 @@ export class EmbedCommand extends Command
         {
             if (value.url.endsWith(".json")) fileUrl = value.url;
         });
+
         if (fileUrl)
         {
             let jsonName = Downloader.getFileName(fileUrl);
@@ -34,8 +36,11 @@ export class EmbedCommand extends Command
                 ["json file name", "json file url", "delete after execution", "channel"],
                 [`${jsonName}`, `${fileUrl}`, `${values[1]}`, `${values[0].name}`]
             ));
+
             let downloader = new Downloader(this.name);
             await downloader.download([fileUrl]);
+
+            // wait for the file to be available to read
             setTimeout(() =>
             {
                 let fileContent = fs.readFile(`${downloader.path}${jsonName}`).toString();
@@ -86,7 +91,7 @@ export class EmbedCommand extends Command
             willDelete = true;
         }
 
-        let channel = this.resolveDefaultTextChannel(map, message);
+        let channel = this.resolveTextChannel(map, message);
 
         return [channel, willDelete];
     }
