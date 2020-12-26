@@ -85,24 +85,28 @@ export class Bot
         this._client.login(TokenReader.getToken("discord"));
     }
 
-    private onPrefixChange(prefix: string): void
+    private handleErrorForClient(error: Error, message: Message): void
     {
-        if (prefix.length >= 1)
+        if (error instanceof ExecutionError && this.verbose > 2)
         {
-            this.prefix = prefix;
+            if (error instanceof CommandError)
+            {
+                message.author.send(error.message);
+            }
+            else
+            {
+                this.sendErrorMessage(message);
+            }
         }
         else
         {
-            throw new ConfigurationError("Given prefix is not valid.");
+            this.sendErrorMessage(message);
         }
     }
 
-    private onUserAdd(user: User)
+    private sendErrorMessage(message: Message): void
     {
-        if (!this.parents.includes(user.tag))
-        {
-            this.parents.push(user.tag);
-        }
+        message.author.send("Uh oh... Something went wrong ! Try again !");
     }
 
     private onMessage(message: Message): void 
@@ -148,32 +152,33 @@ export class Bot
                                 command.deleteMessage(message, 300);
                             }
                         });
-                } 
+                }
                 catch (error)
                 {
                     Printer.error(error.toString());
                     this.handleErrorForClient(error, message);
                 }
-            } 
+            }
         }
     }
 
-    private handleErrorForClient(error: Error, message: Message): void
+    private onPrefixChange(prefix: string): void
     {
-        if (error instanceof ExecutionError && this.verbose > 3)
+        if (prefix.length >= 1)
         {
-            if (error instanceof CommandError)
-            {
-                message.author.send("Uh oh with the " + error.name + "command... Something went wrong ! Try again !")
-            }
-            else
-            {
-                message.author.send(`Command (\`${error.name}\`) failed. Message : \n${error.message}`);
-            }
+            this.prefix = prefix;
         }
         else
         {
-            message.author.send("Uh oh... Something went wrong ! Try again !");
+            throw new ConfigurationError("Given prefix is not valid.");
+        }
+    }
+
+    private onUserAdd(user: User)
+    {
+        if (!this.parents.includes(user.tag))
+        {
+            this.parents.push(user.tag);
         }
     }
 }
