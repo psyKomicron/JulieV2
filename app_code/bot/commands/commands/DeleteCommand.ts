@@ -9,7 +9,7 @@ export class DeleteCommand extends Command
 {
     public constructor(bot: Bot)
     {
-        super("delete", bot);
+        super("delete", bot, false);
     }
 
     public async execute(message: Message): Promise<void> 
@@ -44,7 +44,11 @@ export class DeleteCommand extends Command
                 .catch(() =>
                 {
                     this.overrideDelete(channel, params)
-                        .catch(console.error);
+                        .catch(error =>
+                        {
+                            Printer.error("Bulk delete failed, switching to manual delete.");
+                            Printer.error(error.toString());
+                        });
                 });
         }
         // channel defined && username filled (username validation done before)
