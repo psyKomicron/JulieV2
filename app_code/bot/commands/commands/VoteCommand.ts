@@ -140,7 +140,8 @@ export class VoteCommand extends Command
             throw new CommandError(
                 "Uh oh something broke... A technician will fix this, give it little bit of time and try again !",
                 this,
-                error as ExecutionError);
+                error as ExecutionError
+            );
         }
     }
 
