@@ -23,6 +23,7 @@ export class TestCommand extends Command
     private sendTestCommands(message: Message): void
     {
         let commands = [
+            "```",
             "/download -n 10",
             "/delete -n 2",
             "/delete -n 2 -u",
@@ -32,7 +33,8 @@ export class TestCommand extends Command
             "/play -u \"https://www.youtube.com/watch?v=aIHF7u9Wwiw \"",
             "/help",
             "/vote -r \"Test\"",
-            "/default"
+            "/default",
+            "```"
         ];
 
         message.author.send(commands);
