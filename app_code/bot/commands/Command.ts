@@ -4,6 +4,7 @@ import { FileSystem as fs } from "../../dal/FileSystem";
 import { Message, TextChannel, GuildChannel, GuildChannelManager } from 'discord.js';
 import { CommandSyntaxError } from "../../errors/command_errors/CommandSyntaxError";
 import { WrongArgumentError } from "../../errors/command_errors/WrongArgumentError";
+import { Printer } from "../../console/Printer";
 
 export abstract class Command extends EventEmitter
 {
@@ -36,7 +37,12 @@ export abstract class Command extends EventEmitter
     {
         if (message && message.deletable)
         {
-            message.delete({ timeout: timeout });
+            message.delete({ timeout: timeout })
+                .catch(error =>
+                {
+                    Printer.error("Message could not be deleted");
+                    Printer.error(error.toString());
+                });
         }
     }
 
@@ -108,9 +114,9 @@ export abstract class Command extends EventEmitter
 
                     while (i < content.length && marker)
                     {
-                        if ((content.charCodeAt(i) > 47 && content.charCodeAt(i) < 58) ||
-                            (content.charCodeAt(i) > 64 && content.charCodeAt(i) < 91) ||
-                            (content.charCodeAt(i) > 96 && content.charCodeAt(i) < 123))
+                        if ((content.codePointAt(i) > 47 && content.codePointAt(i) < 58) ||
+                            (content.codePointAt(i) > 64 && content.codePointAt(i) < 91) ||
+                            (content.codePointAt(i) > 96 && content.codePointAt(i) < 123))
                         {
                             value += content[i];
                         }
