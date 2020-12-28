@@ -16,11 +16,11 @@ import { CommandError } from '../errors/command_errors/CommandError';
 export class Bot 
 {
     // own
+    private readonly parents: string[];
+    private readonly verbose: number;
     private moderator: Moderator;
     private _logger: Logger = new DefaultLogger();
     private prefix: string;
-    private readonly parents: string[];
-    private readonly verbose: number;
     // discord
     private readonly _client: Client = new Client();
 
@@ -55,14 +55,8 @@ export class Bot
     private init(id: LoadingEffect): void
     {
         // config changes
-        Config.on("prefix-change", (newPrefix) =>
-        {
-            this.onPrefixChange(newPrefix);
-        });
-        Config.on("added-user", (user) =>
-        {
-            this.onUserAdd(user);
-        });
+        Config.on("prefix-change", (newPrefix) => this.onPrefixChange(newPrefix));
+        Config.on("added-user", (user) => this.onUserAdd(user));
 
         // initiate bot
         this._client.on("ready", () =>
@@ -73,7 +67,7 @@ export class Bot
             Printer.error(Printer.repeat("-", 26));
         });
 
-        this._client.on("message", (message) => { this.onMessage(message); });
+        this._client.on("message", (message) => this.onMessage(message));
 
         this._client.on("disconnect", (arg_0, arg_1: number) => 
         {
@@ -164,7 +158,7 @@ export class Bot
 
     private onPrefixChange(prefix: string): void
     {
-        if (prefix.length >= 1)
+        if (prefix.length > 0)
         {
             this.prefix = prefix;
         }
@@ -174,11 +168,12 @@ export class Bot
         }
     }
 
-    private onUserAdd(user: User)
+    private onUserAdd(user: User): void
     {
         if (!this.parents.includes(user.tag))
         {
             this.parents.push(user.tag);
         }
     }
+
 }
