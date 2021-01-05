@@ -1,4 +1,4 @@
-import { Command } from "../../bot/commands/Command";
+import { Command } from "../../bot/discord/commands/Command";
 import { ExecutionError } from "../ExecutionError";
 
 export class CommandSyntaxError extends ExecutionError

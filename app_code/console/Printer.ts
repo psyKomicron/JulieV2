@@ -1,5 +1,5 @@
 import readline = require('readline');
-import { Command } from '../bot/commands/Command';
+import { Command } from '../bot/discord/commands/Command';
 import { Config } from '../dal/Config';
 
 export class Printer

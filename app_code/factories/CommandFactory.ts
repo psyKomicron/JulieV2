@@ -1,19 +1,19 @@
-import { Bot } from "../bot/Bot";
-import { Command } from "../bot/commands/Command";
-import { DownloadCommand } from "../bot/commands/commands/DownloadCommand";
-import { DeleteCommand } from "../bot/commands/commands/DeleteCommand";
-import { EmbedCommand } from "../bot/commands/commands/EmbedCommand";
-import { ExploreCommand } from "../bot/commands/commands/ExploreCommand";
-import { PlayCommand } from "../bot/commands/commands/PlayCommand";
-import { HelpCommand } from "../bot/commands/commands/HelpCommand";
-import { TestCommand } from "../bot/commands/commands/TestCommand";
-import { VoteCommand } from "../bot/commands/commands/VoteCommand";
-import { AddUserCommand } from "../bot/commands/commands/AddUserCommand";
-import { ChannelCleanerCommand } from "../bot/commands/commands/ChannelCleanerCommand";
-import { ShowUsersCommand } from "../bot/commands/commands/ShowUsersCommand";
-import { ChangePrefixCommand } from "../bot/commands/commands/ChangePrefixCommand";
-import { DefaultCommand } from "../bot/commands/commands/DefaultCommand";
-
+import { Bot } from "../bot/discord/Bot";
+import { Command } from "../bot/discord/commands/Command";
+import { DownloadCommand } from "../bot/discord/commands/commands/DownloadCommand";
+import { DeleteCommand } from "../bot/discord/commands/commands/DeleteCommand";
+import { EmbedCommand } from "../bot/discord/commands/commands/EmbedCommand";
+import { ExploreCommand } from "../bot/discord/commands/commands/ExploreCommand";
+import { PlayCommand } from "../bot/discord/commands/commands/PlayCommand";
+import { HelpCommand } from "../bot/discord/commands/commands/HelpCommand";
+import { TestCommand } from "../bot/discord/commands/commands/TestCommand";
+import { VoteCommand } from "../bot/discord/commands/commands/VoteCommand";
+import { AddUserCommand } from "../bot/discord/commands/commands/AddUserCommand";
+import { ChannelCleanerCommand } from "../bot/discord/commands/commands/ChannelCleanerCommand";
+import { ShowUsersCommand } from "../bot/discord/commands/commands/ShowUsersCommand";
+import { ChangePrefixCommand } from "../bot/discord/commands/commands/ChangePrefixCommand";
+import { DefaultCommand } from "../bot/discord/commands/commands/DefaultCommand";
+import { GambleCommand } from "../bot/discord/commands/commands/GambleCommand";
 
 export class CommandFactory
 {
@@ -70,6 +70,10 @@ export class CommandFactory
             case "changeprefix":
             case "prefix":
                 command = new ChangePrefixCommand(bot);
+                break;
+            case "g":
+            case "gamble":
+                command = new GambleCommand(bot);
                 break;
             default:
                 command = new DefaultCommand(bot);

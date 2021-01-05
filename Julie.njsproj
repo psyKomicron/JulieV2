@@ -34,94 +34,94 @@
     <TypeScriptCompile Include="app.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\Bot.ts">
+    <TypeScriptCompile Include="app_code\bot\common\DiscordMessageFetcher.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\Command.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\Bot.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\AddUserCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\Command.ts" />
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\AddUserCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\ChangePrefixCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\ChangePrefixCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\ChannelCleanerCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\ChannelCleanerCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\DefaultCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\DefaultCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\DeleteCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\DeleteCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\DownloadCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\DownloadCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\EmbedCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\EmbedCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\ExploreCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\ExploreCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\HelpCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\GambleCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\PlayCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\HelpCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\ShowUsersCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\PlayCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\TestCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\ShowUsersCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\commands\commands\VoteCommand.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\TestCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\Downloader.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\VoteCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\explore\Explorer.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\Downloader.ts" />
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\explore\Explorer.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\explore\GitExplorer.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\explore\GitExplorer.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\explore\WikiExplorer.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\explore\WikiExplorer.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\explore\YoutubeExplorer.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\explore\YoutubeExplorer.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\explore\youtube\YoutubeModule.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\explore\youtube\YoutubeModule.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\logger\Logger.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\logger\Logger.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\logger\loggers\DefaultLogger.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\logger\loggers\DefaultLogger.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\logger\loggers\PlayLogger.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\logger\loggers\PlayLogger.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\logger\loggers\VoteLogger.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\logger\loggers\VoteLogger.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\moderation\completion_tree\Node.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\moderation\completion_tree\Node.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\moderation\completion_tree\Tree.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\moderation\completion_tree\Tree.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\moderation\GuildModeratorProxy.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\moderation\guild_mods\GuildModerator.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\moderation\guild_mods\GuildModerator.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\bot\command_modules\moderation\Moderator.ts">
+    <TypeScriptCompile Include="app_code\bot\discord\command_modules\moderation\Moderator.ts" />
+    <TypeScriptCompile Include="app_code\bot\twitter\TwitterBot.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\console\effects\BubbleEffect.ts">
@@ -202,34 +202,37 @@
     <TypeScriptCompile Include="app_code\tests\test_app.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\viewmodels\ConfigData.ts">
+    <TypeScriptCompile Include="app_code\dtos\ConfigData.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\viewmodels\copy_books\YoutubeItemType.ts">
+    <TypeScriptCompile Include="app_code\dtos\copy_books\YoutubeItemType.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\viewmodels\copy_books\YoutubeItem.ts">
+    <TypeScriptCompile Include="app_code\dtos\copy_books\YoutubeItem.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\viewmodels\EmbedResolvable.ts">
+    <TypeScriptCompile Include="app_code\dtos\EmbedResolvable.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\viewmodels\YoutubeInput.ts" />
-    <TypeScriptCompile Include="app_code\viewmodels\YoutubeOuput.ts" />
+    <TypeScriptCompile Include="app_code\dtos\YoutubeInput.ts" />
+    <TypeScriptCompile Include="app_code\dtos\YoutubeOuput.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="app_code\" />
     <Folder Include="app_code\bot\" />
-    <Folder Include="app_code\bot\commands\commands\" />
-    <Folder Include="app_code\bot\command_modules\" />
-    <Folder Include="app_code\bot\commands\" />
-    <Folder Include="app_code\bot\command_modules\explore\" />
-    <Folder Include="app_code\bot\command_modules\explore\youtube\" />
-    <Folder Include="app_code\bot\command_modules\logger\" />
-    <Folder Include="app_code\bot\command_modules\logger\loggers\" />
-    <Folder Include="app_code\bot\command_modules\moderation\" />
-    <Folder Include="app_code\bot\command_modules\moderation\guild_mods\" />
-    <Folder Include="app_code\bot\command_modules\moderation\completion_tree\" />
+    <Folder Include="app_code\bot\discord\commands\commands\" />
+    <Folder Include="app_code\bot\discord\command_modules\" />
+    <Folder Include="app_code\bot\discord\commands\" />
+    <Folder Include="app_code\bot\discord\command_modules\explore\" />
+    <Folder Include="app_code\bot\discord\command_modules\explore\youtube\" />
+    <Folder Include="app_code\bot\discord\command_modules\logger\" />
+    <Folder Include="app_code\bot\discord\command_modules\logger\loggers\" />
+    <Folder Include="app_code\bot\discord\command_modules\moderation\" />
+    <Folder Include="app_code\bot\discord\command_modules\moderation\guild_mods\" />
+    <Folder Include="app_code\bot\discord\command_modules\moderation\completion_tree\" />
+    <Folder Include="app_code\bot\discord\" />
+    <Folder Include="app_code\bot\common\" />
+    <Folder Include="app_code\bot\twitter\" />
     <Folder Include="app_code\console\" />
     <Folder Include="app_code\console\effects\" />
     <Folder Include="app_code\dal\readers\" />
@@ -241,8 +244,8 @@
     <Folder Include="app_code\dal\" />
     <Folder Include="app_code\helpers\enums\" />
     <Folder Include="app_code\helpers\proxies\" />
-    <Folder Include="app_code\viewmodels\copy_books\" />
-    <Folder Include="app_code\viewmodels\" />
+    <Folder Include="app_code\dtos\copy_books\" />
+    <Folder Include="app_code\dtos\" />
     <Folder Include="app_code\tests\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />

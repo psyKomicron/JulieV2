@@ -3,9 +3,9 @@ import ytdl = require('ytdl-core');
 import readline = require('readline');
 import { performance } from "perf_hooks";
 import { Printer } from '../console/Printer';
-import { Tree } from '../bot/command_modules/moderation/completion_tree/Tree';
 import { Tools } from '../helpers/Tools';
 import { Config } from '../dal/Config';
+import { Tree } from '../bot/discord/command_modules/moderation/completion_tree/Tree';
 
 export class Test
 {

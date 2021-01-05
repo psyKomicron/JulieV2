@@ -1,7 +1,7 @@
-import { YoutubeInput } from "../../viewmodels/YoutubeInput";
+import { YoutubeInput } from "../../dtos/YoutubeInput";
 import { youtube_v3 } from "googleapis";
-import { YoutubeOutput } from "../../viewmodels/YoutubeOuput";
-import { YoutubeItem } from "../../viewmodels/copy_books/YoutubeItem";
+import { YoutubeOutput } from "../../dtos/YoutubeOuput";
+import { YoutubeItem } from "../../dtos/copy_books/YoutubeItem";
 import { Tools } from "../Tools";
 import { WrongYoutubeResponseType } from "../../errors/WrongYoutubeResponseType";
 

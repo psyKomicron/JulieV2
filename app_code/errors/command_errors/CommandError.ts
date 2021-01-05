@@ -1,5 +1,5 @@
 import { ExecutionError } from "../ExecutionError";
-import { Command } from "../../bot/commands/Command";
+import { Command } from "../../bot/discord/commands/Command";
 
 /**Use this class to send friendly error messages to the client.*/
 export class CommandError extends ExecutionError

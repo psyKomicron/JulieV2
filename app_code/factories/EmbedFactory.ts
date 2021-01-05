@@ -1,6 +1,6 @@
 import { MessageEmbed } from 'discord.js';
 import { EmojiReader } from '../dal/readers/EmojiReader';
-import { EmbedResolvable } from '../viewmodels/EmbedResolvable';
+import { EmbedResolvable } from '../dtos/EmbedResolvable';
 
 export class EmbedFactory
 {

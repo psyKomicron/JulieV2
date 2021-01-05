@@ -1,8 +1,9 @@
 // ENTRY POINT FOR THE NODEJS APPLICATION //
 import { Printer } from './app_code/console/Printer';
 import { StarEffect } from './app_code/console/effects/StarEffect';
-import { Bot } from './app_code/bot/Bot';
+import { Bot } from './app_code/bot/discord/Bot';
 import { Config } from './app_code/dal/Config';
+import { Client } from 'discord.js';
 
 Config.init();
 Printer.startUp();
@@ -10,7 +11,9 @@ let loadingEffect = new StarEffect([-12, -1]);
 loadingEffect.start();
 try
 {
-    new Bot(loadingEffect);
+    let client = new Client();
+    new Bot(loadingEffect, client);
+
 }
 catch (e)
 {

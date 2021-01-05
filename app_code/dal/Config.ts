@@ -22,6 +22,7 @@ export class Config extends EventEmitter
     private static readonly emojisFilePath: string = "./config/emojis.json";
     private static readonly downloadPath: string = "./files/downloads/";
 
+    // #region getters
     public static init()
     {
         if (!this.isInit)
@@ -94,6 +95,16 @@ export class Config extends EventEmitter
         return this.authorizedUsers;
     }
 
+    public static getEmojisFilePath(): string
+    {
+        return this.emojisFilePath;
+    }
+    
+    public static getDownloadPath(): string
+    {
+        return this.downloadPath;
+    }
+
     public static addAuthorizedUser(user: User)
     {
         let configFile = JSON.parse(fs.readFile(this.path).toString());
@@ -106,7 +117,7 @@ export class Config extends EventEmitter
                 try
                 {
                     authorizedUsers.push(user.tag);
-                    this.emit("added-user", user);
+                    this.emit("addUser", user);
                 }
                 catch (error)
                 {
@@ -128,16 +139,23 @@ export class Config extends EventEmitter
     public static setPrefix(prefix: string): void
     {
         this.prefix = prefix;
-        this.config.emit("prefix-change", prefix);
+        this.config.emit("prefixChange", prefix);
     }
+    // #endregion
 
-    public static emit(event: string | symbol, ...args: any[]): void
+    public static emit<T extends keyof ConfigEvents>(event: T, ...args: ConfigEvents[T]): void
     {
         this.config.emit(event, ...args);
     }
 
-    public static on(event: "prefix-change"| "added-user", listener: (...args: any[]) => void): void
+    public static on<T extends keyof ConfigEvents>(event: T, listener: (...args: ConfigEvents[T]) => void): void
     {
         this.config.on(event, listener);
     }
+}
+
+export interface ConfigEvents
+{
+    prefixChange: [string];
+    addUser: [User];
 }
