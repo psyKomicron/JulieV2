@@ -7,7 +7,7 @@ import { DiscordMessageFetcher } from "../../../common/DiscordMessageFetcher";
 
 export class ChannelCleanerCommand extends Command
 {
-    private fetcher: DiscordMessageFetcher = new DiscordMessageFetcher();
+    private dog: DiscordMessageFetcher = new DiscordMessageFetcher();
 
     public constructor(bot: Bot)
     {
@@ -27,7 +27,7 @@ export class ChannelCleanerCommand extends Command
 
     private async cleanChannel(channel: TextChannel, numberPerUser: number, message: Message): Promise<void>
     {
-        let messages: Array<Message> = await this.fetcher.fetchToday(channel, message);
+        let messages: Array<Message> = await this.dog.fetchToday(channel, message);
 
         let bar = new ProgressBar(messages.length, "cleaning channel [" + channel.name + "]");
         bar.start();
