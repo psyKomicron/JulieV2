@@ -47,7 +47,7 @@ export class DiscordMessageFetcher
      * @param ignoreList Messages or message to ignore
      * @param compareFunction Sort to apply to the retreived messages
      */
-    public async fetchToday(channel: TextChannel, ignoreList: Array<Message> | Message): Promise<Array<Message>>
+    public async fetchToday(channel: TextChannel, ignoreList?: Array<Message> | Message): Promise<Array<Message>>
     {
         let date: Date = new Date(Date.now());
         let messagesToHandle: Array<Message> = new Array();
@@ -61,13 +61,10 @@ export class DiscordMessageFetcher
                 && messageDate.getDay() == date.getDay();
         };
 
-        messages.forEach((message) =>
+        messagesToHandle = messages.filter((message) =>
         {
-            if (message && isSameDay(message.createdAt, date) && this.isInIgnoreList(ignoreList, message))
-            {
-                messagesToHandle.push(message);
-            }
-        });
+            return message && isSameDay(message.createdAt, date) && this.isInIgnoreList(ignoreList, message);
+        }).array();
 
         return messagesToHandle.sort((a: Message, b: Message) =>
         {
