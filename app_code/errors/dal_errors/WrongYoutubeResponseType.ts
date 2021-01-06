@@ -1,5 +1,5 @@
-import { ExecutionError } from "./ExecutionError";
-import { YoutubeProxy } from "../helpers/proxies/YoutubeProxy";
+import { ExecutionError } from "../ExecutionError";
+import { YoutubeProxy } from "../../helpers/proxies/YoutubeProxy";
 
 export class WrongYoutubeResponseType extends ExecutionError
 {
