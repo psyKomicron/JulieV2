@@ -8,13 +8,13 @@ export class TokenReader
         switch (tokenName)
         {
             case "youtube":
-                tokenValue = process.env.API_KEY;
+                tokenValue = process.env.YOUTUBE_API_KEY;
                 break;
             case "release":
                 tokenValue = process.env.release;
                 break;
             case "discord":
-                tokenValue = process.env.BOT_KEY;
+                tokenValue = process.env.DISCORD_BOT_TOKEN;
                 break;
         }
         if (!tokenValue)
