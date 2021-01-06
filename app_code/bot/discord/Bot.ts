@@ -1,6 +1,6 @@
 import readline = require('readline');
 import { TokenReader } from '../../dal/readers/TokenReader';
-import { Client, Message, User } from 'discord.js';
+import { Client, Message, User, TextChannel } from 'discord.js';
 import { DefaultLogger } from './command_modules/logger/loggers/DefaultLogger';
 import { Logger } from './command_modules/logger/Logger';
 import { Printer } from '../../console/Printer';
@@ -16,27 +16,30 @@ import { EventEmitter } from 'events';
 
 export class Bot extends EventEmitter
 {
+    private static instance: Bot;
     // discord
     private readonly _client: Client;
-    // own
+    // bot
     private readonly parents: string[];
     private readonly verbose: number;
-    private moderator: Moderator;
+    private moderator: Moderator;   
     private prefix: string;
+    // miscallenous
+    private lastTextChannel: TextChannel;
+    private collectInterval: NodeJS.Timeout;
     // properties
     private _logger: Logger = new DefaultLogger();
 
-    public constructor(effect: LoadingEffect, client: Client)
+    private constructor(effect: LoadingEffect)
     {
         super();
-        this._client = client;
+        this._client = new Client();
         this.moderator = Moderator.get(this);
         try
         {
             // bot parameters
             this.verbose = Config.getVerbose();
             this.parents = Config.getAuthorizedUsers();
-            this.prefix = Config.getPrefix();
 
             // events init & login
             this.init(effect);
@@ -50,6 +53,15 @@ export class Bot extends EventEmitter
         }
     }
 
+    public static get(effect: LoadingEffect): Bot
+    {
+        if (!this.instance)
+        {
+            this.instance = new Bot(effect);
+        }
+        return this.instance
+    }
+
     public get prefixLength(): number { return this.prefix.length; }
 
     public get client(): Client { return this._client; }
@@ -58,8 +70,7 @@ export class Bot extends EventEmitter
 
     public on<K extends keyof BotEvents>(event: K, listener: (...args: BotEvents[K]) => void): this
     {
-        super.on(event, listener);
-        return this;
+        return super.on(event, listener);
     }
 
     public emit<K extends keyof BotEvents>(event: K, ...args: BotEvents[K]): boolean
@@ -69,9 +80,17 @@ export class Bot extends EventEmitter
 
     private init(id: LoadingEffect): void
     {
+        this.prefix = Config.getPrefix();
+
         // config changes
         Config.on("prefixChange", (newPrefix) => this.onPrefixChange(newPrefix));
         Config.on("addUser", (user) => this.onUserAdd(user));
+
+        // meme collection
+        this.collectInterval = setInterval(() =>
+        {
+            this.emit("collect", this.lastTextChannel, );
+        }, 1000) // 23h 59min -> 86340000 ms
 
         // initiate bot
         this._client.on("ready", () =>
@@ -202,5 +221,5 @@ export class Bot extends EventEmitter
 
 export interface BotEvents
 {
-    collect: [Message];
+    collect?: [TextChannel];
 }
