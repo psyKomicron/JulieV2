@@ -78,8 +78,23 @@ export class DeleteCommand extends Command
         if (params.username)
         {
             let username = params.username;
-            let filter = params.deletePinned ? (message: Message) => message.author.tag == username;
+
+            let filter: (message: Message) => boolean;
+
+            if (params.deletePinned)
+            {
+                filter = (message: Message) => message.author.tag == username;
+            }
+            else
+            {
+                filter = (message: Message) => message.author.tag == username && !message.pinned;
+            }
+
             messages = await dog.fetchAndFilter(channel, params.messages, filter);
+        }
+        else if (!params.deletePinned)
+        {
+            messages = await dog.fetchAndFilter(channel, params.messages, (message: Message) => !message.pinned);
         }
         else
         {
@@ -101,7 +116,7 @@ export class DeleteCommand extends Command
 
         for (var i = 0; i < messages.length && i < params[0] && alive; i++)
         {
-            if (messages[i].deletable && !messages[i].pinned)
+            if (messages[i].deletable)
             {
                 await messages[i].delete({ timeout: 100 });
             }
@@ -137,7 +152,7 @@ export class DeleteCommand extends Command
 
         let channel = this.resolveTextChannel(map, message);
 
-        let deletePinned = map.has("pins") || ;//this.getValue(map, ["pins", "deletePins", "p"]);
+        let deletePinned = map.has("pins") || map.has("p"); //this.getValue(map, ["pins", "deletePins", "p"]);
         
         return { messages, channel, username, deletePinned };
     }
