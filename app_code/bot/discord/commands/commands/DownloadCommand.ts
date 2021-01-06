@@ -11,6 +11,7 @@ import { ProgressBar } from '../../../../console/effects/ProgressBar';
 import { WrongArgumentError } from '../../../../errors/command_errors/WrongArgumentError';
 import { Downloader } from '../../command_modules/Downloader';
 import { Command } from '../Command';
+import { Tools } from '../../../../helpers/Tools';
 
 export class DownloadCommand extends Command
 {
@@ -217,9 +218,7 @@ export class DownloadCommand extends Command
             else
             {
                 let content = message.content;
-                let regex =
-                    /(https?: \/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
-                let urls = content.match(regex);
+                let urls = content.match(Tools.getUrlRegex());
                 if (urls != undefined)
                 {
                     for (var i = 0; i < urls.length; i++)
