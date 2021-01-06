@@ -6,11 +6,11 @@ export class Downloader
 {
     private readonly _path: string;
 
-    public constructor(directory: string)
+    public constructor(folderName: string)
     {
-        if (directory != "." && directory != "..")
+        if (folderName != "." && folderName != "..")
         {
-            this._path = `./files/downloads/${directory}/`;
+            this._path = `./files/downloads/${folderName}/`;
             if (!fs.exists(this.path))
             {
                 fs.mkdir(this.path, true);
@@ -26,18 +26,25 @@ export class Downloader
             names.push(Downloader.getFileName(urls[j]));
         }
         names = this.renameFiles(names);
+
         let bar = new ProgressBar(urls.length, "downloading");
         bar.start();
+
         for (var i = 0; i < urls.length; i++)
         {
             if (urls[i] == undefined)
             {
                 throw new Error("url at index " + i + "was undefined");
             }
+
             let path = this.path + names[i];
+
             let file = fs.createWriteStream(path, { flags: "w" });
+
             bar.update(i + 1);
+
             let req = request.get(urls[i]);
+
             req.on("response", (response) =>
             {
                 if (response.statusCode > 300 && response.statusCode < 600)
@@ -89,12 +96,16 @@ export class Downloader
                 throw err;
             });
         }
+
         bar.stop();
+
         let downloadedItems = "";
+
         urls.forEach(url =>
         {
             downloadedItems += url + "\n";
         });
+
         fs.appendToFile(this.path + "0_logs.txt", `${downloadedItems}\n`)
     }
 
