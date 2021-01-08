@@ -75,7 +75,7 @@ export class Bot extends EventEmitter
 
     public emit<K extends keyof BotEvents>(event: K, ...args: BotEvents[K]): boolean
     {
-        return super.emit(event, args);
+        return super.emit(event, ...args);
     }
 
     private init(id: LoadingEffect): void
@@ -86,12 +86,6 @@ export class Bot extends EventEmitter
         Config.on("prefixChange", (newPrefix) => this.onPrefixChange(newPrefix));
         Config.on("addUser", (user) => this.onUserAdd(user));
 
-        // meme collection
-        this.collectInterval = setInterval(() =>
-        {
-            this.emit("collect", this.lastTextChannel, );
-        }, 1000) // 23h 59min -> 86340000 ms
-
         // initiate bot
         this._client.on("ready", () =>
         {
@@ -99,6 +93,7 @@ export class Bot extends EventEmitter
             readline.moveCursor(process.stdout, -3, 0);
             process.stdout.write("Ready\n");
             Printer.error(Printer.repeat("-", 26));
+            this.emit("ready");
         });
 
         this._client.on("message", (message) => this.onMessage(message));
@@ -221,5 +216,6 @@ export class Bot extends EventEmitter
 
 export interface BotEvents
 {
-    collect?: [TextChannel];
+    collect: [TextChannel];
+    ready: [];
 }
