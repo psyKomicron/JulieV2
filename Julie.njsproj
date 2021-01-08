@@ -50,6 +50,9 @@
     <TypeScriptCompile Include="app_code\bot\discord\commands\commands\ChannelCleanerCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="app_code\bot\discord\commands\commands\CollectCommand.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\bot\discord\commands\commands\DefaultCommand.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
