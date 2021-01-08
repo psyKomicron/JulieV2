@@ -14,6 +14,7 @@ import { ShowUsersCommand } from "../bot/discord/commands/commands/ShowUsersComm
 import { ChangePrefixCommand } from "../bot/discord/commands/commands/ChangePrefixCommand";
 import { DefaultCommand } from "../bot/discord/commands/commands/DefaultCommand";
 import { GambleCommand } from "../bot/discord/commands/commands/GambleCommand";
+import { CollectCommand } from "../bot/discord/commands/commands/CollectCommand";
 
 export class CommandFactory
 {
@@ -74,6 +75,9 @@ export class CommandFactory
             case "g":
             case "gamble":
                 command = new GambleCommand(bot);
+                break;
+            case "collect":
+                command = new CollectCommand(bot);
                 break;
             default:
                 command = new DefaultCommand(bot);
