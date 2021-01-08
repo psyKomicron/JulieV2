@@ -17,6 +17,7 @@ export class AddUserCommand extends Command
         Printer.title("add-user")
 
         let users = Config.getAuthorizedUsers();
-        throw new CommandError("Command not finished yet, give me a some time and try again !", this);
+        Config.addAuthorizedUser(this.bot.client.user);
+        //throw new CommandError("Command not finished yet, give me a some time and try again !", this);
     }
 }
