@@ -1,6 +1,7 @@
 {
     "emojis":
     [
+        {"heart": "💜"},
         { "green_check": "✅" },
         { "green_cross": "❎" },
         { "red_cross": "❌" }
