@@ -1,9 +1,18 @@
 import { TextChannel, Message, Collection } from "discord.js";
+import { ArgumentError } from "../../errors/ArgumentError";
 
 export class DiscordMessageFetcher
 {
-    public async fetch(channel: TextChannel, messagesAmount: number, chunk?: number): Promise<Array<Message>>
+    /**
+     * Fetch messages in a channel.
+     * @param channel Where to fetch the messages
+     * @param messagesAmount Number of messages to fetch
+     * @param chunk How much messages to fetch. Can use function instead of constant
+     */
+    public async fetch(channel: TextChannel, messagesAmount: number, chunk?: number | ((i: number) => number)): Promise<Array<Message>>
     {
+        this.isChannelNullOrUndefined(channel);
+
         chunk = chunk ?? 50;
 
         let messages = await channel.messages.fetch();
@@ -26,7 +35,14 @@ export class DiscordMessageFetcher
                 }
                 else
                 {
-                    messages = await channel.messages.fetch({ limit: chunk, before: lastMessageID });
+                    if (typeof chunk == "number")
+                    {
+                        messages = await channel.messages.fetch({ limit: chunk, before: lastMessageID });
+                    }
+                    else
+                    {
+                        messages = await channel.messages.fetch({ limit: chunk(resMessages.length), before: lastMessageID });
+                    }
 
                     // apply not null/undefined filter && user filter
                     messages = messages.filter(nullMessageFilter);
@@ -49,6 +65,8 @@ export class DiscordMessageFetcher
      */
     public async fetchToday(channel: TextChannel, ignoreList?: Array<Message> | Message): Promise<Array<Message>>
     {
+        this.isChannelNullOrUndefined(channel);
+
         let date: Date = new Date(Date.now());
         let messagesToHandle: Array<Message> = new Array();
         let messages: Collection<string, Message> = await channel.messages.fetch();
@@ -63,7 +81,7 @@ export class DiscordMessageFetcher
 
         messagesToHandle = messages.filter((message) =>
         {
-            return message && isSameDay(message.createdAt, date) && this.isInIgnoreList(ignoreList, message);
+            return message && isSameDay(message.createdAt, date) && !this.isInIgnoreList(ignoreList, message);
         }).array();
 
         return messagesToHandle.sort((a: Message, b: Message) =>
@@ -98,6 +116,8 @@ export class DiscordMessageFetcher
         filter: (message: Message, ...args: any[]) => boolean, chunk: number = 50, overflow: boolean = false, ...args: any[])
         : Promise<Array<Message>>
     {
+        this.isChannelNullOrUndefined(channel);
+
         let messages = await channel.messages.fetch();
         let resMessages: Array<Message> = new Array();
 
@@ -147,9 +167,21 @@ export class DiscordMessageFetcher
         return resMessages;
     }
 
+    private isChannelNullOrUndefined(channel: TextChannel)
+    {
+        if (!channel)
+        {
+            throw new ArgumentError("Channel cannot be null/undefined in order to fetch messages", "channel");
+        }
+    }
+
     private isInIgnoreList(ignoreList: Array<Message> | Message, message: Message): boolean
     {
-        if (ignoreList instanceof Array)
+        if (!ignoreList)
+        {
+            return false;
+        }
+        else if (ignoreList instanceof Array)
         {
             for (var i = 0; i < ignoreList.length; i++)
             {
