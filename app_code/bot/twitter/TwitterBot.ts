@@ -12,7 +12,15 @@ export class TwitterBot
 
     private constructor(bot: Bot)
     {
-        bot.on("collect", channel => { if (!this.collecting) this.onCollect(channel); });
+        bot.on("collect", channel =>
+        {
+            this.onCollect(channel);
+        });
+
+        bot.on("ready", () =>
+        {
+            Printer.info("Twitter bot : ready");
+        });
     }
 
     /**
@@ -21,7 +29,7 @@ export class TwitterBot
      */
     public static get(bot: Bot): TwitterBot
     {
-        if (this.instance)
+        if (!this.instance)
         {
             this.instance = new TwitterBot(bot);
         }
@@ -30,6 +38,11 @@ export class TwitterBot
 
     private async onCollect(channel: TextChannel): Promise<void>
     {
+        if (this.collecting && !channel)
+        {
+            return;
+        }
+
         let dog = new DiscordMessageFetcher();
         let messages: Array<Message> = await dog.fetchToday(channel);
         //let downloader: Downloader = new Downloader(channel.name);
@@ -59,7 +72,8 @@ export class TwitterBot
             }
         })
 
-        urls.forEach(url => Printer.info(url));
+        Printer.print("Retreived urls : ");
+        urls.forEach(url => Printer.print("\t" + url));
 
         //downloader.download()
 
