@@ -111,7 +111,7 @@ export class Config extends EventEmitter
 
         if (JSONParser.matchTemplate(configFile, this.configTemplate))
         {
-            let authorizedUsers = configFile.authorizedUsers;
+            let authorizedUsers = configFile.authorizedusers;
             if (authorizedUsers && authorizedUsers instanceof Array)
             {
                 try
@@ -158,4 +158,5 @@ export interface ConfigEvents
 {
     prefixChange: [string];
     addUser: [User];
+    verboseChange: [number];
 }
