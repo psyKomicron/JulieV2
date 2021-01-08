@@ -101,7 +101,7 @@ export class DeleteCommand extends Command
             messages = await dog.fetch(channel, params.messages);
         }
 
-        let bar = new ProgressBar(params[0], "deleting messages");
+        let bar = new ProgressBar(params.messages, "deleting messages");
         bar.start();
         
         let alive = true;
@@ -114,7 +114,7 @@ export class DeleteCommand extends Command
             //readline.moveCursor(process.stdout, 0, 1);
         }, 10000);
 
-        for (var i = 0; i < messages.length && i < params[0] && alive; i++)
+        for (var i = 0; i < messages.length && i < params.messages && alive; i++)
         {
             if (messages[i].deletable)
             {
@@ -135,7 +135,7 @@ export class DeleteCommand extends Command
         let messages = 10;
         if (!Number.isNaN(Number.parseInt(map.get("n"))))
         {
-            messages = Number.parseInt(map.get("n"));
+            messages = Number.parseInt(map.get("n")) + 1;
         }
 
         let username: string = undefined; 
