@@ -1,25 +1,23 @@
-import { Bot } from "../discord/Bot";
+import { Bot, CollectOptions } from "../discord/Bot";
 import { Message, TextChannel } from "discord.js";
 import { DiscordMessageFetcher } from "../common/DiscordMessageFetcher";
 import { Downloader } from "../discord/command_modules/Downloader";
 import { Printer } from "../../console/Printer";
 import { Tools } from "../../helpers/Tools";
+import { Alarm } from "./Alarm";
 
 export class TwitterBot
 {
     private static instance: TwitterBot;
     private collecting: boolean = false;
+    private collectChannel: TextChannel;
+    private alarm: Alarm;
 
     private constructor(bot: Bot)
     {
-        bot.on("collect", channel =>
+        bot.on("collect", (channel: TextChannel, setAsDefault: boolean, options: CollectOptions) =>
         {
-            this.onCollect(channel);
-        });
-
-        bot.on("ready", () =>
-        {
-            Printer.info("Twitter bot : ready");
+            this.onCollect(channel, setAsDefault, options);
         });
     }
 
@@ -36,7 +34,46 @@ export class TwitterBot
         return this.instance;
     }
 
-    private async onCollect(channel: TextChannel): Promise<void>
+    private onCollect(channel: TextChannel, setAsDefault: boolean, options: CollectOptions): void
+    {
+        if (setAsDefault) // setAsDefault: will be collecting at intervals in this channel pics
+        {
+            this.collectChannel = channel;
+
+            if (options)
+            {
+                if (options.collectWhen) // when to collect (00:00)
+                {
+                    this.alarm = new Alarm(options.collectWhen);
+
+                }
+            }
+            else
+            {
+                let now: Date = new Date(Date.now());
+                // setting alarm for midnight
+                this.alarm = new Alarm(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0));
+            }
+
+            if (this.alarm)
+            {
+                this.alarm.on("reachedEnd", () =>
+                {
+                    if (this.collectChannel)
+                    {
+                        this.collect(this.collectChannel, true);
+                    }
+
+                }).start();
+            }
+        }
+        else // simple collect, no interval or anything else
+        {
+            this.collect(channel);
+        }
+    }
+
+    private async collect(channel: TextChannel, fromAlarm: boolean = false): Promise<void>
     {
         if (this.collecting && !channel)
         {
@@ -44,8 +81,21 @@ export class TwitterBot
         }
 
         let dog = new DiscordMessageFetcher();
-        let messages: Array<Message> = await dog.fetchToday(channel);
-        //let downloader: Downloader = new Downloader(channel.name);
+        //let messages: Array<Message> = await dog.fetchToday(channel);
+
+        var filter = (message: Message) =>
+        {
+            if (message.attachments.size > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return message.cleanContent.match(Tools.getUrlRegex()) != null;
+            }
+        };
+        let messages = await dog.fetchAndFilter(channel, 10, filter, 10, false);
+        let downloader: Downloader = new Downloader(channel.name);
 
         // get links
         let urls: Array<string> = new Array();
@@ -61,22 +111,27 @@ export class TwitterBot
             else
             {
                 let content = message.content;
-                let urls = content.match(Tools.getUrlRegex());
-                if (urls != undefined)
+                let match = content.match(Tools.getUrlRegex());
+                if (match != null)
                 {
-                    for (var i = 0; i < urls.length; i++)
+                    for (var i = 0; i < match.length; i++)
                     {
-                        urls.push(urls[i]);
+                        urls.push(match[i]);
                     }
                 }
             }
         })
 
-        Printer.print("Retreived urls : ");
+        Printer.print("Retreived " + urls.length + " urls : ");
         urls.forEach(url => Printer.print("\t" + url));
 
-        //downloader.download()
+        await downloader.download(urls);
 
         this.collecting = false;
+        if (fromAlarm)
+        {
+            // restarting alarm since channel was collected
+            this.alarm.restart();
+        }
     }
 }
