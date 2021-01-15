@@ -1,6 +1,7 @@
 import request = require('request');
 import { ProgressBar } from '../../../console/effects/ProgressBar';
 import { FileSystem as fs } from '../../../dal/FileSystem';
+import { Printer } from '../../../console/Printer';
 
 export class Downloader
 {
@@ -54,25 +55,25 @@ export class Downloader
                     switch (code)
                     {
                         case 400:
-                            console.log(`[${code}] Bad Request !`);
+                            Printer.warn(`[${code}] Bad Request !`);
                             break;
                         case 403:
-                            console.log(`[${code}] Forbidden !`);
+                            Printer.warn(`[${code}] Forbidden !`);
                             break;
                         case 409:
-                            console.log(`[${code}] Conflict !`);
+                            Printer.warn(`[${code}] Conflict !`);
                             break;
                         case 401:
-                            console.log(`[${code}] Unauthorized !`);
+                            Printer.warn(`[${code}] Unauthorized !`);
                             break;
                         case 404:
-                            console.log(`[${code}] Not Found !`);
+                            Printer.warn(`[${code}] Not Found !`);
                             break;
                         case 500:
-                            console.log(`[${code}] Internal Server Error !`);
+                            Printer.warn(`[${code}] Internal Server Error !`);
                             break;
                         default:
-                            console.log(code);
+                            Printer.warn(code);
                     }
                 }
             });
@@ -103,7 +104,7 @@ export class Downloader
 
         urls.forEach(url =>
         {
-            downloadedItems += url + "\n";
+            downloadedItems +="[" + new Date(Date.now()).toISOString() + "]" + url + "\n";
         });
 
         fs.appendToFile(this.path + "0_logs.txt", `${downloadedItems}\n`)
