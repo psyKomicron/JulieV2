@@ -16,19 +16,16 @@ import { EventEmitter } from 'events';
 
 export class Bot extends EventEmitter
 {
-    private static instance: Bot;
     // discord
     private readonly _client: Client;
     // bot
+    private static instance: Bot;
     private readonly parents: string[];
     private readonly verbose: number;
     private moderator: Moderator;   
     private prefix: string;
-    // miscallenous
-    private lastTextChannel: TextChannel;
-    private collectInterval: NodeJS.Timeout;
-    // properties
     private _logger: Logger = new DefaultLogger();
+    private twitterBotStarted: boolean;
 
     private constructor(effect: LoadingEffect)
     {
@@ -53,6 +50,14 @@ export class Bot extends EventEmitter
         }
     }
 
+    // #region properties
+    public get prefixLength(): number { return this.prefix.length; }
+
+    public get client(): Client { return this._client; }
+
+    public get logger(): Logger { return this._logger; }
+    // #endregion
+
     public static get(effect: LoadingEffect): Bot
     {
         if (!this.instance)
@@ -61,12 +66,6 @@ export class Bot extends EventEmitter
         }
         return this.instance
     }
-
-    public get prefixLength(): number { return this.prefix.length; }
-
-    public get client(): Client { return this._client; }
-
-    public get logger(): Logger { return this._logger; }
 
     public on<K extends keyof BotEvents>(event: K, listener: (...args: BotEvents[K]) => void): this
     {
@@ -78,6 +77,7 @@ export class Bot extends EventEmitter
         return super.emit(event, ...args);
     }
 
+    // #region private methods
     private init(id: LoadingEffect): void
     {
         this.prefix = Config.getPrefix();
@@ -93,7 +93,6 @@ export class Bot extends EventEmitter
             readline.moveCursor(process.stdout, -3, 0);
             process.stdout.write("Ready\n");
             Printer.error(Printer.repeat("-", 26));
-            this.emit("ready");
         });
 
         this._client.on("message", (message) => this.onMessage(message));
@@ -136,6 +135,8 @@ export class Bot extends EventEmitter
     {
         return this.parents.includes(user.tag);
     }
+
+    // #endregion
 
     // #region events handlers
     private onMessage(message: Message): void 
@@ -216,6 +217,13 @@ export class Bot extends EventEmitter
 
 export interface BotEvents
 {
-    collect: [TextChannel];
-    ready: [];
+    /**TextChannel: to get messages from. boolean: set as default channel to get messages from. */
+    collect: [TextChannel, boolean, CollectOptions?];
+}
+
+export interface CollectOptions
+{
+    keepUntil?: Date;
+    collectWhen?: Date;
+    fetchType: "today" | number;
 }
