@@ -4,12 +4,12 @@ import { ArgumentError } from "../../errors/ArgumentError";
 export class DiscordMessageFetcher
 {
     /**
-     * Fetch messages in a channel.
+     * Fetches messages in a channel.
      * @param channel Where to fetch the messages
      * @param messagesAmount Number of messages to fetch
      * @param chunk How much messages to fetch. Can use function instead of constant
      */
-    public async fetch(channel: TextChannel, messagesAmount: number, chunk?: number | ((i: number) => number)): Promise<Array<Message>>
+    public async fetch(channel: TextChannel, messagesAmount: number, overflow?: boolean, chunk?: number | ((i: number) => number)): Promise<Array<Message>>
     {
         this.isChannelNullOrUndefined(channel);
 
@@ -52,11 +52,16 @@ export class DiscordMessageFetcher
             }
         }
 
+        if (!overflow)
+        {
+            return this.slice(resMessages, messagesAmount);
+        }
+
         return resMessages;
     }
 
     /**
-     * Fetch messages in the channel that were created/sent the same day as the date parameter. 
+     * Fetches messages in the channel that were created/sent the same day as the date parameter. 
      * An ignore list can be provided (i.e. to ignore the last message in the channel), the number
      * of messages is directly limited by the Discord API, too old dates will cause an error.
      * @param date When to get messages
@@ -161,7 +166,7 @@ export class DiscordMessageFetcher
 
         if (!overflow)
         {
-            return resMessages.slice(0, messagesAmount - 1);
+            return this.slice(resMessages, messagesAmount);
         }
 
         return resMessages;
@@ -196,5 +201,10 @@ export class DiscordMessageFetcher
             return ignoreList.id == message.id;
         }
         return false;
+    }
+
+    private slice<T>(array: Array<T>, end: number, start: number = 0)
+    {
+        return array.slice(start, end);
     }
 }
