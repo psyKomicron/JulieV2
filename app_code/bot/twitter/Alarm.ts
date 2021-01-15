@@ -15,7 +15,8 @@ export class Alarm extends EventEmitter
     private autoRestart: boolean;
 
     /**
-     * Creates an alarm. If the tick interval is null/undefined it will be defaulted to 1 sec.
+     * Creates an alarm.
+     * Defaults : autoStart -> false, autoRestart -> true, tickInterval -> 1000ms.
      * @param date When will the alarm set off
      * @param name Friendly name of the alarm
      * @param autoStart Starts the alarm immediatly
