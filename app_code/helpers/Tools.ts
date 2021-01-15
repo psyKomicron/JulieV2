@@ -27,7 +27,7 @@ export class Tools
 
     public static isUrl(url: string): boolean
     {
-        return url.match(this.getUrlRegex()) != undefined;
+        return url.match(this.getUrlRegex()) != null;
     }
 
     /**
