@@ -13,11 +13,11 @@ export class CollectCommand extends Command
     {
         if (message.channel instanceof TextChannel)
         {
-            this.bot.emit("collect", message.channel);
+            this.bot.emit("collect", message.channel, false);
         }
         else
         {
-            this.bot.emit("collect", undefined);
+            this.bot.emit("collect", undefined, false);
         }
     }
 
