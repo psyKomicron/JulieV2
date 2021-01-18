@@ -12,6 +12,7 @@ export class TwitterBot
     private collecting: boolean = false;
     private collectChannel: TextChannel;
     private alarm: Alarm;
+    private fetchMethod: number;
 
     private constructor(bot: Bot)
     {
@@ -45,8 +46,12 @@ export class TwitterBot
                 if (options.collectWhen) // when to collect (00:00)
                 {
                     this.alarm = new Alarm(options.collectWhen);
+                }
+                if (options.keepUntil)
+                {
 
                 }
+                this.fetchMethod = options.fetchType >= 0 ? options.fetchType : 0;
             }
             else
             {
@@ -81,20 +86,23 @@ export class TwitterBot
         }
 
         let dog = new DiscordMessageFetcher();
-        //let messages: Array<Message> = await dog.fetchToday(channel);
+        let messages: Array<Message> = undefined;
+        if (this.fetchMethod == 0)
+        {
+            messages = await dog.fetchToday(channel);
+        }
+        else
+        {
+
+        }
 
         var filter = (message: Message) =>
         {
-            if (message.attachments.size > 0)
-            {
-                return true;
-            }
-            else
-            {
-                return message.cleanContent.match(Tools.getUrlRegex()) != null;
-            }
+            if (message.attachments.size > 0) return true;
+            else return Tools.isUrl(message.cleanContent);
         };
-        let messages = await dog.fetchAndFilter(channel, 10, filter, 10, false);
+        //let messages = await dog.fetchAndFilter(channel, 10, filter, 10, false);
+
         let downloader: Downloader = new Downloader(channel.name);
 
         // get links

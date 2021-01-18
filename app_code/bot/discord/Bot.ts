@@ -25,7 +25,6 @@ export class Bot extends EventEmitter
     private moderator: Moderator;   
     private prefix: string;
     private _logger: Logger = new DefaultLogger();
-    private twitterBotStarted: boolean;
 
     private constructor(effect: LoadingEffect)
     {
@@ -225,5 +224,5 @@ export interface CollectOptions
 {
     keepUntil?: Date;
     collectWhen?: Date;
-    fetchType: "today" | number;
+    fetchType: number;
 }
