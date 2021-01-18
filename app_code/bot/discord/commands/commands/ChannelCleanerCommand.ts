@@ -11,7 +11,7 @@ export class ChannelCleanerCommand extends Command
 
     public constructor(bot: Bot)
     {
-        super("channel cleaner", bot, true);
+        super("channel-cleaner", bot, true);
     }
 
     public async execute(message: Message): Promise<void>
