@@ -9,16 +9,15 @@
     "clean": "tsc --build --clean"
   },
   "devDependencies": {
-    "@types/node": "^13.11.0",
+    "@types/node": "^13.13.40",
     "node": "14.0.0",
-    "typescript": "^3.9.0-dev.20200406"
+    "typescript": "^3.9.7"
   },
   "dependencies": {
     "@discordjs/opus": "^0.3.2",
     "cheerio": "^1.0.0-rc.3",
     "core-js": "^3.6.5",
     "discord.js": "^12.5.1",
-    "express": "^4.17.1",
     "ffmpeg-static": "^4.2.2",
     "googleapis": "^51.0.0",
     "node-fetch": "^2.6.0",
