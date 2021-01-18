@@ -2,6 +2,7 @@ import { Command } from "../Command";
 import { Message, TextChannel } from "discord.js";
 import { Bot } from "../../Bot";
 
+/**Asks the TwitterBot to collect images from a channel.*/
 export class CollectCommand extends Command
 {
     public constructor(bot: Bot)
@@ -20,5 +21,4 @@ export class CollectCommand extends Command
             this.bot.emit("collect", undefined, false);
         }
     }
-
 }
