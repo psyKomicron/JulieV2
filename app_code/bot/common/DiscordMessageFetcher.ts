@@ -9,7 +9,7 @@ export class DiscordMessageFetcher
      * @param messagesAmount Number of messages to fetch
      * @param chunk How much messages to fetch. Can use function instead of constant
      */
-    public async fetch(channel: TextChannel, messagesAmount: number, overflow?: boolean, chunk?: number | ((i: number) => number)): Promise<Array<Message>>
+    public async fetch(channel: TextChannel, messagesAmount: number, options: AdditionalParams): Promise<Array<Message>>
     {
         this.isChannelNullOrUndefined(channel);
 
@@ -73,23 +73,36 @@ export class DiscordMessageFetcher
         this.isChannelNullOrUndefined(channel);
 
         let date: Date = new Date(Date.now());
-        let messagesToHandle: Array<Message> = new Array();
-        let messages: Collection<string, Message> = await channel.messages.fetch();
 
-        let isSameDay = (messageDate: Date, date: Date) =>
+        var filter: Filter = (message: Message, ignoreList: Array<Message> | Message, date: Date) =>
         {
-            return messageDate.getFullYear() == date.getFullYear()
-                && messageDate.getMonth() == date.getMonth()
-                && messageDate.getDate() == date.getDate()
-                && messageDate.getDay() == date.getDay();
-        };
+            let isIn = false;
+            if (ignoreList instanceof Array)
+            {
+                for (var i = 0; i < ignoreList.length; i++)
+                {
+                    if (ignoreList[i].id == message.id)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (ignoreList)
+            {
+                return ignoreList.id == message.id;
+            }
 
-        messagesToHandle = messages.filter((message) =>
-        {
-            return message && isSameDay(message.createdAt, date) && !this.isInIgnoreList(ignoreList, message);
-        }).array();
+            return message != undefined
+                && (message.createdAt.getFullYear() == date.getFullYear()
+                    && message.createdAt.getMonth() == date.getMonth()
+                    && message.createdAt.getDate() == date.getDate()
+                    && message.createdAt.getDay() == date.getDay())
+                && isIn;
+        }
 
-        return messagesToHandle.sort((a: Message, b: Message) =>
+        let messages: Array<Message> = await this.fetchAndFilter(channel, 100, filter, undefined, true, ignoreList, date);
+
+        return messages.sort((a: Message, b: Message) =>
         {
             if (a.createdAt.getTime() == b.createdAt.getTime())
             {
@@ -117,9 +130,7 @@ export class DiscordMessageFetcher
      * will be trimmed
      * @param args Args to provide to the filter function (if needed)
      */
-    public async fetchAndFilter(channel: TextChannel, messagesAmount: number,
-        filter: (message: Message, ...args: any[]) => boolean, chunk: number = 50, overflow: boolean = false, ...args: any[])
-        : Promise<Array<Message>>
+    public async fetchAndFilter(channel: TextChannel, messagesAmount: number, filter: Filter, options: AdditionalParams, ...args: any[]): Promise<Array<Message>>
     {
         this.isChannelNullOrUndefined(channel);
 
@@ -150,13 +161,16 @@ export class DiscordMessageFetcher
                 }
                 else
                 {
-                    messages = await channel.messages.fetch({ limit: chunk, before: lastMessageID });
+                    messages = await channel.messages.fetch(
+                        {
+                            limit: typeof options.chunk == "function" ? options.chunk(resMessages.length) : options.chunk,
+                            before: lastMessageID
+                        });
 
                     // apply not null/undefined filter && user filter
-                    messages = messages.filter(nullMessageFilter);
                     messages = messages.filter((message: Message) =>
                     {
-                        return filter(message, args);
+                        return nullMessageFilter(message) && filter(message, args);
                     });
 
                     messages.forEach((message: Message) => resMessages.push(message));
@@ -164,12 +178,20 @@ export class DiscordMessageFetcher
             }
         }
 
-        if (!overflow)
+        if (!options.overflow)
         {
             return this.slice(resMessages, messagesAmount);
         }
 
         return resMessages;
+    }
+
+    public async fetchAt(channel: TextChannel, date: Date, options: AdditionalParams): Promise<Array<Message>>
+    {
+        let filter: Filter = (message: Message, date: Date) =>
+        {
+            return message.createdAt == date;
+        }
     }
 
     private isChannelNullOrUndefined(channel: TextChannel)
@@ -180,31 +202,17 @@ export class DiscordMessageFetcher
         }
     }
 
-    private isInIgnoreList(ignoreList: Array<Message> | Message, message: Message): boolean
-    {
-        if (!ignoreList)
-        {
-            return false;
-        }
-        else if (ignoreList instanceof Array)
-        {
-            for (var i = 0; i < ignoreList.length; i++)
-            {
-                if (ignoreList[i].id == message.id)
-                {
-                    return true;
-                }
-            }
-        }
-        else
-        {
-            return ignoreList.id == message.id;
-        }
-        return false;
-    }
-
     private slice<T>(array: Array<T>, end: number, start: number = 0)
     {
         return array.slice(start, end);
     }
+}
+
+type Filter = (message: Message, ...args: any[]) => boolean;
+type Chunk = (i: number) => number | number;
+
+interface AdditionalParams
+{
+    chunk?: Chunk;
+    overflow?: number;
 }
