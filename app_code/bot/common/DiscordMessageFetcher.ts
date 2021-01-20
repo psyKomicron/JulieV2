@@ -3,6 +3,7 @@ import { ArgumentError } from "../../errors/ArgumentError";
 
 export class DiscordMessageFetcher
 {
+    public readonly DEFAULT_CHUNK_VALUE = 50;
     /**
      * Fetches messages in a channel.
      * @param channel Where to fetch the messages
@@ -12,8 +13,6 @@ export class DiscordMessageFetcher
     public async fetch(channel: TextChannel, messagesAmount: number, options: AdditionalParams): Promise<Array<Message>>
     {
         this.isChannelNullOrUndefined(channel);
-
-        chunk = chunk ?? 50;
 
         let messages = await channel.messages.fetch();
         let resMessages: Array<Message> = new Array();
@@ -35,14 +34,7 @@ export class DiscordMessageFetcher
                 }
                 else
                 {
-                    if (typeof chunk == "number")
-                    {
-                        messages = await channel.messages.fetch({ limit: chunk, before: lastMessageID });
-                    }
-                    else
-                    {
-                        messages = await channel.messages.fetch({ limit: chunk(resMessages.length), before: lastMessageID });
-                    }
+                    messages = await channel.messages.fetch({ limit: this.getChunk(options?.chunk, resMessages.length), before: lastMessageID });
 
                     // apply not null/undefined filter && user filter
                     messages = messages.filter(nullMessageFilter);
@@ -52,7 +44,7 @@ export class DiscordMessageFetcher
             }
         }
 
-        if (!overflow)
+        if (!options?.overflow)
         {
             return this.slice(resMessages, messagesAmount);
         }
@@ -135,7 +127,7 @@ export class DiscordMessageFetcher
         this.isChannelNullOrUndefined(channel);
 
         let messages = await channel.messages.fetch();
-        let resMessages: Array<Message> = new Array();
+        let filteredMessages: Array<Message> = new Array();
 
         let nullMessageFilter = (message: Message) => message != undefined;
         // adding to resMessages and removing null/undefined messages
@@ -147,12 +139,12 @@ export class DiscordMessageFetcher
         });
 
         // add messages to result array
-        messages.forEach((message: Message) => resMessages.push(message));
+        messages.forEach((message: Message) => filteredMessages.push(message));
 
-        if (resMessages.length < messagesAmount)
+        if (filteredMessages.length < messagesAmount)
         {
             // get more messages manually
-            while (resMessages.length < messagesAmount)
+            while (filteredMessages.length < messagesAmount)
             {
                 let lastMessageID = await messages.last()?.id;
                 if (lastMessageID == undefined)
@@ -163,7 +155,7 @@ export class DiscordMessageFetcher
                 {
                     messages = await channel.messages.fetch(
                         {
-                            limit: typeof options.chunk == "function" ? options.chunk(resMessages.length) : options.chunk,
+                            limit: this.getChunk(options.chunk, filteredMessages.length),
                             before: lastMessageID
                         });
 
@@ -173,17 +165,17 @@ export class DiscordMessageFetcher
                         return nullMessageFilter(message) && filter(message, args);
                     });
 
-                    messages.forEach((message: Message) => resMessages.push(message));
+                    messages.forEach((message: Message) => filteredMessages.push(message));
                 }
             }
         }
 
         if (!options.overflow)
         {
-            return this.slice(resMessages, messagesAmount);
+            return this.slice(filteredMessages, messagesAmount);
         }
 
-        return resMessages;
+        return filteredMessages;
     }
 
     public async fetchAt(channel: TextChannel, date: Date, options: AdditionalParams): Promise<Array<Message>>
@@ -191,7 +183,21 @@ export class DiscordMessageFetcher
         let filter: Filter = (message: Message, date: Date) =>
         {
             return message.createdAt == date;
+        };
+
+        if (!options?.chunk)
+        {
+            options.chunk = DiscordMessageFetcher.sigmoid;
         }
+    }
+
+    /**
+     * Sigmoid function (used for chunk definition).
+     * @param x
+     */
+    public static sigmoid(x): number
+    {
+        return 1 / (1 + Math.exp(-x));
     }
 
     private isChannelNullOrUndefined(channel: TextChannel)
@@ -206,6 +212,13 @@ export class DiscordMessageFetcher
     {
         return array.slice(start, end);
     }
+
+    private getChunk(chunk: Chunk, iterator: number): number
+    {
+        if (!chunk) return this.DEFAULT_CHUNK_VALUE;
+        else return typeof chunk == "function" ? chunk(iterator) : chunk
+    }
+
 }
 
 type Filter = (message: Message, ...args: any[]) => boolean;
@@ -214,5 +227,6 @@ type Chunk = (i: number) => number | number;
 interface AdditionalParams
 {
     chunk?: Chunk;
-    overflow?: number;
+    overflow?: boolean;
+    maxMessagesPerDay?: number;
 }
