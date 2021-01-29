@@ -1,20 +1,12 @@
 import { Bot } from '../../Bot';
 import { Command } from '../Command';
-import
-{
-    Message, MessageReaction, MessageEmbed,
-    User,
-    ReactionCollector,
-    Snowflake, SnowflakeUtil,
-    Emoji,
-    TextChannel
-} from 'discord.js';
+import { Message, MessageReaction, MessageEmbed, User, ReactionCollector, Snowflake, SnowflakeUtil, Emoji, TextChannel } from 'discord.js';
 import { VoteLogger } from '../../command_modules/logger/loggers/VoteLogger';
 import { Printer } from '../../../../console/Printer';
 import { EmojiReader } from '../../../../dal/readers/EmojiReader';
-import { WrongArgumentError } from '../../../../errors/command_errors/WrongArgumentError';
 import { CommandError } from '../../../../errors/command_errors/CommandError';
 import { ExecutionError } from '../../../../errors/ExecutionError';
+import { ArgumentError } from '../../../../errors/ArgumentError';
 
 export class VoteCommand extends Command
 {
@@ -29,7 +21,7 @@ export class VoteCommand extends Command
 
     public constructor(bot: Bot)
     {
-        super("vote", bot);
+        super(VoteCommand.name, bot);
     }
 
     public get title(): string 
@@ -78,7 +70,9 @@ export class VoteCommand extends Command
             }
             else
             {
-                throw new WrongArgumentError(this, "The vote command failed. Check syntax or see if the message used to host the vote was sent by me");
+                throw new CommandError(this,
+                    new ArgumentError("The vote command failed. Check syntax or see if the message used to host the vote was sent by me", "message")
+                );
             }
         }
     }
@@ -129,8 +123,8 @@ export class VoteCommand extends Command
 
         try
         {
-            let greenCheck: string = EmojiReader.getEmoji("green_check");
-            let greenCross: string = EmojiReader.getEmoji("green_cross");
+            let greenCheck: string = EmojiReader.getEmoji("green_check").value;
+            let greenCross: string = EmojiReader.getEmoji("green_cross").value;
 
             emojis.push(new Emoji(this.bot.client, { name: greenCheck }));
             emojis.push(new Emoji(this.bot.client, { name: greenCross }));
@@ -138,9 +132,9 @@ export class VoteCommand extends Command
         catch (error)
         {
             throw new CommandError(
-                "Uh oh something broke... A technician will fix this, give it little bit of time and try again !",
                 this,
-                error as ExecutionError
+                error as ExecutionError,
+                "Uh oh something broke... A technician will fix this, give it little bit of time and try again !"
             );
         }
     }
@@ -180,7 +174,7 @@ export class VoteCommand extends Command
         }
         else
         {
-            throw new WrongArgumentError(this, "Message to use as vote message was not an embed, thus it cannot be used");
+            throw new ArgumentError("Message to use as vote message was not an embed, thus it cannot be used", "message");
         }
 
         this.voteMessage = hostMessage;

@@ -15,6 +15,7 @@ import { ChangePrefixCommand } from "../bot/discord/commands/commands/ChangePref
 import { DefaultCommand } from "../bot/discord/commands/commands/DefaultCommand";
 import { GambleCommand } from "../bot/discord/commands/commands/GambleCommand";
 import { CollectCommand } from "../bot/discord/commands/commands/CollectCommand";
+import { ArgumentError } from "../errors/ArgumentError";
 
 export class CommandFactory
 {
@@ -84,5 +85,56 @@ export class CommandFactory
                 break;
         }
         return command;
+    }
+
+    public static exist(commandName: string): boolean
+    {
+        switch (commandName)
+        {
+            case "dl":
+            case "download":
+                return true;
+            case "d":
+            case "delete":
+                return true;
+            case "embed":
+                return true;
+            case "search":
+            case "e":
+            case "explore":
+                return true;
+            case "p":
+            case "play":
+                return true;
+            case "h":
+            case "help":
+                return true;
+            case "t":
+            case "test":
+                return true;
+            case "v":
+            case "vote":
+                return true;
+            case "a":
+            case "add":
+            case "adduser":
+                return true;
+            case "c":
+            case "clean":
+                return true;
+            case "su":
+            case "showusers":
+                return true;
+            case "changeprefix":
+            case "prefix":
+                return true;
+            case "g":
+            case "gamble":
+                return true;
+            case "collect":
+                return true;
+            default:
+                return false;
+        }
     }
 }

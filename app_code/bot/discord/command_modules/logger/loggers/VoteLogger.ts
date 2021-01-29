@@ -50,7 +50,7 @@ export class VoteLogger extends Logger
             {
                 if (error instanceof RangeError)
                 {
-                    message.react(EmojiReader.getEmoji("red_cross"));
+                    message.react(EmojiReader.getEmoji("red_cross").value);
                     Printer.error(error.toString());
                 }
             }

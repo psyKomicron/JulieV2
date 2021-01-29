@@ -1,4 +1,5 @@
 import { Message } from "discord.js";
+import { isNullOrUndefined } from "util";
 
 export class Tools
 {
@@ -25,9 +26,36 @@ export class Tools
         return new RegExp(/(https?: \/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi);
     }
 
+    public static getNumbersRegex(): RegExp
+    {
+        return new RegExp(/([0-9]{2}|[0-9]{1}):([0-9]{2}|[0-9]{1})/g);
+    }
+
     public static isUrl(url: string): boolean
     {
-        return url.match(this.getUrlRegex()) != null;
+        return !isNullOrUndefined(url.match(this.getUrlRegex()));
+    }
+
+    public static isDate(numbers: string): boolean
+    {
+        return !isNullOrUndefined(numbers.match(this.getNumbersRegex()));
+    }
+
+    public static isNullOrEmpty(s: string): boolean
+    {
+        if (s)
+        {
+            if (s.length > 0)
+            {
+                for (var i = 0; i < s.length; i++)
+                {
+                    if (s[i] != " ") return false;
+                }
+                return true;
+            }
+            else return true;
+        }
+        else return true;
     }
 
     /**
@@ -74,6 +102,20 @@ export class Tools
             default:
                 return ReleaseType.PROD;
         }
+    }
+
+    /**
+     * Sigmoid function (used for chunk definition).
+     * @param x
+     */
+    public static sigmoid(x): number
+    {
+        return 1 / (1 + Math.exp(-x));
+    }
+
+    public static slice<T>(array: Array<T>, end: number, start: number = 0)
+    {
+        return array.slice(start, end);
     }
 }
 

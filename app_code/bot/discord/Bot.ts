@@ -82,8 +82,8 @@ export class Bot extends EventEmitter
         this.prefix = Config.getPrefix();
 
         // config changes
-        Config.on("prefixChange", (newPrefix) => this.onPrefixChange(newPrefix));
-        Config.on("addUser", (user) => this.onUserAdd(user));
+        Config.onEvent("prefixChange", (newPrefix) => this.onPrefixChange(newPrefix));
+        Config.onEvent("addUser", (user) => this.onUserAdd(user));
 
         // initiate bot
         this._client.on("ready", () =>

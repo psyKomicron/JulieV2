@@ -6,12 +6,13 @@ import { Bot } from "../../Bot";
 import { EmbedFactory } from "../../../../factories/EmbedFactory";
 import { EmbedResolvable } from "../../../../dtos/EmbedResolvable";
 import { Command } from "../Command";
+import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyntaxError";
 
 export class ChangePrefixCommand extends Command
 {
     public constructor(bot: Bot)
     {
-        super("change-prefix", bot, true);
+        super(ChangePrefixCommand.name, bot, true);
     }
 
     public async execute(message: Message): Promise<void> 
@@ -45,7 +46,10 @@ export class ChangePrefixCommand extends Command
         else
         {
             Printer.warn("new prefix invalid, not updating current prefix");
-            throw new CommandError("New prefix invalid (" + prefix + "), not updating current prefix", this);
+            throw new CommandError(this,
+                new CommandSyntaxError(this),
+                "New prefix invalid (" + prefix + "), not updating current prefix"
+            );
         }
     }
 }

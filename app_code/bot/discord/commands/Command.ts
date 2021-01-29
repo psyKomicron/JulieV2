@@ -2,16 +2,16 @@ import { EventEmitter } from "events";
 import { FileSystem as fs } from "../../../dal/FileSystem";
 import { Message, TextChannel, GuildChannel, GuildChannelManager } from 'discord.js';
 import { CommandSyntaxError } from "../../../errors/command_errors/CommandSyntaxError";
-import { WrongArgumentError } from "../../../errors/command_errors/WrongArgumentError";
 import { Printer } from "../../../console/Printer";
 import { Bot } from "../Bot";
+import { ArgumentError } from "../../../errors/ArgumentError";
 
 export abstract class Command extends EventEmitter
 {
     private static _commands: number = 0;
     private readonly _bot: Bot;
     private readonly _deleteAfterExecution: boolean;
-    private _name: string;
+    private readonly _name: string;
 
     public static get commands(): number { return this._commands; }
 
@@ -136,6 +136,12 @@ export abstract class Command extends EventEmitter
         return map;
     }
 
+    /**
+     * Safely gets a entry in the map.
+     * @param args
+     * @param names
+     * @param ignoreDuplicate
+     */
     protected getValue(args: Map<string, string>, names: Array<string>, ignoreDuplicate: boolean = false): string
     {
         let filled: boolean = false;
@@ -157,7 +163,7 @@ export abstract class Command extends EventEmitter
                 }
                 else
                 {
-                    throw new WrongArgumentError(this, "Duplicate argument in command : " + names[i]);
+                    throw new ArgumentError("Duplicate argument in command", names[i]);
                 }
             }
         }
@@ -165,7 +171,7 @@ export abstract class Command extends EventEmitter
         return res;
     }
 
-    private preParseMessage(rawContent: string): string
+    protected preParseMessage(rawContent: string): string
     {
         let substr = 0;
 
@@ -174,7 +180,7 @@ export abstract class Command extends EventEmitter
         {
             if (rawContent[substr] == " ")
             {
-                while (substr < rawContent.length && rawContent[substr] != "-") substr++;
+                while (Number.MAX_SAFE_INTEGER && substr < rawContent.length && rawContent[substr] != "-") substr++;
                 break;
             }
             substr++;

@@ -1,9 +1,20 @@
-{
-    "emojis":
-    [
-        {"heart": "💜"},
-        { "green_check": "✅" },
-        { "green_cross": "❎" },
-        { "red_cross": "❌" }
-    ]
-}
+{"emojis":[
+    {"name": "green_check", "value": "✅"},
+    {"name": "green_cross", "value": "❎"},
+    {"name": "thinking", "value": "🤔"},
+    {"name": "warning", "value": "⚠"},
+    {"name": "red_cross", "value": "❌"},
+    {"name": "pointing_down", "value": "👇"},
+    {"name": "heart", "value":"💜"},
+    {"name": "0", "value": "0️⃣"},
+    {"name": "1", "value": "1️⃣"},
+    {"name": "2", "value": "2️⃣"},
+    {"name": "3", "value": "3️⃣"},
+    {"name": "4", "value": "4️⃣"},
+    {"name": "5", "value": "5️⃣"},
+    {"name": "6", "value": "6️⃣"},
+    {"name": "7", "value": "7️⃣"},
+    {"name": "8", "value": "8️⃣"},
+    {"name": "9", "value": "9️⃣"},
+    {"name": "10", "value": "🔟"}
+]}

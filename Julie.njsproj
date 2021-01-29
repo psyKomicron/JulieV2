@@ -7,6 +7,10 @@
     <EnableTypeScript>true</EnableTypeScript>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
     <TypeScriptModuleKind>CommonJS</TypeScriptModuleKind>
+    <Environment>YOUTUBE_API_KEY
+DISCORD_BOT_TOKEN
+RELEASE_TYPE</Environment>
+    <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -22,7 +26,7 @@
     <OutputPath>.</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
-    <StartWebBrowser>false</StartWebBrowser>
+    <StartWebBrowser>False</StartWebBrowser>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -157,6 +161,12 @@
     <TypeScriptCompile Include="app_code\dal\IStreamOptions.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="app_code\dal\readers\emojis\Emoji.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="app_code\dal\readers\emojis\EmojiName.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\errors\AlarmError.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -167,9 +177,6 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\errors\command_errors\DeprecatedCommandError.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\errors\command_errors\WrongArgumentError.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\errors\dal_errors\ConfigurationError.ts">
@@ -188,6 +195,9 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\errors\ArgumentError.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="app_code\errors\NotImplementedError.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\helpers\enums\FileType.ts">
@@ -248,6 +258,7 @@
     <Folder Include="app_code\console\" />
     <Folder Include="app_code\console\effects\" />
     <Folder Include="app_code\dal\readers\" />
+    <Folder Include="app_code\dal\readers\emojis\" />
     <Folder Include="app_code\errors\" />
     <Folder Include="app_code\errors\command_errors\" />
     <Folder Include="app_code\errors\dal_errors\" />

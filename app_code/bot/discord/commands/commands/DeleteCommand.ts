@@ -59,8 +59,7 @@ export class DeleteCommand extends Command
                 ["number of messages", "channel name", "method", "target user"],
                 [`${params.messages}`, `${params.channel.name}`, "target delete", `${params.username}`]);
 
-            let channel = params[1];
-            this.overrideDelete(channel, params);
+            this.overrideDelete(params.channel, params);
         }
     }
 

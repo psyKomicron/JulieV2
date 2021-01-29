@@ -11,7 +11,6 @@ import
 import { YoutubeModule } from '../../command_modules/explore/youtube/YoutubeModule';
 import { PlayLogger } from '../../command_modules/logger/loggers/PlayLogger';
 import { Printer } from '../../../../console/Printer';
-import { WrongArgumentError } from '../../../../errors/command_errors/WrongArgumentError';
 import { EmojiReader } from '../../../../dal/readers/EmojiReader';
 import { EmbedResolvable } from '../../../../dtos/EmbedResolvable';
 import { CommandSyntaxError } from '../../../../errors/command_errors/CommandSyntaxError';
@@ -19,6 +18,7 @@ import { YoutubeOutput } from '../../../../dtos/YoutubeOuput';
 import { TokenReader } from '../../../../dal/readers/TokenReader';
 import { EmbedFactory } from '../../../../factories/EmbedFactory';
 import { Command } from '../Command';
+import { ArgumentError } from '../../../../errors/ArgumentError';
 
 export class PlayCommand extends Command
 {
@@ -32,7 +32,7 @@ export class PlayCommand extends Command
 
     public constructor(bot: Bot)
     {
-        super("play-command", bot);
+        super(PlayCommand.name, bot);
     }
 
     public get channel(): VoiceChannel { return this.voiceChannel; }
@@ -75,7 +75,7 @@ export class PlayCommand extends Command
             }
             else
             {
-                throw new WrongArgumentError(this, "No channel to connect to was provided");
+                throw new ArgumentError("No channel to connect to was provided", "voice channel");
             }
         }
         else if (this.videos)
@@ -136,7 +136,7 @@ export class PlayCommand extends Command
             }
             else
             {
-                throw new WrongArgumentError(this, "Cannot find the requested url");
+                throw new ArgumentError("Cannot find the requested url", "url");
             }
         }
         else

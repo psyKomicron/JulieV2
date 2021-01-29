@@ -8,10 +8,10 @@ import { Printer } from '../../../../console/Printer';
 import { EmbedResolvable } from '../../../../dtos/EmbedResolvable';
 import { EmbedFactory } from '../../../../factories/EmbedFactory';
 import { ProgressBar } from '../../../../console/effects/ProgressBar';
-import { WrongArgumentError } from '../../../../errors/command_errors/WrongArgumentError';
 import { Downloader } from '../../command_modules/Downloader';
 import { Command } from '../Command';
 import { Tools } from '../../../../helpers/Tools';
+import { ArgumentError } from '../../../../errors/ArgumentError';
 
 export class DownloadCommand extends Command
 {
@@ -42,7 +42,7 @@ export class DownloadCommand extends Command
                 name = channel.name;
             }
 
-            message.react(EmojiReader.getEmoji("thinking"));
+            message.react(EmojiReader.getEmoji("thinking").value);
             Printer.title("initiating download");
             Printer.args(
                 ["downloading", "file type", "channel"],
@@ -52,13 +52,13 @@ export class DownloadCommand extends Command
             if (limit > 250)
             {
                 Printer.warn("\n\t/!\\ WARNING : downloading over 250 files can fail /!\\ \n");
-                message.react(EmojiReader.getEmoji("warning"));
+                message.react(EmojiReader.getEmoji("warning").value);
             }
 
             this.initiateDownload(limit, channel)
                 .then(() =>
                 {
-                    message.react(EmojiReader.getEmoji("green_check"));
+                    message.react(EmojiReader.getEmoji("green_check").value);
                     this.deleteMessage(message, 2000);
                 });
         }
@@ -70,7 +70,7 @@ export class DownloadCommand extends Command
             }
             else
             {
-                throw new WrongArgumentError(this, "No URI were provided");
+                throw new ArgumentError("No URI were provided", "url");
             }
         }
     }
@@ -84,14 +84,14 @@ export class DownloadCommand extends Command
         );
         try
         {
-            message.react(EmojiReader.getEmoji("thinking"));
+            message.react(EmojiReader.getEmoji("thinking").value);
 
             ytdl(this.values.directDownloadURI, { quality: "highestaudio" })
                 .pipe(fs.createWriteStream("./files/downloads/file.mp3", { flags: "w" }))
                 .on("finish", () =>
                 {
                     Printer.print("Finished downloading file");
-                    message.react(EmojiReader.getEmoji("green_check"));
+                    message.react(EmojiReader.getEmoji("green_check").value);
                     this.deleteMessage(message, 3000);
 
                     let data = new EmbedResolvable();
@@ -115,7 +115,7 @@ export class DownloadCommand extends Command
                 });
         } catch (error)
         {
-            message.react(EmojiReader.getEmoji("red_cross"));
+            message.react(EmojiReader.getEmoji("red_cross").value);
             Printer.error(error.toString());
         }
     }
@@ -156,9 +156,12 @@ export class DownloadCommand extends Command
                     else
                     {
                         messages = await channel.messages.fetch({ limit: limit, before: lastMessageID });
+
                         filteredMessages = this.filterMessages(messages);
+
                         let newUrls = this.hydrateUrls(filteredMessages);
                         newUrls.forEach(v => urls.push(v));
+
                         bar.update(urls.length);
                     }
                     reps++;
@@ -271,14 +274,10 @@ export class DownloadCommand extends Command
 
     private isImage(content: string)
     {
-        return (Downloader.getFileName(content).endsWith(".png") ||
-            Downloader.getFileName(content).endsWith(".PNG") ||
-            Downloader.getFileName(content).endsWith(".jpg") ||
-            Downloader.getFileName(content).endsWith(".JPG") ||
-            Downloader.getFileName(content).endsWith(".gif") ||
-            Downloader.getFileName(content).endsWith(".bmp") ||
-            Downloader.getFileName(content).endsWith(".BMP") ||
-            Downloader.getFileName(content).endsWith(".GIF"));
+        return (Downloader.getFileName(content).toLowerCase().endsWith(".png") ||
+            Downloader.getFileName(content).toLowerCase().endsWith(".jpg") ||
+            Downloader.getFileName(content).toLowerCase().endsWith(".gif") ||
+            Downloader.getFileName(content).toLowerCase().endsWith(".bmp"));
     }
 }
 

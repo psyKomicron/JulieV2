@@ -4,6 +4,7 @@ import { JSONParser } from '../helpers/JSONParser';
 import { EventEmitter } from 'events';
 import { User } from 'discord.js';
 import { Printer } from '../console/Printer';
+import { EmojiReader } from './readers/EmojiReader';
 
 /**The parameters are loaded into the class attribute with the init() method. */
 export class Config extends EventEmitter
@@ -21,6 +22,7 @@ export class Config extends EventEmitter
     private static readonly path = "./config/config.json";
     private static readonly emojisFilePath: string = "./config/emojis.json";
     private static readonly downloadPath: string = "./files/downloads/";
+    private static readonly gitRepoPath: string = "https://github.com/psyKomicron/Julie/"
 
     // #region getters
     public static init()
@@ -63,6 +65,8 @@ export class Config extends EventEmitter
                 {
                     throw new ConfigurationError("Configuration file is malformed, please check file integrity.");
                 }
+
+                EmojiReader.init();
             }
             else
             {
@@ -105,6 +109,11 @@ export class Config extends EventEmitter
         return this.downloadPath;
     }
 
+    public static getGitRepoPath(): string
+    {
+        return this.gitRepoPath;
+    }
+
     public static addAuthorizedUser(user: User)
     {
         let configFile = JSON.parse(fs.readFile(this.path).toString());
@@ -117,7 +126,7 @@ export class Config extends EventEmitter
                 try
                 {
                     authorizedUsers.push(user.tag);
-                    this.emit("addUser", user);
+                    this.config.emit("addUser", user);
                 }
                 catch (error)
                 {
@@ -143,14 +152,14 @@ export class Config extends EventEmitter
     }
     // #endregion
 
-    public static emit<T extends keyof ConfigEvents>(event: T, ...args: ConfigEvents[T]): void
+    public static emitEvent<T extends keyof ConfigEvents>(event: T, ...args: ConfigEvents[T]): void
     {
         this.config.emit(event, ...args);
     }
 
-    public static on<T extends keyof ConfigEvents>(event: T, listener: (...args: ConfigEvents[T]) => void): void
+    public static onEvent<T extends keyof ConfigEvents>(event: T, listener: (...args: ConfigEvents[T]) => void): Config
     {
-        this.config.on(event, listener);
+        return this.config.on(event, listener);
     }
 }
 

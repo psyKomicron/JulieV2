@@ -2,7 +2,7 @@ import { EmptyTokenError } from "../../errors/dal_errors/EmptyTokenError";
 
 export class TokenReader
 {
-    public static getToken(tokenName: "youtube" | "release" | "discord"): string 
+    public static getToken(tokenName: Token): string 
     {
         let tokenValue = "";
         switch (tokenName)
@@ -11,7 +11,7 @@ export class TokenReader
                 tokenValue = process.env.YOUTUBE_API_KEY;
                 break;
             case "release":
-                tokenValue = process.env.release;
+                tokenValue = process.env.RELEASE_TYPE;
                 break;
             case "discord":
                 tokenValue = process.env.DISCORD_BOT_TOKEN;
@@ -24,3 +24,5 @@ export class TokenReader
         return tokenValue;
     }
 }
+
+type Token = ("youtube" | "release" | "discord");

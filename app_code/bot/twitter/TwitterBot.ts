@@ -9,9 +9,12 @@ import { Alarm } from "./Alarm";
 export class TwitterBot
 {
     private static instance: TwitterBot;
+
+    private dog: DiscordMessageFetcher = new DiscordMessageFetcher();
     private collecting: boolean = false;
     private collectChannel: TextChannel;
-    private alarm: Alarm;
+    private collectAlarm: Alarm;
+    private keepUntilAlarm: Alarm;
     private fetchMethod: number;
 
     private constructor(bot: Bot)
@@ -35,75 +38,32 @@ export class TwitterBot
         return this.instance;
     }
 
-    private onCollect(channel: TextChannel, setAsDefault: boolean, options: CollectOptions): void
-    {
-        if (setAsDefault) // setAsDefault: will be collecting at intervals in this channel pics
-        {
-            this.collectChannel = channel;
-
-            if (options)
-            {
-                if (options.collectWhen) // when to collect (00:00)
-                {
-                    this.alarm = new Alarm(options.collectWhen);
-                }
-                if (options.keepUntil)
-                {
-
-                }
-                this.fetchMethod = options.fetchType >= 0 ? options.fetchType : 0;
-            }
-            else
-            {
-                let now: Date = new Date(Date.now());
-                // setting alarm for midnight
-                this.alarm = new Alarm(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0));
-            }
-
-            if (this.alarm)
-            {
-                this.alarm.on("reachedEnd", () =>
-                {
-                    if (this.collectChannel)
-                    {
-                        this.collect(this.collectChannel, true);
-                    }
-
-                }).start();
-            }
-        }
-        else // simple collect, no interval or anything else
-        {
-            this.collect(channel);
-        }
-    }
-
     private async collect(channel: TextChannel, fromAlarm: boolean = false): Promise<void>
     {
-        if (this.collecting && !channel)
+        if (this.collecting || !channel)
         {
             return;
         }
 
-        let dog = new DiscordMessageFetcher();
         let messages: Array<Message> = undefined;
         if (this.fetchMethod == 0)
         {
-            messages = await dog.fetchToday(channel);
+            messages = await this.dog.fetchToday(channel);
         }
         else
         {
+            var filter = (message: Message) =>
+            {
+                if (message.attachments.size > 0) return true;
+                else return Tools.isUrl(message.cleanContent);
+            };
 
+            messages = await this.dog.fetchAndFilter(channel, 50, filter, { overflow: false, chunk: Tools.sigmoid });
         }
-
-        var filter = (message: Message) =>
-        {
-            if (message.attachments.size > 0) return true;
-            else return Tools.isUrl(message.cleanContent);
-        };
-        //let messages = await dog.fetchAndFilter(channel, 10, filter, 10, false);
-
+    
         let downloader: Downloader = new Downloader(channel.name);
+
+        this.collecting = false;
 
         // get links
         let urls: Array<string> = new Array();
@@ -135,11 +95,90 @@ export class TwitterBot
 
         await downloader.download(urls);
 
-        this.collecting = false;
         if (fromAlarm)
         {
             // restarting alarm since channel was collected
-            this.alarm.restart();
+            this.collectAlarm.restart();
         }
     }
+
+    private setCollectAlarm(alarm: Alarm): void
+    {
+        if (!this.collectAlarm)
+        {
+            this.collectAlarm = alarm;
+        }
+        else
+        {
+            this.collectAlarm.stop();
+            this.collectAlarm = alarm;
+        }
+    }
+
+    private setKeepUntilAlarm(alarm: Alarm): void
+    {
+        if (!this.keepUntilAlarm)
+        {
+            this.keepUntilAlarm = alarm;
+        }
+        else
+        {
+            this.keepUntilAlarm.stop();
+            this.keepUntilAlarm = alarm;
+        }
+    }
+
+    //#region events
+    private onCollect(channel: TextChannel, setAsDefault: boolean, options: CollectOptions): void
+    {
+        if (setAsDefault) // setAsDefault: will be collecting at intervals in this channel pics
+        {
+            this.collectChannel = channel;
+
+            if (options)
+            {
+                if (options.collectWhen) // when to collect
+                {
+                    // check date validity
+                    if (options.collectWhen.getTime() < Date.now())
+                    {
+                        options.collectWhen.setDate(options.collectWhen.getDate() + 1);
+                    }
+
+                    this.setCollectAlarm(new Alarm(options.collectWhen));
+                }
+                if (options.keepUntil) // if set, will collect memes in this channel until a given date
+                {
+                    this.setKeepUntilAlarm(new Alarm(options.keepUntil, "keep-until alarm", false));
+
+                    this.keepUntilAlarm.on("reachedEnd", name =>
+                    {
+                        Printer.info(name);
+                        while (this.collecting);
+                        this.collectChannel = undefined;
+                    });
+                }
+                this.fetchMethod = options.fetchType >= 0 ? options.fetchType : 0;
+            }
+            else
+            {
+                let now: Date = new Date(Date.now());
+                // setting alarm for midnight
+                this.setCollectAlarm(new Alarm(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)));
+            }
+
+            if (this.collectAlarm)
+            {
+                this.collectAlarm.on("reachedEnd", () =>
+                {
+                    this.collect(this.collectChannel, true);
+                }).start();
+            }
+        }
+        else // simple collect, no interval or anything else
+        {
+            this.collect(channel);
+        }
+    }
+    //#endregion
 }

@@ -5,13 +5,13 @@ import { Printer } from '../../../../console/Printer';
 import { EmbedFactory } from '../../../../factories/EmbedFactory';
 import { FileSystem as fs } from '../../../../dal/FileSystem';
 import { Message, TextChannel} from 'discord.js';
-import { WrongArgumentError } from '../../../../errors/command_errors/WrongArgumentError';
+import { ArgumentError } from '../../../../errors/ArgumentError';
 
 export class EmbedCommand extends Command
 {
     public constructor(bot: Bot)
     {
-        super("embed builder", bot);
+        super(EmbedCommand.name, bot);
     }
 
     public async execute(message: Message): Promise<void> 
@@ -19,7 +19,7 @@ export class EmbedCommand extends Command
         let values = this.getParams(this.parseMessage(message), message);
         if (values[0] == undefined)
         {
-            throw new WrongArgumentError(this,  "Channel cannot be resolved");
+            throw new ArgumentError("Channel cannot be resolved", "channel");
         }
         // 1 -get & download file
         // 2 -check message & parse

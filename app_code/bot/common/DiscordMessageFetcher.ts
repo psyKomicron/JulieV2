@@ -1,5 +1,7 @@
 import { TextChannel, Message, Collection } from "discord.js";
 import { ArgumentError } from "../../errors/ArgumentError";
+import { NotImplementedError } from "../../errors/NotImplementedError";
+import { Tools } from "../../helpers/Tools";
 
 export class DiscordMessageFetcher
 {
@@ -37,16 +39,15 @@ export class DiscordMessageFetcher
                     messages = await channel.messages.fetch({ limit: this.getChunk(options?.chunk, resMessages.length), before: lastMessageID });
 
                     // apply not null/undefined filter && user filter
-                    messages = messages.filter(nullMessageFilter);
-
-                    messages.forEach((message: Message) => resMessages.push(message));
+                    messages.filter(nullMessageFilter)
+                            .forEach((message: Message) => resMessages.push(message));
                 }
             }
         }
 
         if (!options?.overflow)
         {
-            return this.slice(resMessages, messagesAmount);
+            return Tools.slice(resMessages, messagesAmount);
         }
 
         return resMessages;
@@ -88,7 +89,8 @@ export class DiscordMessageFetcher
                 && (message.createdAt.getFullYear() == date.getFullYear()
                     && message.createdAt.getMonth() == date.getMonth()
                     && message.createdAt.getDate() == date.getDate()
-                    && message.createdAt.getDay() == date.getDay())
+                    && message.createdAt.getDay() == date.getDay()
+                )
                 && isIn;
         }
 
@@ -160,44 +162,20 @@ export class DiscordMessageFetcher
                         });
 
                     // apply not null/undefined filter && user filter
-                    messages = messages.filter((message: Message) =>
+                    messages.filter((message: Message) =>
                     {
                         return nullMessageFilter(message) && filter(message, args);
-                    });
-
-                    messages.forEach((message: Message) => filteredMessages.push(message));
+                    }).forEach((message: Message) => filteredMessages.push(message));
                 }
             }
         }
 
         if (!options.overflow)
         {
-            return this.slice(filteredMessages, messagesAmount);
+            return Tools.slice(filteredMessages, messagesAmount);
         }
 
         return filteredMessages;
-    }
-
-    public async fetchAt(channel: TextChannel, date: Date, options: AdditionalParams): Promise<Array<Message>>
-    {
-        let filter: Filter = (message: Message, date: Date) =>
-        {
-            return message.createdAt == date;
-        };
-
-        if (!options?.chunk)
-        {
-            options.chunk = DiscordMessageFetcher.sigmoid;
-        }
-    }
-
-    /**
-     * Sigmoid function (used for chunk definition).
-     * @param x
-     */
-    public static sigmoid(x): number
-    {
-        return 1 / (1 + Math.exp(-x));
     }
 
     private isChannelNullOrUndefined(channel: TextChannel)
@@ -206,11 +184,6 @@ export class DiscordMessageFetcher
         {
             throw new ArgumentError("Channel cannot be null/undefined in order to fetch messages", "channel");
         }
-    }
-
-    private slice<T>(array: Array<T>, end: number, start: number = 0)
-    {
-        return array.slice(start, end);
     }
 
     private getChunk(chunk: Chunk, iterator: number): number
@@ -228,5 +201,5 @@ interface AdditionalParams
 {
     chunk?: Chunk;
     overflow?: boolean;
-    maxMessagesPerDay?: number;
+    maxMessages?: number;
 }

@@ -6,9 +6,9 @@ export class CommandError extends ExecutionError
 {
     private _internalError: ExecutionError;
 
-    public constructor(message: string, command: Command, internalError: ExecutionError = null)
+    public constructor(command: Command, internalError: ExecutionError = null, message?: string)
     {
-        super(message, command.name);
+        super(message ?? "Command" + command.name + " failed. Check details below.", command.name);
         this._internalError = internalError;
     }
 
