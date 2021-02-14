@@ -1,4 +1,4 @@
-export class Emoji
+export class LocalEmoji
 {
     private _name: string;
     private _value: string;
