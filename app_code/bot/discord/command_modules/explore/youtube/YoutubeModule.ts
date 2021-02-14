@@ -3,6 +3,7 @@ import { YoutubeInput } from '../../../../../dtos/YoutubeInput';
 import { YoutubeProxy } from '../../../../../helpers/proxies/YoutubeProxy';
 import { TokenReader } from '../../../../../dal/readers/TokenReader';
 import { YoutubeOutput } from '../../../../../dtos/YoutubeOuput';
+import { Printer } from '../../../../../console/Printer';
 
 /**Class to interact with the Youtube API */
 export class YoutubeModule
