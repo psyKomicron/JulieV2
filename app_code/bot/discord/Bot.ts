@@ -13,6 +13,7 @@ import { LoadingEffect } from '../../console/effects/LoadingEffect';
 import { Moderator } from './command_modules/moderation/Moderator';
 import { CommandError } from '../../errors/command_errors/CommandError';
 import { EventEmitter } from 'events';
+import { MessageWrapper } from '../common/MessageWrapper';
 
 export class Bot extends EventEmitter
 {
@@ -140,6 +141,8 @@ export class Bot extends EventEmitter
     // #region events handlers
     private onMessage(message: Message): void 
     {
+        let wrapper = new MessageWrapper(message);
+        wrapper.setCommandContent();
         let content = message.content;
 
         if (content.startsWith(this.prefix))
@@ -160,32 +163,38 @@ export class Bot extends EventEmitter
 
                 if (this._logger)
                 {
-                    this._logger.handle(message);
-                }
+                    let handled = this._logger.handle(message);
 
-                let name = Tools.getCommandName(content);
-                try
-                {
-                    let command = CommandFactory.create(name.substr(this.prefix.length), this);
+                    if (!handled)
+                    {
+                        let name = Tools.getCommandName(content);
+                        try
+                        {
+                            let command = CommandFactory.create(name.substr(this.prefix.length), this);
 
-                    command.execute(message)
-                        .catch(error =>
+                            let wrapper = new MessageWrapper(message);
+                            wrapper.parseMessage(this.prefix.length);
+
+                            command.execute(wrapper)
+                                .catch(error =>
+                                {
+                                    Printer.error(error.toString());
+                                    this.handleErrorForClient(error, message);
+                                })
+                                .then(() =>
+                                {
+                                    if (command.deleteAfterExecution)
+                                    {
+                                        command.deleteMessage(message, 300);
+                                    }
+                                });
+                        }
+                        catch (error)
                         {
                             Printer.error(error.toString());
                             this.handleErrorForClient(error, message);
-                        })
-                        .then(() =>
-                        {
-                            if (command.deleteAfterExecution)
-                            {
-                                command.deleteMessage(message, 300);
-                            }
-                        });
-                }
-                catch (error)
-                {
-                    Printer.error(error.toString());
-                    this.handleErrorForClient(error, message);
+                        }
+                    }
                 }
             }
         }

@@ -1,4 +1,3 @@
-import ytdl = require('ytdl-core');
 import { FileType } from '../../../../helpers/enums/FileType';
 import { Bot } from '../../Bot';
 import { Channel, Message, TextChannel, Snowflake, Collection } from 'discord.js';
@@ -12,6 +11,8 @@ import { Downloader } from '../../command_modules/Downloader';
 import { Command } from '../Command';
 import { Tools } from '../../../../helpers/Tools';
 import { ArgumentError } from '../../../../errors/ArgumentError';
+import { MessageWrapper } from '../../../common/MessageWrapper';
+import { CommandError } from '../../../../errors/command_errors/CommandError';
 
 export class DownloadCommand extends Command
 {
@@ -22,102 +23,46 @@ export class DownloadCommand extends Command
         super("download", bot);
     }
 
-    public async execute(message: Message): Promise<void> 
+    public async execute(wrapper: MessageWrapper): Promise<void> 
     {
-        this.values = this.getParams(this.parseMessage(message), message);
-        if (!this.values.directDownload)
+        this.values = this.getParams(wrapper);
+
+        let limit = this.values.limit;
+        if (limit < 0)
         {
-            let limit = this.values.limit;
-            if (limit < 0)
-            {
-                throw new Error("Given limit is not integer");
-            }
-
-            let type = this.values.type;
-            let channel = this.values.channel;
-            let name = "";
-
-            if (channel instanceof TextChannel)
-            {
-                name = channel.name;
-            }
-
-            message.react(EmojiReader.getEmoji("thinking").value);
-            Printer.title("initiating download");
-            Printer.args(
-                ["downloading", "file type", "channel"],
-                [`${limit}`, `${type}`, `${name}`]
-            );
-
-            if (limit > 250)
-            {
-                Printer.warn("\n\t/!\\ WARNING : downloading over 250 files can fail /!\\ \n");
-                message.react(EmojiReader.getEmoji("warning").value);
-            }
-
-            this.initiateDownload(limit, channel)
-                .then(() =>
-                {
-                    message.react(EmojiReader.getEmoji("green_check").value);
-                    this.deleteMessage(message, 2000);
-                });
+            throw new CommandError(this,
+                new ArgumentError("Given limit is not integer", "url"),
+                "Please provide a number of message (to download) greater than 0");
         }
-        else
+
+        let type = this.values.type;
+        let channel = this.values.channel;
+        let name = "";
+
+        if (channel instanceof TextChannel)
         {
-            if (this.values.directDownloadURI)
-            {
-                this.downloadVideo(message);
-            }
-            else
-            {
-                throw new ArgumentError("No URI were provided", "url");
-            }
+            name = channel.name;
         }
-    }
 
-    private async downloadVideo(message: Message)
-    {
-        Printer.title("downloading");
+        wrapper.react(EmojiReader.getEmoji("thinking").value);
+        Printer.title("initiating download");
         Printer.args(
-            ["downloading"],
-            [`${this.values.directDownloadURI}`]
+            ["downloading", "file type", "channel"],
+            [`${limit}`, `${type}`, `${name}`]
         );
-        try
+
+        if (limit > 250)
         {
-            message.react(EmojiReader.getEmoji("thinking").value);
-
-            ytdl(this.values.directDownloadURI, { quality: "highestaudio" })
-                .pipe(fs.createWriteStream("./files/downloads/file.mp3", { flags: "w" }))
-                .on("finish", () =>
-                {
-                    Printer.print("Finished downloading file");
-                    message.react(EmojiReader.getEmoji("green_check").value);
-                    this.deleteMessage(message, 3000);
-
-                    let data = new EmbedResolvable();
-                    data.setTitle("Youtube")
-                    data.setColor(16711680)
-                    data.setFooter("powered by psyKomicron")
-                    data.setDescription("Video");
-
-                    let embed = EmbedFactory.build(data);
-                    embed.attachFiles([{ attachment: fs.readFile("./files/downloads/file.mp3"), name: "file.mp3" }]);
-                    // cannot be sent if the bot hasn't Nitro
-                    /*this.message.channel.send(embed)
-                        .catch(error =>
-                        {
-                            console.error(error);
-                        });*/
-                })
-                .on("error", (error) =>
-                {
-                    throw error;
-                });
-        } catch (error)
-        {
-            message.react(EmojiReader.getEmoji("red_cross").value);
-            Printer.error(error.toString());
+            Printer.warn("\n\t/!\\ WARNING : downloading over 250 files can fail /!\\ \n");
+            wrapper.react(EmojiReader.getEmoji("warning").value);
         }
+
+        this.initiateDownload(limit, channel)
+            .then(() =>
+            {
+                wrapper.react(EmojiReader.getEmoji("green_check").value);
+                this.deleteMessage(wrapper.message, 2000);
+            });
     }
 
     private async initiateDownload(numberOfFiles: number, channel: Channel): Promise<void>
@@ -242,7 +187,7 @@ export class DownloadCommand extends Command
      * this.initiateDownload method.
      * @param command content to parse (usually a message content)
      */
-    private getParams(map: Map<string, string>, message: Message): Params
+    private getParams(wrapper: MessageWrapper): Params
     {
         let limit = 50;
         let type = FileType.IMG;
@@ -250,17 +195,17 @@ export class DownloadCommand extends Command
         let directDownload: boolean = false;
         let directDownloadURI: string;
 
-        if (!Number.isNaN(Number.parseInt(map.get("n"))))
+        if (!Number.isNaN(Number.parseInt(wrapper.get("n"))))
         {
-            limit = Number.parseInt(map.get("n"));
+            limit = Number.parseInt(wrapper.get("n"));
         }
 
-        channel = this.resolveTextChannel(map, message);
+        channel = this.resolveTextChannel(wrapper.args, wrapper.message);
 
-        if (map.get("v") && map.get("video"))
+        if (wrapper.hasValue(["v", "video"]))
         {
             directDownload = true;
-            directDownloadURI = map.get("v") ?? map.get("video");
+            directDownloadURI = wrapper.getValue(["v", "video"]);
         }
 
         return {
@@ -274,10 +219,10 @@ export class DownloadCommand extends Command
 
     private isImage(content: string)
     {
-        return (Downloader.getFileName(content).toLowerCase().endsWith(".png") ||
-            Downloader.getFileName(content).toLowerCase().endsWith(".jpg") ||
-            Downloader.getFileName(content).toLowerCase().endsWith(".gif") ||
-            Downloader.getFileName(content).toLowerCase().endsWith(".bmp"));
+        return (Downloader.getFileName(content).toLowerCase().endsWith(".png")
+            || Downloader.getFileName(content).toLowerCase().endsWith(".jpg")
+            || Downloader.getFileName(content).toLowerCase().endsWith(".gif")
+            || Downloader.getFileName(content).toLowerCase().endsWith(".bmp"));
     }
 }
 

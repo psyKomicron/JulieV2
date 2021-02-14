@@ -4,6 +4,7 @@ import { Bot } from "../../Bot";
 import { Printer } from "../../../../console/Printer";
 import { ProgressBar } from "../../../../console/effects/ProgressBar";
 import { DiscordMessageFetcher } from "../../../common/DiscordMessageFetcher";
+import { MessageWrapper } from "../../../common/MessageWrapper";
 
 export class ChannelCleanerCommand extends Command
 {
@@ -14,14 +15,14 @@ export class ChannelCleanerCommand extends Command
         super("channel-cleaner", bot, true);
     }
 
-    public async execute(message: Message): Promise<void>
+    public async execute(message: MessageWrapper): Promise<void>
     {
-        let values = this.getParams(this.parseMessage(message), message);
+        let values = this.getParams(message);
         Printer.title("cleaning channel");
         if (values[1] != undefined)
         {
             Printer.args(["number of unique messages", "channel"], [`${values[0]}`, `${values[1].name}`]);
-            this.cleanChannel(values[1], values[0], message);
+            this.cleanChannel(values[1], values[0], message.message);
         }
     }
 
@@ -80,17 +81,17 @@ export class ChannelCleanerCommand extends Command
         else return false;
     }
 
-    private getParams(map: Map<string, string>, message: Message): [number, TextChannel]
+    private getParams(wrapper: MessageWrapper): [number, TextChannel]
     {
         let maxMessages = 3;
         let channel: TextChannel = undefined;
 
-        if (!Number.isNaN(Number.parseInt(map.get("u"))))
+        if (!Number.isNaN(Number.parseInt(wrapper.get("u"))))
         {
-            maxMessages = Number.parseInt(map.get("u"));
+            maxMessages = Number.parseInt(wrapper.get("u"));
         }
 
-        channel = this.resolveTextChannel(map, message);
+        channel = this.resolveTextChannel(wrapper.args, wrapper.message);
 
         return [maxMessages, channel];
     }

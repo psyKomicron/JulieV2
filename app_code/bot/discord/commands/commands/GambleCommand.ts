@@ -1,6 +1,6 @@
 import { Command } from '../Command';
-import { Message } from "discord.js";
 import { Bot } from "../../Bot";
+import { MessageWrapper } from '../../../common/MessageWrapper';
 
 export class GambleCommand extends Command
 {
@@ -9,13 +9,13 @@ export class GambleCommand extends Command
         super("gamble-command", bot);
     }
 
-    public async execute(message: Message): Promise<void> 
+    public async execute(wrapper: MessageWrapper): Promise<void> 
     {
-        let params: Params = this.getParams(this.parseMessage(message));
+        let params: Params = this.getParams(wrapper);
 
     }
 
-    private getParams(args: Map<string, string>)
+    private getParams(wrapper: MessageWrapper): Params
     {
 
         return null;

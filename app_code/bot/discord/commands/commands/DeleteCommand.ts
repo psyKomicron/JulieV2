@@ -5,6 +5,7 @@ import { Printer } from '../../../../console/Printer';
 import { ProgressBar } from '../../../../console/effects/ProgressBar';
 import { Command } from '../Command';
 import { DiscordMessageFetcher } from '../../../common/DiscordMessageFetcher';
+import { MessageWrapper } from '../../../common/MessageWrapper';
 
 export class DeleteCommand extends Command
 {
@@ -13,9 +14,9 @@ export class DeleteCommand extends Command
         super("delete", bot, false);
     }
 
-    public async execute(message: Message): Promise<void> 
+    public async execute(wrapper: MessageWrapper): Promise<void> 
     {
-        let params: Params = this.getParams(this.parseMessage(message), message);
+        let params: Params = this.getParams(wrapper);
 
         Printer.title("deleting messages");
 
@@ -129,29 +130,29 @@ export class DeleteCommand extends Command
         Printer.print("");
     }
 
-    private getParams(map: Map<string, string>, message: Message): Params
+    private getParams(wrapper: MessageWrapper): Params
     {
         let messages = 10;
-        if (!Number.isNaN(Number.parseInt(map.get("n"))))
+        if (!Number.isNaN(Number.parseInt(wrapper.get("n"))))
         {
-            messages = Number.parseInt(map.get("n")) + 1;
+            messages = Number.parseInt(wrapper.get("n")) + 1;
         }
 
         let username: string = undefined; 
-        if (map.get("u"))
+        if (wrapper.get("u"))
         {
-            let value = this.getValue(map, ["u", "user", "username"]);
+            let value = wrapper.getValue(["u", "user", "username"]);
             let res = /([A-Za-z0-9]+#+[0-9999])\w+/.exec(value);
 
             if (res && res[0] == value)
             {
-                username = map.get("u");
+                username = wrapper.get("u");
             }
         }
 
-        let channel = this.resolveTextChannel(map, message);
+        let channel = this.resolveTextChannel(wrapper.args, wrapper.message);
 
-        let deletePinned = map.has("pins") || map.has("p"); //this.getValue(map, ["pins", "deletePins", "p"]);
+        let deletePinned = wrapper.hasValue(["pins", "p"]);
         
         return { messages, channel, username, deletePinned };
     }

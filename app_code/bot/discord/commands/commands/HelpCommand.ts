@@ -1,10 +1,11 @@
 import { Bot } from '../../Bot';
 import { Command } from '../Command';
-import { Message, MessageEmbed } from 'discord.js';
+import { MessageEmbed } from 'discord.js';
 import { EmojiReader } from '../../../../dal/readers/EmojiReader';
 import { CommandFactory } from '../../../../factories/CommandFactory';
 import { Config } from '../../../../dal/Config';
 import { isNullOrUndefined } from 'util';
+import { MessageWrapper } from '../../../common/MessageWrapper';
 
 export class HelpCommand extends Command
 {
@@ -13,23 +14,23 @@ export class HelpCommand extends Command
         super("help", bot, false);
     }
 
-    public async execute(message: Message): Promise<void> 
+    public async execute(wrapper: MessageWrapper): Promise<void> 
     {
-        let url = this.getUrl(message);
+        let url = this.getUrl(wrapper);
+
         let embed = new MessageEmbed()
             .setTitle("Happy to help ! " + EmojiReader.getEmoji("pointing_down").value)
             .setColor(0xff0000)
             .setDescription("Help page")
             .setURL(url)
-            .addFields(
-                { name: "Link", value: url }
-            );
-        message.channel.send(embed);
+            .addFields({ name: "Link", value: url });
+
+        wrapper.send(embed);
     }
 
-    private getUrl(msg: Message): string
+    private getUrl(wrapper: MessageWrapper): string
     {
-        let content = msg.cleanContent;
+        let content = wrapper.content;
         let commandName = "";
 
         for (var i = 1; i < content.length; i++)
@@ -40,7 +41,6 @@ export class HelpCommand extends Command
                 break;
             }
         }
-
 
         if (CommandFactory.exist(content.substring(i)))
         {

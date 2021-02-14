@@ -1,7 +1,7 @@
 import { Bot } from '../../Bot';
-import { Message } from 'discord.js';
 import { Printer } from '../../../../console/Printer';
 import { Command } from '../Command';
+import { MessageWrapper } from '../../../common/MessageWrapper';
 
 export class DefaultCommand extends Command
 {
@@ -10,7 +10,7 @@ export class DefaultCommand extends Command
         super("default", bot);
     }
 
-    public async execute(message: Message): Promise<void> 
+    public async execute(message: MessageWrapper): Promise<void> 
     {
         Printer.title("default");
         message.reply("Unknown command !");

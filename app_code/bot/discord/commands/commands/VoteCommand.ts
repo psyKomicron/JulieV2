@@ -7,6 +7,7 @@ import { EmojiReader } from '../../../../dal/readers/EmojiReader';
 import { CommandError } from '../../../../errors/command_errors/CommandError';
 import { ExecutionError } from '../../../../errors/ExecutionError';
 import { ArgumentError } from '../../../../errors/ArgumentError';
+import { MessageWrapper } from '../../../common/MessageWrapper';
 
 export class VoteCommand extends Command
 {
@@ -29,7 +30,7 @@ export class VoteCommand extends Command
         return this.params.title;
     }
 
-    public async execute(message: Message): Promise<void> 
+    public async execute(message: MessageWrapper): Promise<void> 
     {
         this.params = this.getParams(this.parseMessage(message), message);
 

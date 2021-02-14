@@ -1,4 +1,4 @@
-import ytdl = require('ytdl-core');
+import ytdl = require("ytdl-core-discord");
 import { Bot } from "../../Bot";
 import
 {
@@ -19,45 +19,46 @@ import { TokenReader } from '../../../../dal/readers/TokenReader';
 import { EmbedFactory } from '../../../../factories/EmbedFactory';
 import { Command } from '../Command';
 import { ArgumentError } from '../../../../errors/ArgumentError';
+import { Logger } from "../../command_modules/logger/Logger";
+import internal = require("stream");
+import { CommandError } from "../../../../errors/command_errors/CommandError";
+import { MessageWrapper } from "../../../common/MessageWrapper";
 
 export class PlayCommand extends Command
 {
+    private playing: boolean = false;
+    private currentVideo: number = 0;
+    private videos: Array<string> = new Array();
     private timeout: NodeJS.Timeout;
-    private message: Message;
+    private _message: Message;
     private connection: VoiceConnection;
     private dispacher: StreamDispatcher;
     private voiceChannel: VoiceChannel;
-    private videos: Array<string> = new Array();
-    private currentVideo: number = 0;
+    private stream: internal.Readable;
 
     public constructor(bot: Bot)
     {
-        super(PlayCommand.name, bot);
+        super(PlayCommand.name, bot, false);
     }
 
     public get channel(): VoiceChannel { return this.voiceChannel; }
 
-    public async execute(message: Message): Promise<void> 
-    {
-        this.message = message;
+    public set message(message: Message) { this._message = message; }
+    public get message() { return this._message; }
 
-        if (!message.content.match(/([-])/g))
-        {
-            // this.parseMessage(message); // command will not be logged
-            this.videos = this.getSimpleParams(message.content).videos;
-        }
-        else
-        {
-            let params = this.getParams(this.parseMessage(message), message.guild.channels);
-            this.voiceChannel = params.channel;
-            this.videos = params.videos;
-        }
+    public async execute(wrapper: MessageWrapper): Promise<void> 
+    {
+        this.message = wrapper.message;
+
+        let params = this.getParams(wrapper);
+        
 
         Printer.title("play");
-        Printer.args(["values provided"],
+        Printer.args(["urls provided"],
             [
                 this.videos.length == 0 ? "" : `${this.videos.length}`,
             ]);
+
         let match = true;
         this.videos.forEach(url =>
         {
@@ -65,79 +66,23 @@ export class PlayCommand extends Command
             {
                 match = false;
             }
-        })
+        });
+
         if (this.videos.length > 0 && match)
         {
-            this.voiceChannel = this.voiceChannel == undefined ? message.member.voice.channel : this.voiceChannel;
+            this.voiceChannel = this.voiceChannel == undefined ? wrapper.message.member.voice.channel : this.voiceChannel;
             if (this.voiceChannel)
             {
                 this.playStream();
             }
             else
             {
-                throw new ArgumentError("No channel to connect to was provided", "voice channel");
+                throw new CommandError(this, new ArgumentError("No channel to connect to was provided", "voice channel"));
             }
         }
         else if (this.videos)
         {
-            let youtube = new YoutubeModule(TokenReader.getToken("youtube"));
-            let results = new Array<YoutubeOutput>();
-            for (var k = 0; k < this.videos.length; k++)
-            {
-                await youtube.searchVideos(this.videos[i], 30, "en");
-            }
-            if (results.length > 0)
-            {
-                let embed = EmbedFactory.build(new EmbedResolvable()
-                    .setColor(16711680)
-                    .setDescription("Choose wich video to play")
-                    .setFooter("powered by psyKomicron")
-                    .setTitle("Videos"));
-                let embedFields = new Array<EmbedField>();
-                for (var l = 0; l < results.length; l++)
-                {
-                    let items = results[l].items;
-                    for (var i = 0; i < items.length; i++)
-                    {
-                        let name = `${i + 1}`.split("");
-                        let num = "";
-                        for (var j = 0; j < name.length; j++)
-                        {
-                            let index = Number.parseInt(name[j]);
-                            num += EmojiReader.getEmoji(index);
-                        }
-                        embedFields.push((
-                            {
-                                name: `${num} - ${items[i].title}`,
-                                value: items[i].videoURL,
-                                inline: false
-                            }));
-                    }
-                }
-                let embeds = new Array<MessageEmbed>();
-                for (var m = 0; m < embedFields.length; m++)
-                {
-                    if ((m % 25) == 0)
-                    {
-                        embeds.push(embed);
-                        embed = EmbedFactory.build(new EmbedResolvable()
-                            .setColor(16711680)
-                            .setDescription("Rest of the videos")
-                            .setFooter("powered by psyKomicron")
-                            .setTitle("Videos"));
-                    }
-                    embed.addField(embedFields[i].name, embedFields[i].value, embedFields[i].inline);
-                }
-                message.reply(embeds[0]);
-                for (var n = 1; n < embeds.length; n++)
-                {
-                    message.channel.send(embeds[n]);
-                }
-            }
-            else
-            {
-                throw new ArgumentError("Cannot find the requested url", "url");
-            }
+            this.searchVideos()
         }
         else
         {
@@ -145,36 +90,47 @@ export class PlayCommand extends Command
         }
     }
 
-    public async join(): Promise<VoiceConnection>
-    {
-        let connection: VoiceConnection;
-        if (this.voiceChannel.joinable)
-        {
-            connection = await this.voiceChannel.join();
-        }
-        return connection;
-    }
-
+    //#region log methods
     public leave(): void
     {
-        if (this.connection)
+        this.emit("end");
+
+        if (this.dispacher)
         {
             this.dispacher.end();
+            this.dispacher.destroy();
+        }
+
+        if (this.connection)
+        {
             this.connection.disconnect();
         }
     }
 
-    public addToPlaylist(message: Message): void
+    public addToPlaylist(): void
     {
-        let videos = this.getSimpleParams(message.content).videos;
-        videos.forEach(video =>
+        let videos = this.getParams(this.message).videos;
+
+        if (videos.length == 1)
         {
-            if (video.match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
+            if (videos[0].match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
             {
-                message.reply("Added song to queue");
-                this.videos.push(video);
+                this.videos.push(videos[0]);
+                this.message.reply("Added song to queue");
             }
-        });
+        }
+        else if (videos.length > 1)
+        {
+            videos.forEach(video =>
+            {
+                if (video.match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
+                {
+                    this.videos.push(video);
+                }
+            });
+            this.message.reply("Added " + videos.length + " songs to queue");
+        }
+        
     }
 
     public pause(): void
@@ -200,110 +156,223 @@ export class PlayCommand extends Command
         if (this.videos.length > 0 && this.currentVideo + 1 < this.videos.length)
         {
             this.currentVideo++;
+            this.stream.destroy();
             this.playStream(this.currentVideo);
         }
         else
         {
+            // play poulourt ?
             this.leave();
+        }
+    }
+    //#endregion
+
+    private async searchVideos(): Promise<void>
+    {
+        let youtube = new YoutubeModule(TokenReader.getToken("youtube"));
+
+        let results = new Array<YoutubeOutput>();
+        for (var k = 0; k < this.videos.length; k++)
+        {
+            let res = await youtube.searchVideos(this.videos[k], 30, "en");
+
+        }
+
+        if (results.length > 0)
+        {
+            let embed = EmbedFactory.build(new EmbedResolvable()
+                .setColor(16711680)
+                .setDescription("Choose wich video to play")
+                .setFooter("powered by psyKomicron")
+                .setTitle("Videos"));
+
+            let embedFields = new Array<EmbedField>();
+
+            for (var l = 0; l < results.length; l++)
+            {
+                let items = results[l].items;
+                for (var i = 0; i < items.length; i++)
+                {
+                    let name = `${i + 1}`.split("");
+                    let num = "";
+                    for (var j = 0; j < name.length; j++)
+                    {
+                        let index = Number.parseInt(name[j]);
+                        num += EmojiReader.getEmoji(index);
+                    }
+                    embedFields.push((
+                        {
+                            name: `${num} - ${items[i].title}`,
+                            value: items[i].videoURL,
+                            inline: false
+                        }));
+                }
+            }
+
+            let embeds = new Array<MessageEmbed>();
+
+            for (var m = 0; m < embedFields.length; m++)
+            {
+                if ((m % 25) == 0)
+                {
+                    embeds.push(embed);
+                    embed = EmbedFactory.build(new EmbedResolvable()
+                        .setColor(16711680)
+                        .setDescription("Rest of the videos")
+                        .setFooter("powered by psyKomicron")
+                        .setTitle("Videos"));
+                }
+                embed.addField(embedFields[i].name, embedFields[i].value, embedFields[i].inline);
+            }
+
+            this.message.reply(embeds[0]);
+
+            for (var n = 1; n < embeds.length; n++)
+            {
+                this.message.channel.send(embeds[n]);
+            }
+        }
+        else
+        {
+            throw new CommandSyntaxError(this, "Cannot find the requested url");
         }
     }
 
     private async playStream(index: number = 0)
     {
-        this.connection = await this.join();
-        this.bot.logger.addLogger(new PlayLogger().logPlayer(this));
+        if (!this.playing)
+        {
+            this.connection = await this.join();
+            this.bot.logger.addLogger(new PlayLogger().logPlayer(this));
+        }
+
         try
         {
-            this.dispacher = this.connection.play(ytdl(this.videos[index], { quality: "highestaudio" }));
+            this.stream = await this.createStream(this.videos[index]);
+
+            this.dispacher = this.createDispatcher(this.stream, this.connection);
+
             this.dispacher.on("error", (error) =>
             {
-                console.error(error);
+                Printer.error("Dispacher error :\n" + error.toString());
                 this.leave();
                 this.message.reply("Uh oh... something broke !");
             });
+
             this.dispacher.on("start", () =>
             {
+                this.playing = true;
                 this.message.channel.send(EmbedFactory.build(new EmbedResolvable()
                     .setColor(16711680)
                     .setDescription(this.videos[index])
                     .setFooter("powered by psyKomicron")
                     .setTitle("Playing")));
             });
-            this.dispacher.on("close", () =>
-            {
-                this.dispacher.end();
-                this.emit("end");
-            });
+
             this.dispacher.on("speaking", (speaking) =>
             {
                 if (!speaking)
                 {
                     this.next();
                 }
-                /*else
-                {
-                    this.leave();
-                }*/
             });
-        } catch (error)
+
+        }
+        catch (error)
         {
             this.leave();
-            console.log(error);
-        }
-        finally
-        {
-            this.deleteMessage(this.message);
+            Printer.error(error.toString());
         }
     }
 
-    private getSimpleParams(content: string): Params
+    private async join(): Promise<VoiceConnection>
     {
-        let params = new Array<string>();
-        let values = content.split(" ");
-        values.forEach(v =>
+        let connection: VoiceConnection;
+        if (this.voiceChannel.joinable)
         {
-            if (v.match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
-            {
-                params.push(v);
-            }
-        });
-        return { videos: params };
+            connection = await this.voiceChannel.join();
+        }
+        return connection;
     }
 
-    private getParams(args: Map<string, string>, manager: GuildChannelManager): Params
+    private async createStream(url: string): Promise<internal.Readable>
     {
-        let videos = new Array<string>();
-        let channel: VoiceChannel;
-        args.forEach((v, k) => 
-        {
-            switch (k)
+        return await ytdl(url,
             {
-                case "u":
-                    let urls = v.split(" ");
-                    for (let i = 0; i < urls.length; i++)
-                    {
-                        if (v.match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
-                        {
-                            videos.push(v);
-                        }
-                    }
-                    break;
-                case "c":
-                    let c = this.resolveChannel(v, manager);
-                    if (c && c instanceof VoiceChannel)
-                    {
-                        channel = c;
-                    }
-                default:
-            }
-        });
-        return { videos: videos, channel: channel };
+                highWaterMark: 1 << 27,
+                filter: "audioonly"
+            });
+    }
+
+    private createDispatcher(stream: internal.Readable, connection: VoiceConnection): StreamDispatcher
+    {
+        return connection.play(stream,
+            {
+                type: "opus",
+                bitrate: 96000
+            });
     }
 
     private startTimeout(): void
     {
         this.timeout = setTimeout(() => this.leave(), 180000);
     }
+
+    //#region params
+    private getParams(message: MessageWrapper): Params
+    {
+        if (!message.content.match(/(-[a-z] )/g))
+        {
+            let params = new Array<string>();
+            let values = message.cleanContent.split(" ");
+
+            values.forEach(v =>
+            {
+                if (v.match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
+                {
+                    let url = v;
+                    while (url.match(/"/g))
+                    {
+                        url = url.replace("\"", "");
+                    }
+                    params.push(url);
+                }
+            });
+            return { videos: params };
+        }
+        else
+        {
+            let videos = new Array<string>();
+            let channel: VoiceChannel;
+            let args: Map<string, string> = this.parseMessage(message);
+
+            let u = this.getValue(args, ["u", "url"]);
+            if (u)
+            {
+                let urls = u.split(" ");
+                for (let i = 0; i < urls.length; i++)
+                {
+                    if (urls[i].match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
+                    {
+                        videos.push(urls[i]);
+                    }
+                }
+            }
+
+            let c = this.getValue(args, ["c", "channel"]);
+            if (c)
+            {
+                let resChannel = this.resolveChannel(c, message.guild.channels);
+                if (resChannel && resChannel instanceof VoiceChannel)
+                {
+                    channel = resChannel;
+                }
+            }
+
+            return { videos: videos, channel: channel };
+        }
+    }
+    //#endregion
 }
 
 interface Params

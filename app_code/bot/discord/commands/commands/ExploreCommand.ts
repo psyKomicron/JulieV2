@@ -6,6 +6,7 @@ import { Message, MessageEmbed, TextChannel } from 'discord.js';
 import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyntaxError";
 import { Command } from "../Command";
 import { Explorer } from "../../command_modules/explore/Explorer";
+import { MessageWrapper } from "../../../common/MessageWrapper";
 
 export class ExploreCommand extends Command
 {
@@ -16,9 +17,9 @@ export class ExploreCommand extends Command
         super("explore", bot);
     }
 
-    public async execute(message: Message): Promise<void>
+    public async execute(wrapper: MessageWrapper): Promise<void>
     {
-        let params: Params = this.getParams(this.parseMessage(message));
+        let params: Params = this.getParams(wrapper);
         let keyword = params.keyword;
         let domain = params.domain;
 
@@ -37,7 +38,7 @@ export class ExploreCommand extends Command
         }
         e.explore();
 
-        this.deleteMessage(message, 1000);
+        this.deleteMessage(wrapper.message, 1000);
     }
 
     /**
@@ -49,22 +50,22 @@ export class ExploreCommand extends Command
         return this.channel.send(embed);
     }
 
-    private getParams(args: Map<string, string>): Params
+    private getParams(wrapper: MessageWrapper): Params
     {
         let keyword: string = undefined;
         let domain: Domain = undefined;
 
-        if (args.get("k") || args.get("keyword"))
+        if (wrapper.hasValue(["k", "keyword"]))
         {
-            keyword = args.get("k") ?? args.get("keyword");
+            keyword = wrapper.getValue(["k", "keyword"]);
         }
 
-        if (args.has("yt") || args.has("youtube"))
+        if (wrapper.hasValue(["yt", "youtube"]))
         {
             domain = Domain.YOUTUBE;
         }
 
-        if (args.has("w") || args.has("wiki"))
+        if (wrapper.hasValue(["w", "wiki"]))
         {
             if (!domain)
             {

@@ -6,6 +6,7 @@ import { EmbedFactory } from '../../../../factories/EmbedFactory';
 import { FileSystem as fs } from '../../../../dal/FileSystem';
 import { Message, TextChannel} from 'discord.js';
 import { ArgumentError } from '../../../../errors/ArgumentError';
+import { MessageWrapper } from '../../../common/MessageWrapper';
 
 export class EmbedCommand extends Command
 {
@@ -14,9 +15,9 @@ export class EmbedCommand extends Command
         super(EmbedCommand.name, bot);
     }
 
-    public async execute(message: Message): Promise<void> 
+    public async execute(wrapper: MessageWrapper): Promise<void> 
     {
-        let values = this.getParams(this.parseMessage(message), message);
+        let values = this.getParams(wrapper);
         if (values[0] == undefined)
         {
             throw new ArgumentError("Channel cannot be resolved", "channel");
@@ -24,7 +25,7 @@ export class EmbedCommand extends Command
         // 1 -get & download file
         // 2 -check message & parse
         let fileUrl: string;
-        message.attachments.forEach(value =>
+        wrapper.message.attachments.forEach(value =>
         {
             if (value.url.endsWith(".json")) fileUrl = value.url;
         });
@@ -83,15 +84,15 @@ export class EmbedCommand extends Command
         }
     }
 
-    private getParams(map: Map<string, string>, message: Message): [TextChannel, boolean]
+    private getParams(wrapper: MessageWrapper): [TextChannel, boolean]
     {
         let willDelete: boolean = false;
-        if (map.get("d"))
+        if (wrapper.has("d"))
         {
             willDelete = true;
         }
 
-        let channel = this.resolveTextChannel(map, message);
+        let channel = this.resolveTextChannel(wrapper.args, wrapper.message);
 
         return [channel, willDelete];
     }

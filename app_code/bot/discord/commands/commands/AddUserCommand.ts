@@ -1,8 +1,8 @@
 import { Command } from "../Command";
-import { Message } from "discord.js";
 import { Config } from "../../../../dal/Config";
 import { Bot } from "../../Bot";
 import { Printer } from "../../../../console/Printer";
+import { MessageWrapper } from "../../../common/MessageWrapper";
 import { CommandError } from "../../../../errors/command_errors/CommandError";
 
 export class AddUserCommand extends Command
@@ -12,12 +12,12 @@ export class AddUserCommand extends Command
         super("add-user", bot);
     }
 
-    public async execute(message: Message): Promise<void> 
+    public async execute(message: MessageWrapper): Promise<void> 
     {
         Printer.title("add-user")
 
+        throw new CommandError(this, undefined, "Command not finished yet, give me a some time and try again !");
         let users = Config.getAuthorizedUsers();
         Config.addAuthorizedUser(this.bot.client.user);
-        //throw new CommandError("Command not finished yet, give me a some time and try again !", this);
     }
 }

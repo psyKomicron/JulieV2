@@ -1,4 +1,3 @@
-import { Message } from "discord.js";
 import { Printer } from "../../../../console/Printer";
 import { Config } from "../../../../dal/Config";
 import { CommandError } from "../../../../errors/command_errors/CommandError";
@@ -7,19 +6,20 @@ import { EmbedFactory } from "../../../../factories/EmbedFactory";
 import { EmbedResolvable } from "../../../../dtos/EmbedResolvable";
 import { Command } from "../Command";
 import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyntaxError";
+import { MessageWrapper } from "../../../common/MessageWrapper";
 
 export class ChangePrefixCommand extends Command
 {
     public constructor(bot: Bot)
     {
-        super(ChangePrefixCommand.name, bot, true);
+        super("change-prefix", bot, true);
     }
 
-    public async execute(message: Message): Promise<void> 
+    public async execute(message: MessageWrapper): Promise<void> 
     {
         Printer.title("changing prefix");
         let prefix = undefined;
-        let value = this.parseMessage(message).get("p");
+        let value = message.getValue(["p", "prefix"]);
 
         if (value.length <= 10 && value.length > 0)
         {

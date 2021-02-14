@@ -5,6 +5,7 @@ import { Printer } from "../../../../console/Printer";
 import { EmbedFactory } from "../../../../factories/EmbedFactory";
 import { EmbedResolvable } from "../../../../dtos/EmbedResolvable";
 import { Command } from "../Command";
+import { MessageWrapper } from "../../../common/MessageWrapper";
 
 export class ShowUsersCommand extends Command
 {
@@ -13,7 +14,7 @@ export class ShowUsersCommand extends Command
         super("show-users", bot, false);
     }
 
-    public async execute(message: Message): Promise<void> 
+    public async execute(message: MessageWrapper): Promise<void> 
     {
         Printer.title(this.name);
 

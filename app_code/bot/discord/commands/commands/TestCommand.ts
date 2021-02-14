@@ -1,6 +1,7 @@
 import { Bot } from '../../Bot';
 import { Command } from '../Command';
 import { Message } from 'discord.js';
+import { MessageWrapper } from '../../../common/MessageWrapper';
 
 export class TestCommand extends Command
 {
@@ -9,7 +10,7 @@ export class TestCommand extends Command
         super("Test command", bot);
     }
 
-    public async execute(message: Message): Promise<void>
+    public async execute(message: MessageWrapper): Promise<void>
     {
         let args = this.parseMessage(message);
         args.forEach((v, k) =>

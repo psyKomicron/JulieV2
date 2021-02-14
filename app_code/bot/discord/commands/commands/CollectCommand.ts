@@ -4,6 +4,7 @@ import { Bot, CollectOptions } from "../../Bot";
 import { Tools } from "../../../../helpers/Tools";
 import { CommandError } from "../../../../errors/command_errors/CommandError";
 import { ArgumentError } from "../../../../errors/ArgumentError";
+import { MessageWrapper } from "../../../common/MessageWrapper";
 
 /**Asks the TwitterBot to collect images from a channel.*/
 export class CollectCommand extends Command
@@ -13,11 +14,11 @@ export class CollectCommand extends Command
         super(CollectCommand.name, bot);
     }
 
-    public async execute(message: Message): Promise<void> 
+    public async execute(wrapper: MessageWrapper): Promise<void> 
     {
-        if (message.channel instanceof TextChannel)
+        if (wrapper.message.channel instanceof TextChannel)
         {
-            this.bot.emit("collect", message.channel, true, this.getParams(this.parseMessage(message)));
+            this.bot.emit("collect", wrapper.message.channel, true, this.getParams(wrapper));
         }
         else
         {
@@ -66,25 +67,25 @@ export class CollectCommand extends Command
         }
     }
 
-    private getParams(params: Map<string, string>): CollectOptions
+    private getParams(wrapper: MessageWrapper): CollectOptions
     {
         let collectWhen: Date;
         let keepUntil: Date;
         let fetchType: number;
 
-        let when = this.getValue(params, ["when", "w"], false);
+        let when = wrapper.getValue(["when", "w"], false);
         if (!Tools.isNullOrEmpty(when))
         {
             collectWhen = this.parseDate(when);
         }
 
-        let until = this.getValue(params, ["keep-until", "k-u"]);
+        let until = wrapper.getValue(["keep-until", "k-u"]);
         if (!Tools.isNullOrEmpty(until))
         {
             keepUntil = this.parseDate(until);
         }
 
-        let fetch = this.getValue(params, ["n", "fetch-type"]);
+        let fetch = wrapper.getValue(["n", "fetch-type"]);
         if (!Tools.isNullOrEmpty(fetch))
         {
             if (!Number.isNaN(Number.parseInt(fetch)))
