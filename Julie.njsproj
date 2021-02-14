@@ -41,6 +41,9 @@ RELEASE_TYPE</Environment>
     <TypeScriptCompile Include="app_code\bot\common\DiscordMessageFetcher.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="app_code\bot\common\MessageWrapper.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\bot\discord\Bot.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -161,7 +164,7 @@ RELEASE_TYPE</Environment>
     <TypeScriptCompile Include="app_code\dal\IStreamOptions.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\dal\readers\emojis\Emoji.ts">
+    <TypeScriptCompile Include="app_code\dal\readers\emojis\LocalEmoji.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\dal\readers\emojis\EmojiName.ts">
@@ -218,12 +221,6 @@ RELEASE_TYPE</Environment>
     <TypeScriptCompile Include="app_code\helpers\Tools.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\tests\CommandTester.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="app_code\tests\test_app.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="app_code\dtos\ConfigData.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -269,7 +266,6 @@ RELEASE_TYPE</Environment>
     <Folder Include="app_code\helpers\proxies\" />
     <Folder Include="app_code\dtos\copy_books\" />
     <Folder Include="app_code\dtos\" />
-    <Folder Include="app_code\tests\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
 </Project>
