@@ -2,7 +2,7 @@ import { Printer } from '../../console/Printer';
 import { FileSystem } from '../FileSystem';
 import { ConfigurationError } from '../../errors/dal_errors/ConfigurationError';
 import { EmojiName } from './emojis/EmojiName';
-import { Emoji } from './emojis/Emoji';
+import { LocalEmoji } from './emojis/LocalEmoji';
 import { Config } from '../Config';
 import { Tools } from '../../helpers/Tools';
 import { ArgumentError } from '../../errors/ArgumentError';
@@ -56,7 +56,7 @@ export class EmojiReader
         }
     }
 
-    public static getEmoji<K extends keyof typeof EmojiName>(name: K | number): Emoji
+    public static getEmoji<K extends keyof typeof EmojiName>(name: K | number): LocalEmoji
     {
         if (this.emojis)
         {
@@ -67,7 +67,7 @@ export class EmojiReader
             }
             else
             {
-                return new Emoji(name.toString(), emoji);
+                return new LocalEmoji(name.toString(), emoji);
             }
         }
         else
