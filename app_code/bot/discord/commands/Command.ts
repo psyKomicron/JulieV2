@@ -5,6 +5,7 @@ import { CommandSyntaxError } from "../../../errors/command_errors/CommandSyntax
 import { Printer } from "../../../console/Printer";
 import { Bot } from "../Bot";
 import { ArgumentError } from "../../../errors/ArgumentError";
+import { MessageWrapper } from "../../common/MessageWrapper";
 
 export abstract class Command extends EventEmitter
 {
@@ -30,7 +31,7 @@ export abstract class Command extends EventEmitter
     }
 
     /**Execute the command async */
-    public abstract async execute(message: Message): Promise<void>;
+    public abstract async execute(wrapper: MessageWrapper): Promise<void>;
 
     /**Delete the command message (here to avoid code redundancy) */
     public deleteMessage(message: Message, timeout: number = 100): void
@@ -76,140 +77,18 @@ export abstract class Command extends EventEmitter
         return channel;
     }
 
-    /**Parse the command message content to get parameters and returns a map of
-     the arguments name paired with their values */
-    public parseMessage(message: Message): Map<string, string>
+    //#region events
+    public on<K extends keyof CommandEvents>(event: K, listener: (...args: CommandEvents[K]) => void): this
     {
-        let content: string = this.preParseMessage(message.cleanContent.substring(this.bot.prefixLength));
-
-        let map = new Map<string, string>();
-        let i = 0;
-        while (i < content.length)
-        {
-            if (content[i] == "-")
-            {
-                if (i + 1 != content.length) 
-                {
-                    let key: string = "";
-                    for (i += 1; i < content.length; i++) 
-                    {
-                        if (content[i] != " ")
-                        {
-                            key += content[i];
-                        }
-                        else 
-                        {
-                            i++;
-                            break;
-                        }
-                    }
-                    let comma = false;
-                    if (content[i] == "\"")
-                    {
-                        i++;
-                        comma = true;
-                    }
-                    let value = "";
-                    let marker = true;
-
-                    while (i < content.length && marker)
-                    {
-                        if ((content.codePointAt(i) > 47 && content.codePointAt(i) < 58) ||
-                            (content.codePointAt(i) > 64 && content.codePointAt(i) < 91) ||
-                            (content.codePointAt(i) > 96 && content.codePointAt(i) < 123))
-                        {
-                            value += content[i];
-                        }
-                        else if (content[i] != "\"" && comma)
-                        {
-                            value += content[i];
-                        }
-                        else marker = false;
-                        if (marker) i++;
-                    }
-                    map.set(key, value);
-                }
-            }
-            else i++;
-        }
-        this.writeLogs(map, message);
-        return map;
+        return super.on(event, listener);
     }
 
-    /**
-     * Safely gets a entry in the map.
-     * @param args
-     * @param names
-     * @param ignoreDuplicate
-     */
-    protected getValue(args: Map<string, string>, names: Array<string>, ignoreDuplicate: boolean = false): string
+    public emit<K extends keyof CommandEvents>(event: K, ...args: CommandEvents[K]): boolean
     {
-        let filled: boolean = false;
-        let res: string = "";
-
-        for (var i = 0; i < names.length; i++)
-        {
-            let value = args.get(names[i]);
-            if (value)
-            {
-                if (ignoreDuplicate)
-                {
-                    return value;
-                }
-                else if (!filled)
-                {
-                    res = value;
-                    filled = true;
-                }
-                else
-                {
-                    throw new ArgumentError("Duplicate argument in command", names[i]);
-                }
-            }
-        }
-
-        return res;
+        return super.emit(event, ...args);
     }
+    //#endregion
 
-    protected preParseMessage(rawContent: string): string
-    {
-        let substr = 0;
-
-        // getting to the first argument
-        while (substr < rawContent.length)
-        {
-            if (rawContent[substr] == " ")
-            {
-                while (Number.MAX_SAFE_INTEGER && substr < rawContent.length && rawContent[substr] != "-") substr++;
-                break;
-            }
-            substr++;
-        }
-
-        let commas: boolean;
-
-        for (var j = 0; j < rawContent.length; j++)
-        {
-            if (rawContent[j] == "\"")
-            {
-                commas = !commas;
-            }
-        }
-
-        if (commas)
-        {
-            throw new CommandSyntaxError(this, `Command contains a space, but not incapsulated in \" \" (at character ${j + 1})`);
-        }
-
-        return rawContent.substring(substr);
-    }
-
-    /**
-     * Resolve a text channel through the Discord API. Returns undefined if the id isn't
-     * recognized.
-     * @param channelID string-Discord.Snowflake representing a Discord.TextChannel id.
-     * @returns The resolved TextChannel
-     */
     private resolveFromID(channelID: string, manager: GuildChannelManager): TextChannel
     {
         let channel: TextChannel;
@@ -221,16 +100,9 @@ export abstract class Command extends EventEmitter
         return channel;
     }
 
-    /**
-     * Write logs in a json file when the command asks to parse messages. If the file is to big, 
-     * another file is created to store the newly created logs.
-     * Logs user info (username, discriminator); command info (name, arguments, number of the 
-     * command); message info and message.
-     * @param map Arguments of the command
-     * @param message Message that launched this command.
-     */
-    private async writeLogs(map: Map<string, string>, message: Message): Promise<void>
+    private async writeLogs(wrapper: MessageWrapper): Promise<void>
     {
+        const map = wrapper.args;
         const filepath = "./files/logs/";
         const name = "command_logs";
         fs.mkdir(filepath, true);
@@ -249,8 +121,8 @@ export abstract class Command extends EventEmitter
         var json = {
             "user": [
                 {
-                    "username": message.author.username,
-                    "discriminator": message.author.discriminator
+                    "username": wrapper.message.author.username,
+                    "discriminator": wrapper.message.author.discriminator
                 }
             ],
             "command": [
@@ -258,8 +130,8 @@ export abstract class Command extends EventEmitter
                     "name": this._name,
                     "arguments": data,
                     "command number": `${Command.commands}`,
-                    "message id": `${message.id}`,
-                    "message": message
+                    "message id": `${wrapper.message.id}`,
+                    "message": wrapper
                 }
             ],
             "date": [
@@ -283,4 +155,9 @@ export abstract class Command extends EventEmitter
             fs.writeFile(filepath + name + ".json", JSON.stringify(logs));
         }
     }
+}
+
+export interface CommandEvents
+{
+    end: [void]
 }
