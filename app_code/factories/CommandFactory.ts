@@ -15,14 +15,13 @@ import { ChangePrefixCommand } from "../bot/discord/commands/commands/ChangePref
 import { DefaultCommand } from "../bot/discord/commands/commands/DefaultCommand";
 import { GambleCommand } from "../bot/discord/commands/commands/GambleCommand";
 import { CollectCommand } from "../bot/discord/commands/commands/CollectCommand";
-import { ArgumentError } from "../errors/ArgumentError";
 
 export class CommandFactory
 {
-    public static create(type: string, bot: Bot): Command
+    public static create(name: string, bot: Bot): Command
     {
         let command: Command = undefined;
-        switch (type)
+        switch (name)
         {
             case "dl":
             case "download":
