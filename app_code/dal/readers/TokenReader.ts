@@ -2,7 +2,7 @@ import { EmptyTokenError } from "../../errors/dal_errors/EmptyTokenError";
 
 export class TokenReader
 {
-    public static getToken(tokenName: Token): string 
+    public static getToken<K extends keyof typeof Token>(tokenName: K): string 
     {
         let tokenValue = "";
         switch (tokenName)
@@ -25,4 +25,7 @@ export class TokenReader
     }
 }
 
-type Token = ("youtube" | "release" | "discord");
+enum Token 
+{
+    youtube, release, discord
+}
