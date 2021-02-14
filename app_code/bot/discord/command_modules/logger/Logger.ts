@@ -51,10 +51,9 @@ export abstract class Logger
 
     protected logCommand(command: Command): void
     {
-        command.addListener("end", () =>
+        command.on("end", () =>
         {
             this.disconnect();
-            console.log(`successfully disconnected ${this.name}`);
         });
     }
 }

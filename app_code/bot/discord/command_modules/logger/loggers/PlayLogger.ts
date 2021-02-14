@@ -15,11 +15,11 @@ export class PlayLogger extends Logger
     public handle(message: Message): boolean 
     {
         let can: boolean;
-        if (message.content.substr(1).match(/(leave)+/g) ||
-            message.content.substr(1).match(/(play)+/g) ||
-            message.content.substr(1).match(/(next)+/g) ||
-            message.content.substr(1).match(/(pause)+/g) ||
-            message.content.substr(1).match(/(resume)+/g))
+        if (message.content.substr(1).match(/(leave)/g) ||
+            message.content.substr(1).match(/(play)/g) ||
+            message.content.substr(1).match(/(next)/g) ||
+            message.content.substr(1).match(/(pause)/g) ||
+            message.content.substr(1).match(/(resume)/g))
         {
             can = true;
             Printer.title("handled by play logger");
@@ -44,6 +44,7 @@ export class PlayLogger extends Logger
     {
         if (this.player.channel.guild == message.guild)
         {
+            this.player.message = message;
             let content = message.content;
             switch (true)
             {
@@ -53,7 +54,7 @@ export class PlayLogger extends Logger
                     this.disconnect();
                     break;
                 case content.substr(1).match(/(play)+/g) != null:
-                    this.player.addToPlaylist(message);
+                    this.player.addToPlaylist();
                     break;
                 case content.substr(1).match(/(next)+/g) != null:
                     this.player.next();
@@ -80,6 +81,7 @@ export class PlayLogger extends Logger
         }
         else
         {
+            this.logCommand(player);
             this.player = player;
         }
         return this;
