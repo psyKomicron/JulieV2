@@ -21,4 +21,4 @@ imgs
 *.jpg
 *.pdf
 *.txt
-config/config.json
+config.json
