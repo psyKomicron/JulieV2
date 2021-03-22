@@ -1,9 +1,9 @@
 // ENTRY POINT FOR THE NODEJS APPLICATION //
-import { Printer } from './app_code/console/Printer';
-import { StarEffect } from './app_code/console/effects/StarEffect';
-import { Bot } from './app_code/bot/discord/Bot';
-import { Config } from './app_code/dal/Config';
-import { TwitterBot } from './app_code/bot/twitter/TwitterBot';
+import { Printer } from './src/console/Printer';
+import { StarEffect } from './src/console/effects/StarEffect';
+import { Bot } from './src/bot/discord/Bot';
+import { Config } from './src/dal/Config';
+import { TwitterBot } from './src/bot/twitter/TwitterBot';
 
 Config.init();
 
