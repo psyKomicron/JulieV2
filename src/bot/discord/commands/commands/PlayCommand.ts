@@ -23,12 +23,14 @@ import { Logger } from "../../command_modules/logger/Logger";
 import internal = require("stream");
 import { CommandError } from "../../../../errors/command_errors/CommandError";
 import { MessageWrapper } from "../../../common/MessageWrapper";
+import { Tools } from "../../../../helpers/Tools";
 
 export class PlayCommand extends Command
 {
+    private static readonly youtubeRegex = /https:\/\/www.youtube.com\/watch\?v=.+/g;
     private playing: boolean = false;
     private currentVideo: number = 0;
-    private videos: Array<string> = new Array();
+    private videos: Array<string>;
     private timeout: NodeJS.Timeout;
     private _message: MessageWrapper;
     private connection: VoiceConnection;
@@ -51,7 +53,8 @@ export class PlayCommand extends Command
         this.message = wrapper;
 
         let params = this.getParams(wrapper);
-        
+        this.videos = params.videos;
+        this.voiceChannel = params.channel;
 
         Printer.title("play");
         Printer.args(["urls provided"],
@@ -62,7 +65,7 @@ export class PlayCommand extends Command
         let match = true;
         this.videos.forEach(url =>
         {
-            if (!url.match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
+            if (!url.match(PlayCommand.youtubeRegex))
             {
                 match = false;
             }
@@ -113,7 +116,7 @@ export class PlayCommand extends Command
 
         if (videos.length == 1)
         {
-            if (videos[0].match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
+            if (videos[0].match(PlayCommand.youtubeRegex))
             {
                 this.videos.push(videos[0]);
                 this.message.reply("Added song to queue");
@@ -123,7 +126,7 @@ export class PlayCommand extends Command
         {
             videos.forEach(video =>
             {
-                if (video.match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
+                if (video.match(PlayCommand.youtubeRegex))
                 {
                     this.videos.push(video);
                 }
@@ -319,20 +322,26 @@ export class PlayCommand extends Command
 
     private getParams(wrapper: MessageWrapper): Params
     {
-        if (!wrapper.content.match(/^\/[A-z]+ +-[a-z]+/g))
+        // matches command with no arguments, only 1-n links
+        if (!wrapper.content.match(/^\/play +(https:\/\/www.youtube.com\/watch\?v=+)+/g)) 
         {
             let params = new Array<string>();
             let values = wrapper.content.split(" ");
 
             values.forEach(v =>
             {
-                if (v.match(/(https:\/\/www.youtube.com\/watch\?v=+)/g))
+                if (v.match(PlayCommand.youtubeRegex))
                 {
-                    let url = v;
-                    while (url.match(/"/g))
+                    let url: string = v;
+                    let cleanedUrl = "";
+                    for (var i = 0; i < v.length; i++)
                     {
-                        url = url.replace("\"", "");
+                        if (url[i] != "\"")
+                        {
+                            cleanedUrl += url[i];
+                        }
                     }
+                    url = cleanedUrl;
                     params.push(url);
                 }
             });

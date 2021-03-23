@@ -23,3 +23,5 @@ imgs
 *.txt
 config.json
 config/config.json
+.vscode/settings.json
+workspace.code-workspace

@@ -14,7 +14,7 @@ export class YoutubeModule
 
     public constructor(apiKey: string)
     {
-        if (!apiKey.match(/([ ])/g))
+        if (!apiKey.match(/ /g))
         {
             this.service = new YoutubeProxy(apiKey);
         }
@@ -32,16 +32,28 @@ export class YoutubeModule
      */
     public async searchVideos(keyword: string, maxResults: number, lang: string): Promise<YoutubeOutput>
     {
-        let opt = new YoutubeInput()
-            .setToken(TokenReader.getToken("youtube"))
-            .setPart("snippet")
-            .setOrder("viewCount")
-            .setKeyword(keyword)
-            .setType("video")
-            .setRelevanceLanguage(lang)
-            .setMaxResults(maxResults);
+        let opt = new YoutubeInput({
+            token: TokenReader.getToken("youtube"), 
+            part: "snippet",
+            order: "viewCount",
+            keyword: keyword,
+            type: "video",
+            relevanceLanguage: lang,
+            maxResults: maxResults
+        });
 
-        let searchResults = await this.service.search(opt);
+        let searchResults: YoutubeOutput;
+        try 
+        {
+            searchResults = await this.service.search(opt);
+            return searchResults;
+        }
+        catch (e) 
+        {
+            Printer.error("Could not fetch data from the youtube API, see details...");
+            Printer.error(e.toString());
+        }
+        
         return searchResults;
     }
 }

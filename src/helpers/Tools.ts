@@ -33,12 +33,12 @@ export class Tools
 
     public static isUrl(url: string): boolean
     {
-        return !isNullOrUndefined(url.match(this.getUrlRegex()));
+        return url.match(this.getUrlRegex()) != null;
     }
 
     public static isDate(numbers: string): boolean
     {
-        return !isNullOrUndefined(numbers.match(this.getNumbersRegex()));
+        return (numbers.match(this.getNumbersRegex())) != null;
     }
 
     public static isNullOrEmpty(s: string): boolean

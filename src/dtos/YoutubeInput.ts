@@ -1,4 +1,6 @@
-export class YoutubeInput
+import { IFlattenable } from "./IFlattenable";
+
+export class YoutubeInput implements IFlattenable
 {
     private _token: string;
     private _part: string;
@@ -29,47 +31,38 @@ export class YoutubeInput
     public get maxResults() { return this._maxResults }
     public set maxResults(maxResults: number) { this._maxResults = maxResults }
 
-
-    public setToken(token: string): YoutubeInput
+    public constructor(params: Params)
     {
-        this._token = token;
-        return this;
+        this.token = params.token;
+        this.part = params.part;
+        this.order = params.order;
+        this.keyword = params.keyword;
+        this.type = params.type;
+        this.relevanceLanguage = params.relevanceLanguage ?? "en";
+        this.maxResults = params.maxResults ?? 10;
     }
 
-    public setPart(part: string): YoutubeInput
+    public flatten(): Object
     {
-        this._part = part;
-        return this;
+        return {
+            token: this.token,
+            part: this.part,
+            order: this.order,
+            keyword: this.keyword,
+            type: this.type,
+            relevanceLanguage: this.relevanceLanguage,
+            maxResults: this.maxResults
+        };
     }
+}
 
-    public setOrder(order: string): YoutubeInput
-    {
-        this._order = order;
-        return this;
-    }
-
-    public setKeyword(keyword: string): YoutubeInput
-    {
-        this._keyword = keyword;
-        return this;
-    }
-
-    public setType(type: string): YoutubeInput
-    {
-        this._type = type;
-        return this;
-    }
-
-    public setRelevanceLanguage(relevanceLanguage: string): YoutubeInput
-    {
-        this._relevanceLanguage = relevanceLanguage;
-        return this;
-    }
-
-    public setMaxResults(maxResults: number): YoutubeInput
-    {
-        this._maxResults = maxResults;
-        return this;
-    }
-
+export interface Params 
+{
+    token: string;
+    part: string;
+    order: string;
+    keyword: string;
+    type: string;
+    relevanceLanguage?: string;
+    maxResults?: number;
 }

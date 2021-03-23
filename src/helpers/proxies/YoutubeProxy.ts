@@ -5,12 +5,13 @@ import { YoutubeItem } from "../../dtos/copy_books/YoutubeItem";
 import { Tools } from "../Tools";
 import { WrongYoutubeResponseType } from "../../errors/dal_errors/WrongYoutubeResponseType";
 
+/**Proxy to communicate */
 export class YoutubeProxy
 {
+    private static cache: Array<YoutubeInput> = new Array<YoutubeInput>();
     private youtubeV3: youtube_v3.Youtube;
     private question: YoutubeInput;
     private response: YoutubeOutput;
-    private static cache: Array<YoutubeInput> = new Array<YoutubeInput>();
 
     public get name() { return "youtube-proxy"; }
 
@@ -59,19 +60,6 @@ export class YoutubeProxy
             }
         }
         return output;
-    }
-
-    private flattenQuestion(): Object
-    {
-        return {
-            token: this.question.token,
-            part: this.question.part,
-            order: this.question.order,
-            q: this.question.keyword,
-            type: this.question.type,
-            relevanceLanguage: this.question.relevanceLanguage,
-            maxResults: this.question.maxResults
-        }
     }
 }
 
