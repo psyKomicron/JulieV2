@@ -2,6 +2,7 @@ import { Message, MessageEmbed } from "discord.js";
 import { ArgumentError } from "../../errors/ArgumentError";
 import { Tools } from "../../helpers/Tools";
 import { LocalEmoji } from "../../dal/readers/emojis/LocalEmoji";
+import { Printer } from "../../console/Printer";
 
 export class MessageWrapper
 {
@@ -10,6 +11,8 @@ export class MessageWrapper
     private _isParsed: boolean = false;
     private _parsedArgs: Map<string, string>;
 
+    public get isParsed() { return this._isParsed; }
+    
     public constructor(message: Message, commandName?: string)
     {
         this._message = message;
@@ -70,7 +73,7 @@ export class MessageWrapper
                         {
                             key += content[i];
                         }
-                        else 
+                        else
                         {
                             i++;
                             break;
@@ -88,6 +91,12 @@ export class MessageWrapper
 
                     while (i < content.length && marker && i < Number.MAX_SAFE_INTEGER)
                     {
+                        if (comma && content[i] == "\"")
+                        {
+                            i++;
+                            break;
+                        }
+                        
                         if (content[i] != " ")
                         {
                             value += content[i];
@@ -111,6 +120,7 @@ export class MessageWrapper
         }
 
         this.args = map;
+        this._isParsed = true;
     }
 
     /**
@@ -221,7 +231,12 @@ export class MessageWrapper
         {
             if (timeout)
             {
-                this.message.delete({timeout: timeout});
+                this.message.delete({timeout: timeout})
+                    .catch(error =>
+                        {
+                            Printer.error("Message could not be deleted");
+                            Printer.error(error.toString());
+                        });
             }
             else
             {
@@ -262,7 +277,11 @@ export class MessageWrapper
         {
             if (rawContent[substr] == " ")
             {
-                while (Number.MAX_SAFE_INTEGER && substr < rawContent.length && rawContent[substr] != "-") substr++;
+                while (Number.MAX_SAFE_INTEGER && substr < rawContent.length && rawContent[substr] == " ") 
+                {
+                    substr++;
+                }
+
                 break;
             }
             substr++;
@@ -282,8 +301,8 @@ export class MessageWrapper
         {
             throw new SyntaxError(`Message contains a space, but not incapsulated in \" \" (at character ${j + 1})`);
         }
-
-        return rawContent.substring(substr);
+        this.commandContent = rawContent.substring(substr);
+        return this.commandContent;
     }
 
     private isChar(s: string, i: number): boolean
