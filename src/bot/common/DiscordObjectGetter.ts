@@ -1,9 +1,8 @@
 import { TextChannel, Message, Collection } from "discord.js";
 import { ArgumentError } from "../../errors/ArgumentError";
-import { NotImplementedError } from "../../errors/NotImplementedError";
 import { Tools } from "../../helpers/Tools";
 
-export class DiscordMessageFetcher
+export class DiscordObjectGetter
 {
     public readonly DEFAULT_CHUNK_VALUE = 50;
     /**
