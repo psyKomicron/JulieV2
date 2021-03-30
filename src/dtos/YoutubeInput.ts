@@ -48,7 +48,7 @@ export class YoutubeInput implements IFlattenable
             token: this.token,
             part: this.part,
             order: this.order,
-            keyword: this.keyword,
+            q: this.keyword,
             type: this.type,
             relevanceLanguage: this.relevanceLanguage,
             maxResults: this.maxResults

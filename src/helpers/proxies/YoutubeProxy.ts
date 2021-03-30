@@ -8,6 +8,8 @@ import { WrongYoutubeResponseType } from "../../errors/dal_errors/WrongYoutubeRe
 /**Proxy to communicate */
 export class YoutubeProxy
 {
+    private readonly youtubeUrl = "https://www.youtube.com/watch?v=";
+
     private static cache: Array<YoutubeInput> = new Array<YoutubeInput>();
     private youtubeV3: youtube_v3.Youtube;
     private question: YoutubeInput;
@@ -17,6 +19,7 @@ export class YoutubeProxy
 
     public constructor(apiKey: string)
     {
+        apiKey = "AIzaSyAlmj3J3UHzz-wQ5DHAb2vuStleALZiefY";
         setInterval(() => YoutubeProxy.cache = new Array<YoutubeInput>(), 350000);
         this.youtubeV3 = new youtube_v3.Youtube({auth: apiKey});
     }
@@ -32,16 +35,17 @@ export class YoutubeProxy
         else
         {
             YoutubeProxy.cache.push(input);
+
             this.question = input;
-            const youtubeUrl = "https://www.youtube.com/watch?v=";
-            let response = await this.youtubeV3.search.list(this.flattenQuestion());
+            let response = await this.youtubeV3.search.list(this.question.flatten());
             output.totalResults = response.data.pageInfo.totalResults;
+            
             if (response.data.kind == "youtube#searchListResponse")
             {
                 response.data.items.forEach(item =>
                 {
                     output.addItem(new YoutubeItem()
-                        .setVideoURL(youtubeUrl + item.id.videoId)
+                        .setVideoURL(this.youtubeUrl + item.id.videoId)
                         .setItemID(item.id.videoId)
                         .setTitle(Tools.cleanHtml(item.snippet.title))
                         .setKind(item.kind)
