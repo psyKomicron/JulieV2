@@ -2,16 +2,12 @@ import ytdl = require("ytdl-core-discord");
 import { Bot } from "../../Bot";
 import
 {
-    Message, MessageEmbed,
     VoiceChannel, VoiceConnection,
-    StreamDispatcher,
-    EmbedField,
-    GuildChannelManager
+    StreamDispatcher
 } from "discord.js";
 import { YoutubeModule } from '../../command_modules/explore/youtube/YoutubeModule';
 import { PlayLogger } from '../../command_modules/logger/loggers/PlayLogger';
 import { Printer } from '../../../../console/Printer';
-import { EmojiReader } from '../../../../dal/readers/EmojiReader';
 import { EmbedResolvable } from '../../../../dtos/EmbedResolvable';
 import { CommandSyntaxError } from '../../../../errors/command_errors/CommandSyntaxError';
 import { YoutubeOutput } from '../../../../dtos/YoutubeOuput';
@@ -19,11 +15,9 @@ import { TokenReader } from '../../../../dal/readers/TokenReader';
 import { EmbedFactory } from '../../../../factories/EmbedFactory';
 import { Command } from '../Command';
 import { ArgumentError } from '../../../../errors/ArgumentError';
-import { Logger } from "../../command_modules/logger/Logger";
 import internal = require("stream");
 import { CommandError } from "../../../../errors/command_errors/CommandError";
 import { MessageWrapper } from "../../../common/MessageWrapper";
-import { Tools } from "../../../../helpers/Tools";
 
 export class PlayCommand extends Command
 {
@@ -54,46 +48,52 @@ export class PlayCommand extends Command
 
         let params = this.getParams(wrapper);
         this.videos = params.videos;
-        this.voiceChannel = params.channel;
+        this.voiceChannel = params.channel == undefined ? wrapper.message.member.voice.channel : params.channel;
 
         Printer.title("play");
-        Printer.args(["urls provided"],
+        Printer.args(
             [
-                this.videos.length == 0 ? "" : `${this.videos.length}`,
+                "urls provided",
+                "keyword" 
+            ],
+            [
+                this.videos?.length.toString(),
+                params.keyword 
             ]);
 
-        let match = true;
-        this.videos.forEach(url =>
+        if (this.videos)
         {
-            if (!url.match(PlayCommand.youtubeRegex))
+            let match = true;
+            this.videos.forEach(url =>
             {
-                match = false;
-            }
-        });
-
-        if (this.videos.length > 0 && match)
-        {
-            this.voiceChannel = this.voiceChannel == undefined ? wrapper.message.member.voice.channel : this.voiceChannel;
-            if (this.voiceChannel)
+                if (!url.match(PlayCommand.youtubeRegex))
+                {
+                    match = false;
+                }
+            });
+    
+            if (this.videos.length > 0 && match)
             {
-                this.playStream();
+                if (this.voiceChannel)
+                {
+                    this.playStream();
+                }
+                else
+                {
+                    throw new CommandError(this, new ArgumentError("No channel to connect to was provided", "voice channel"));
+                }
             }
             else
             {
-                throw new CommandError(this, new ArgumentError("No channel to connect to was provided", "voice channel"));
+                throw new CommandSyntaxError(this);
             }
         }
-        else if (this.videos)
+        else if (params.keyword)
         {
-            this.searchVideos()
-        }
-        else
-        {
-            throw new CommandSyntaxError(this);
+            this.searchVideos(params.keyword);
         }
     }
 
-    //#region log methods
     public leave(): void
     {
         this.emit("end");
@@ -112,28 +112,37 @@ export class PlayCommand extends Command
 
     public addToPlaylist(): void
     {
-        let videos = this.getParams(this.message).videos;
+        let params = this.getParams(this.message);
 
-        if (videos.length == 1)
+        if (params.videos)
         {
-            if (videos[0].match(PlayCommand.youtubeRegex))
+            let videos = params.videos;
+            if (params.videos.length == 1)
             {
-                this.videos.push(videos[0]);
-                this.message.reply("Added song to queue");
+                if (videos[0].match(PlayCommand.youtubeRegex))
+                {
+                    this.videos.push(videos[0]);
+                    this.message.reply("Added song to queue");
+                }
+            }
+            else if (videos.length > 1)
+            {
+                videos.forEach(video =>
+                {
+                    if (video.match(PlayCommand.youtubeRegex))
+                    {
+                        this.videos.push(video);
+                    }
+                });
+
+                this.message.reply("Added " + videos.length + " songs to queue");
             }
         }
-        else if (videos.length > 1)
+        else if (params.keyword)
         {
-            videos.forEach(video =>
-            {
-                if (video.match(PlayCommand.youtubeRegex))
-                {
-                    this.videos.push(video);
-                }
-            });
-            this.message.reply("Added " + videos.length + " songs to queue");
+            this.searchVideos(params.keyword)
+                .catch(error => Printer.error(error.toString()));
         }
-        
     }
 
     public pause(): void
@@ -169,69 +178,45 @@ export class PlayCommand extends Command
         }
     }
 
-    private async searchVideos(): Promise<void>
+    private async searchVideos(keyword: string): Promise<void>
     {
         let youtube = new YoutubeModule(TokenReader.getToken("youtube"));
+        let searchResult: YoutubeOutput = await youtube.searchVideos(keyword, 10, "fr");
 
-        let results = new Array<YoutubeOutput>();
-        for (var k = 0; k < this.videos.length; k++)
+        if (searchResult && searchResult.items.length > 0)
         {
-            let res = await youtube.searchVideos(this.videos[k], 30, "en");
-
-        }
-
-        if (results.length > 0)
-        {
-            let embed = EmbedFactory.build(new EmbedResolvable()
-                .setColor(16711680)
-                .setDescription("Choose wich video to play")
-                .setFooter("powered by psyKomicron")
-                .setTitle("Videos"));
-
-            let embedFields = new Array<EmbedField>();
-
-            for (var l = 0; l < results.length; l++)
+            if (searchResult.items.length == 1)
             {
-                let items = results[l].items;
-                for (var i = 0; i < items.length; i++)
+                let url = searchResult.items[0].videoURL;
+                if (!this.videos)
                 {
-                    let name = `${i + 1}`.split("");
-                    let num = "";
-                    for (var j = 0; j < name.length; j++)
+                    this.videos = new Array<string>();
+                }
+                this.videos.push(url);
+                if (!this.playing) // play if not playing
+                {
+                    this.playStream(0);
+                }
+            }
+            else 
+            {
+                let embed = EmbedFactory.build(new EmbedResolvable()
+                    .setTitle("Youtube")
+                    .setDescription(`Youtube search for \`${keyword}\``)
+                    .setFooter("made by Julie"));
+
+                for (var i = 0; i < 10 && i < searchResult.items.length; i++)
+                {
+                    let item = searchResult.items[i];
+                    let name = "**" + item.title + "**";
+                    let value = item.videoURL;
+                    if (name && value)
                     {
-                        let index = Number.parseInt(name[j]);
-                        num += EmojiReader.getEmoji(index);
+                        embed.addField(name, value);
                     }
-                    embedFields.push((
-                        {
-                            name: `${num} - ${items[i].title}`,
-                            value: items[i].videoURL,
-                            inline: false
-                        }));
                 }
-            }
-
-            let embeds = new Array<MessageEmbed>();
-
-            for (var m = 0; m < embedFields.length; m++)
-            {
-                if ((m % 25) == 0)
-                {
-                    embeds.push(embed);
-                    embed = EmbedFactory.build(new EmbedResolvable()
-                        .setColor(16711680)
-                        .setDescription("Rest of the videos")
-                        .setFooter("powered by psyKomicron")
-                        .setTitle("Videos"));
-                }
-                embed.addField(embedFields[i].name, embedFields[i].value, embedFields[i].inline);
-            }
-
-            this.message.reply(embeds[0]);
-
-            for (var n = 1; n < embeds.length; n++)
-            {
-                this.message.send(embeds[n]);
+                embed.setURL(searchResult.items[0].videoURL);
+                this._message.send(embed);
             }
         }
         else
@@ -251,7 +236,6 @@ export class PlayCommand extends Command
         try
         {
             this.stream = await this.createStream(this.videos[index]);
-
             this.dispacher = this.createDispatcher(this.stream, this.connection);
 
             this.dispacher.on("error", (error) =>
@@ -287,6 +271,80 @@ export class PlayCommand extends Command
         }
     }
 
+    private getParams(wrapper: MessageWrapper): Params
+    {
+        // matches command with no arguments, only 1-n links
+        if (wrapper.content.match(/^\/play +(https:\/\/www.youtube.com\/watch\?v=.+)+/g)) 
+        {
+            let params = new Array<string>();
+            let values = wrapper.content.split(" ");
+
+            values.forEach(v =>
+            {
+                if (v.match(PlayCommand.youtubeRegex))
+                {
+                    let url: string = v;
+                    let cleanedUrl = "";
+                    for (var i = 0; i < v.length; i++)
+                    {
+                        if (url[i] != "\"")
+                        {
+                            cleanedUrl += url[i];
+                        }
+                    }
+                    url = cleanedUrl;
+                    params.push(url);
+                }
+            });
+            return { videos: params };
+        }
+        else if (wrapper.content.match(/^\/play +((?!https:\/\/www.youtube.com\/watch\?v=.+)[A-z0-9]+ *)*/g)) 
+        {
+            let commandContent = wrapper.commandContent;
+            return { keyword: commandContent }
+        }
+        else
+        {
+            let videos: Array<string>;
+            let channel: VoiceChannel;
+            let keyword: string;
+
+            let u = wrapper.getValue(["u", "url"]);
+            if (u)
+            {
+                videos = new Array<string>();
+                let urls = u.split(" ");
+                for (let i = 0; i < urls.length; i++)
+                {
+                    if (urls[i].match(/https:\/\/www.youtube.com\/watch\?v=.+/g))
+                    {
+                        videos.push(urls[i]);
+                    }
+                }
+            }
+            else if (wrapper.hasValue(["k", "keyword"]))
+            {
+                keyword = wrapper.getValue(["k", "keyword"]);
+            }
+            else 
+            {
+                throw new CommandSyntaxError(this, "No value was provided (keyword or url)");
+            }
+
+            let c = wrapper.getValue(["c", "channel"]);
+            if (c)
+            {
+                let resChannel = this.resolveChannel(c, wrapper.message.guild.channels);
+                if (resChannel && resChannel instanceof VoiceChannel)
+                {
+                    channel = resChannel;
+                }
+            }
+
+            return { videos: videos, keyword: keyword, channel: channel };
+        }
+    }
+
     private async join(): Promise<VoiceConnection>
     {
         let connection: VoiceConnection;
@@ -319,69 +377,11 @@ export class PlayCommand extends Command
     {
         this.timeout = setTimeout(() => this.leave(), 180000);
     }
-
-    private getParams(wrapper: MessageWrapper): Params
-    {
-        // matches command with no arguments, only 1-n links
-        if (!wrapper.content.match(/^\/play +(https:\/\/www.youtube.com\/watch\?v=+)+/g)) 
-        {
-            let params = new Array<string>();
-            let values = wrapper.content.split(" ");
-
-            values.forEach(v =>
-            {
-                if (v.match(PlayCommand.youtubeRegex))
-                {
-                    let url: string = v;
-                    let cleanedUrl = "";
-                    for (var i = 0; i < v.length; i++)
-                    {
-                        if (url[i] != "\"")
-                        {
-                            cleanedUrl += url[i];
-                        }
-                    }
-                    url = cleanedUrl;
-                    params.push(url);
-                }
-            });
-            return { videos: params };
-        }
-        else
-        {
-            let videos = new Array<string>();
-            let channel: VoiceChannel;
-
-            let u = wrapper.getValue(["u", "url"]);
-            if (u)
-            {
-                let urls = u.split(" ");
-                for (let i = 0; i < urls.length; i++)
-                {
-                    if (urls[i].match(/https:\/\/www.youtube.com\/watch\?v=.+/g))
-                    {
-                        videos.push(urls[i]);
-                    }
-                }
-            }
-
-            let c = wrapper.getValue(["c", "channel"]);
-            if (c)
-            {
-                let resChannel = this.resolveChannel(c, wrapper.message.guild.channels);
-                if (resChannel && resChannel instanceof VoiceChannel)
-                {
-                    channel = resChannel;
-                }
-            }
-
-            return { videos: videos, channel: channel };
-        }
-    }
 }
 
 interface Params
 {
+    videos?: Array<string>;
+    keyword?: string;
     channel?: VoiceChannel;
-    videos: Array<string>
 }
