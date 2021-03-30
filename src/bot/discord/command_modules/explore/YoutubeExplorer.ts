@@ -17,7 +17,8 @@ export class YTExplorer extends Explorer
             ytModule.searchVideos(this.keyword, 10, "en")
                 .then(res => this.workFromResponse(res))
                 .catch(console.error);
-        } catch (e)
+        } 
+        catch (e)
         {
             if (e instanceof EmptyTokenError)
             {

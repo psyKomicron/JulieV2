@@ -61,7 +61,7 @@ export class DownloadCommand extends Command
             .then(() =>
             {
                 wrapper.react(EmojiReader.getEmoji("green_check"));
-                this.deleteMessage(wrapper.message, 2000);
+                wrapper.delete(2000);
             });
     }
 

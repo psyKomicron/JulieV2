@@ -1,6 +1,6 @@
 import { Bot, CollectOptions } from "../discord/Bot";
 import { Message, TextChannel } from "discord.js";
-import { DiscordMessageFetcher } from "../common/DiscordMessageFetcher";
+import { DiscordObjectGetter } from "../common/DiscordObjectGetter";
 import { Downloader } from "../discord/command_modules/Downloader";
 import { Printer } from "../../console/Printer";
 import { Tools } from "../../helpers/Tools";
@@ -10,7 +10,7 @@ export class TwitterBot
 {
     private static instance: TwitterBot;
 
-    private dog: DiscordMessageFetcher = new DiscordMessageFetcher();
+    private dog: DiscordObjectGetter = new DiscordObjectGetter();
     private collecting: boolean = false;
     private collectChannel: TextChannel;
     private collectAlarm: Alarm;

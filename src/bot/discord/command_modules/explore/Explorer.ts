@@ -38,16 +38,8 @@ export abstract class Explorer
         return html;
     }
 
-    protected send(embed: MessageEmbed): void
+    protected send(embed: MessageEmbed): void 
     {
-        this.command.send(embed)
-            .catch(e =>
-            {
-                if (e instanceof Error)
-                {
-                    console.error(e.message.substr(0, 30) + "[...]");
-                }
-            });
+        this.command.send(embed);
     }
-
 }

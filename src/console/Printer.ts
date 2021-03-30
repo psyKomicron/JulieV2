@@ -88,28 +88,37 @@ export class Printer
                 let maxLength = -1;
                 for (let i = 0; i < contents.length; i++)
                 {
-                    if (contents[i].length > maxLength) maxLength = contents[i].length;
+                    if (contents[i].length > maxLength) 
+                    {
+                        maxLength = contents[i].length;
+                    }
                 }
+
                 maxLength += 4;
                 let lines = "";
                 for (let i = 0; i < contents.length; i++)
                 {
-                    let arg = "(-) " + contents[i];
-                    while (arg.length < maxLength) arg += " ";
+                    let arg = "↳ " + contents[i];
+
+                    while (arg.length < maxLength) 
+                    {
+                        arg += " ";
+                    }
+
                     if (i != contents.length - 1)
                     {
                         if (inline && i % 3 != 0)
                         {
-                            arg += ` : ${Printer.getName(values[i])} `;
+                            arg += ` : ${Printer.getLongString(values[i])} `;
                         }
                         else
                         {
-                            arg += ` : ${Printer.getName(values[i])} \n`;
+                            arg += ` : ${Printer.getLongString(values[i])} \n`;
                         }
                     }
                     else
                     {
-                        arg += ` : ${Printer.getName(values[i])}`;
+                        arg += ` : ${Printer.getLongString(values[i])}`;
                     }
                     lines += arg;
                 }
@@ -186,6 +195,7 @@ export class Printer
         return str;
     }
 
+    //#region colors
     public static pRed(content: string): string
     {
         return this.printColor(content, Colors.RED);
@@ -226,22 +236,31 @@ export class Printer
     {
         process.stdout.write(code);
     }
+    //#endregion
 
-    private static getName(name: string)
+    private static getLongString(name: string)
     {
-        if (name && name.length > 25 && name.length > 0)
+        if (!name || name.length == 0)
+        {
+            return "not valued";
+        }
+        else if (name.length > 25)
         {
             let firstName = "";
+
             for (var i = 0; i < 10; i++)
             {
                 firstName += name.charAt(i);
             }
+            
             firstName += "[...]";
             let endName = "";
+
             for (var j = name.length - 10; j < name.length; j++)
             {
                 endName += name.charAt(j);
             }
+            
             return firstName + endName;
         }
         else

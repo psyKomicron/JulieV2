@@ -10,15 +10,16 @@ import { MessageWrapper } from "../../../common/MessageWrapper";
 
 export class ExploreCommand extends Command
 {
-    private channel: TextChannel;
+    private wrapper: MessageWrapper;
 
     public constructor(bot: Bot)
     {
-        super("explore", bot);
+        super("explore", bot, false);
     }
 
     public async execute(wrapper: MessageWrapper): Promise<void>
     {
+        this.wrapper = wrapper;
         let params: Params = this.getParams(wrapper);
         let keyword = params.keyword;
         let domain = params.domain;
@@ -38,16 +39,16 @@ export class ExploreCommand extends Command
         }
         e.explore();
 
-        this.deleteMessage(wrapper.message, 1000);
+        wrapper.delete(1000);
     }
 
     /**
      * Sends a message to the command message's channel
      * @param embed
      */
-    public send(embed: MessageEmbed): Promise<Message>
+    public send(embed: MessageEmbed): void
     {
-        return this.channel.send(embed);
+        this.wrapper.send(embed);
     }
 
     private getParams(wrapper: MessageWrapper): Params

@@ -95,7 +95,7 @@ export class Bot extends EventEmitter
             Printer.error(Printer.repeat("-", 26));
         });
 
-        this._client.on("message", (message) => this.onMessage(message));
+        this._client.on("message", (message) => this.onMessage(new MessageWrapper(message)));
 
         this._client.on("disconnect", (arg_0, arg_1: number) => 
         {
@@ -139,9 +139,8 @@ export class Bot extends EventEmitter
     // #endregion
 
     // #region events handlers
-    private onMessage(message: Message): void 
+    private onMessage(wrapper: MessageWrapper): void 
     {
-        let wrapper = new MessageWrapper(message);
         wrapper.parseMessage(this.prefix.length);
         let content = wrapper.content;
 
@@ -157,9 +156,9 @@ export class Bot extends EventEmitter
                 Printer.error(error.toString());
             }
 
-            if (this.isAuthorized(message.author))
+            if (this.isAuthorized(wrapper.message.author))
             {
-                Printer.info("\ncommand requested by : " + message.author.tag);
+                Printer.info("\ncommand requested by : " + wrapper.message.author.tag);
 
                 if (this._logger)
                 {
@@ -171,28 +170,26 @@ export class Bot extends EventEmitter
                         try
                         {
                             let command = CommandFactory.create(name.substr(this.prefix.length), this);
-
-                            let wrapper = new MessageWrapper(message);
                             wrapper.parseMessage(this.prefix.length);
 
                             command.execute(wrapper)
                                 .catch(error =>
                                 {
                                     Printer.error(error.toString());
-                                    this.handleErrorForClient(error, message);
+                                    this.handleErrorForClient(error, wrapper.message);
                                 })
                                 .then(() =>
                                 {
                                     if (command.deleteAfterExecution)
                                     {
-                                        command.deleteMessage(message, 300);
+                                        wrapper.delete(300);
                                     }
                                 });
                         }
                         catch (error)
                         {
                             Printer.error(error.toString());
-                            this.handleErrorForClient(error, message);
+                            this.handleErrorForClient(error, wrapper.message);
                         }
                     }
                 }

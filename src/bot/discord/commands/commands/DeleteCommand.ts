@@ -4,7 +4,7 @@ import { Message, TextChannel, Collection } from 'discord.js';
 import { Printer } from '../../../../console/Printer';
 import { ProgressBar } from '../../../../console/effects/ProgressBar';
 import { Command } from '../Command';
-import { DiscordMessageFetcher } from '../../../common/DiscordMessageFetcher';
+import { DiscordObjectGetter } from '../../../common/DiscordObjectGetter';
 import { MessageWrapper } from '../../../common/MessageWrapper';
 
 export class DeleteCommand extends Command
@@ -73,7 +73,7 @@ export class DeleteCommand extends Command
     private async overrideDelete(channel: TextChannel, params: Params): Promise<void>
     {
         let messages: Array<Message>;
-        let dog = new DiscordMessageFetcher();
+        let dog = new DiscordObjectGetter();
 
         if (params.username)
         {
@@ -132,7 +132,8 @@ export class DeleteCommand extends Command
 
     private getParams(wrapper: MessageWrapper): Params
     {
-        let messages = 10;
+        let messages = 1;
+        
         if (!Number.isNaN(Number.parseInt(wrapper.get("n"))))
         {
             messages = Number.parseInt(wrapper.get("n")) + 1;

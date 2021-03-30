@@ -45,7 +45,7 @@ export class ProgressBar
             let progress = "";
             for (var i = 0; i < border; i++)
             {
-                progress += "=";
+                progress += "▮";
             }
             process.stdout.write(`${Printer.pYell(progress)} ${round}%\n`);
             this.lastValue = value;
@@ -65,7 +65,7 @@ export class ProgressBar
                 let progress = "";
                 for (var i = 0; i < border; i++)
                 {
-                    progress += "=";
+                    progress += "▮";
                 }
                 process.stdout.write(`${Printer.pGreen(progress)} ${round}%\n`);
             }

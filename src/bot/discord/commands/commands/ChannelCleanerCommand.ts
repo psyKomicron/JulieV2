@@ -3,12 +3,12 @@ import { Message, Channel, TextChannel, Collection, User } from "discord.js";
 import { Bot } from "../../Bot";
 import { Printer } from "../../../../console/Printer";
 import { ProgressBar } from "../../../../console/effects/ProgressBar";
-import { DiscordMessageFetcher } from "../../../common/DiscordMessageFetcher";
+import { DiscordObjectGetter } from "../../../common/DiscordObjectGetter";
 import { MessageWrapper } from "../../../common/MessageWrapper";
 
 export class ChannelCleanerCommand extends Command
 {
-    private dog: DiscordMessageFetcher = new DiscordMessageFetcher();
+    private dog: DiscordObjectGetter = new DiscordObjectGetter();
 
     public constructor(bot: Bot)
     {
@@ -41,6 +41,7 @@ export class ChannelCleanerCommand extends Command
             if (!this.hasAnyData(message))
             {
                 let messagesByAuthor = new Map<User, number>();
+
                 for (var j = i; j < messages.length; j++)
                 {
                     let author = messages[j].author;
@@ -50,9 +51,10 @@ export class ChannelCleanerCommand extends Command
                         {
                             messagesByAuthor.set(author, messagesByAuthor.get(author) + 1);
 
-                            if (messagesByAuthor.get(author) > numberPerUser)
+                            if (messagesByAuthor.get(author) > numberPerUser && messages[j].deletable)
                             {
-                                this.deleteMessage(messages[j]);
+                                message[j].delete({timeout: 100, reason: "Cleaned from channel by bot."})
+                                    .catch(error => Printer.error(error.toString()));
                             }
                         }
                         else
@@ -65,6 +67,7 @@ export class ChannelCleanerCommand extends Command
                         break;
                     }
                 }
+
                 i = j;
             }
             bar.update(i);

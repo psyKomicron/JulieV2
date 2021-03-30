@@ -1,10 +1,7 @@
 import { EventEmitter } from "events";
 import { FileSystem as fs } from "../../../dal/FileSystem";
-import { Message, TextChannel, GuildChannel, GuildChannelManager } from 'discord.js';
-import { CommandSyntaxError } from "../../../errors/command_errors/CommandSyntaxError";
-import { Printer } from "../../../console/Printer";
+import { TextChannel, GuildChannel, GuildChannelManager } from 'discord.js';
 import { Bot } from "../Bot";
-import { ArgumentError } from "../../../errors/ArgumentError";
 import { MessageWrapper } from "../../common/MessageWrapper";
 
 export abstract class Command extends EventEmitter
@@ -32,20 +29,6 @@ export abstract class Command extends EventEmitter
 
     /**Execute the command async */
     public abstract execute(wrapper: MessageWrapper): Promise<void>;
-
-    /**Delete the command message (here to avoid code redundancy) */
-    public deleteMessage(message: Message, timeout: number = 100): void
-    {
-        if (message && message.deletable)
-        {
-            message.delete({ timeout: timeout })
-                .catch(error =>
-                {
-                    Printer.error("Message could not be deleted");
-                    Printer.error(error.toString());
-                });
-        }
-    }
 
     /**
      * Resolve a text channel through the Discord API. Returns the channel in wich the message
@@ -105,19 +88,24 @@ export abstract class Command extends EventEmitter
         const map = wrapper.args;
         const filepath = "./files/logs/";
         const name = "command_logs";
+
         fs.mkdir(filepath, true);
+
         if (!fs.exists(filepath + name + ".json"))
         {
             let root = [];
             fs.writeFile(filepath + name + ".json", JSON.stringify(root));
         }
+
         var logs = JSON.parse(fs.readFile(filepath + name + ".json").toString());
         let now = new Date(Date.now());
         let data = {};
+        
         map.forEach((value, key) =>
         {
             data[key] = value;
         });
+        
         var json = {
             "user": [
                 {
@@ -143,6 +131,7 @@ export abstract class Command extends EventEmitter
                 }
             ]
         }
+        
         if (fs.getStats(filepath + name + ".json").size > 19000)
         {
             let index = 1;
