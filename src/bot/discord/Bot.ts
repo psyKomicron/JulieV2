@@ -14,6 +14,7 @@ import { Moderator } from './command_modules/moderation/Moderator';
 import { CommandError } from '../../errors/command_errors/CommandError';
 import { EventEmitter } from 'events';
 import { MessageWrapper } from '../common/MessageWrapper';
+import { ErrorTranslater } from "../../errors/ErrorTranslater";
 
 export class Bot extends EventEmitter
 {
@@ -26,6 +27,7 @@ export class Bot extends EventEmitter
     private moderator: Moderator;   
     private prefix: string;
     private _logger: Logger = new DefaultLogger();
+    private errorTranslater: ErrorTranslater = new ErrorTranslater();
 
     private constructor(effect: LoadingEffect)
     {
@@ -92,7 +94,8 @@ export class Bot extends EventEmitter
             id.stop();
             readline.moveCursor(process.stdout, -3, 0);
             process.stdout.write("Ready\n");
-            Printer.error(Printer.repeat("-", 26));
+            Printer.error(Printer.repeat("-", 34));
+            Printer.printConfig();
         });
 
         this._client.on("message", (message) => this.onMessage(new MessageWrapper(message)));
@@ -107,22 +110,11 @@ export class Bot extends EventEmitter
         this._client.login(TokenReader.getToken("discord"));
     }
 
-    private handleErrorForClient(error: Error, message: Message): void
+    private handleErrorForClient(error: Error, message: MessageWrapper): void
     {
-        if (error instanceof ExecutionError && this.verbose > 2)
+        if (this.verbose > 1)
         {
-            if (error instanceof CommandError)
-            {
-                message.author.send(error.message);
-            }
-            else
-            {
-                this.sendErrorMessage(message);
-            }
-        }
-        else
-        {
-            this.sendErrorMessage(message);
+            message.message.author.send(this.errorTranslater.translate(error, message));
         }
     }
 
@@ -149,7 +141,7 @@ export class Bot extends EventEmitter
             try
             {
                 // asynchronously moderates a message
-                this.moderator.execute(wrapper);
+                this.moderator.execute(wrapper); // does nothing for now
             }
             catch (error)
             {
@@ -176,7 +168,7 @@ export class Bot extends EventEmitter
                                 .catch(error =>
                                 {
                                     Printer.error(error.toString());
-                                    this.handleErrorForClient(error, wrapper.message);
+                                    this.handleErrorForClient(error, wrapper);
                                 })
                                 .then(() =>
                                 {
@@ -189,7 +181,7 @@ export class Bot extends EventEmitter
                         catch (error)
                         {
                             Printer.error(error.toString());
-                            this.handleErrorForClient(error, wrapper.message);
+                            this.handleErrorForClient(error, wrapper);
                         }
                     }
                 }

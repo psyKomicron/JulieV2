@@ -1,7 +1,7 @@
 /**Mother class for all errors of this application*/
-export abstract class ExecutionError extends Error
+export class ExecutionError extends Error
 {
-    protected constructor(message, name: string)
+    public constructor(message: string, name: string)
     {
         super(message);
         this.name = name;
@@ -9,6 +9,6 @@ export abstract class ExecutionError extends Error
 
     public toString(): string
     {
-        return this.stack; 
+        return this.message + "\n\t" + this.stack;
     }
 }
