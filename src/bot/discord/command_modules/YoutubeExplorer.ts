@@ -1,10 +1,10 @@
 import { Explorer } from "./Explorer";
 import { YoutubeModule } from "./youtube/YoutubeModule";
-import { TokenReader } from "../../../../dal/readers/TokenReader";
-import { EmptyTokenError } from "../../../../errors/dal_errors/EmptyTokenError";
-import { Printer } from "../../../../console/Printer";
-import { EmbedFactory } from "../../../../factories/EmbedFactory";
-import { EmbedResolvable } from "../../../../dtos/EmbedResolvable";
+import { TokenReader } from "../../../dal/readers/TokenReader";
+import { EmptyTokenError } from "../../../errors/dal_errors/EmptyTokenError";
+import { Printer } from "../../../console/Printer";
+import { EmbedFactory } from "../../../factories/EmbedFactory";
+import { EmbedResolvable } from "../../../dtos/EmbedResolvable";
 
 /**Class to display results from a search on Youtube for a discord user */
 export class YTExplorer extends Explorer
@@ -25,15 +25,19 @@ export class YTExplorer extends Explorer
                 Printer.error("YoutubeModule cannot log in with an empty token");
                 Printer.error(e.toString());
             }
+            else 
+            {
+                Printer.warn("Uncatched error : " + e.toString());
+            }
         }
     }
 
     private workFromResponse(res: any): void
     {
-        let embed = EmbedFactory.build(new EmbedResolvable()
-            .setTitle("Youtube")
-            .setDescription(`Youtube search for \`${this.keyword}\``)
-            .setFooter("made by Julie"));
+        let embed = EmbedFactory.build({
+            title: "Youtube",
+            description: `Youtube search for \`${this.keyword}\``,
+        });
 
         for (var i = 0; i < 10 && i < res.items.length; i++)
         {
