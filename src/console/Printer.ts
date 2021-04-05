@@ -4,6 +4,9 @@ import { Config } from '../dal/Config';
 
 export class Printer
 {
+    public static ARGS_SPACES: number = 4;
+    public static LONG_STRING_MAX_LENGTH: number = 25;
+
     private static level: number;
     private static lines: number = 0;
 
@@ -14,14 +17,41 @@ export class Printer
 
     public static startUp(): void
     {
-        this.printEscCode(EscapeCodes.CLEAR_SCREEN);
-        this.printEscCode(EscapeCodes.HIDE_CURSOR);
-        readline.cursorTo(process.stdout, 0, 0);
-        process.stdout.write(this.appTitle());
         if (!this.level)
         {
             this.init();
         }
+        this.printEscCode(EscapeCodes.CLEAR_SCREEN);
+        this.printEscCode(EscapeCodes.HIDE_CURSOR);
+        readline.cursorTo(process.stdout, 0, 7);
+        process.stdout.write(this.appTitle());
+    }
+
+    public static printConfig(): void
+    {
+        let reduced: string = "";
+        let wtf = Config.getKeys().keys();
+        Config.getKeys().forEach((value, key) => 
+        {
+            reduced += key + ", ";
+        });
+        reduced = reduced.substring(0, reduced.length - 2);
+
+        Printer.title("Current config");
+        Printer.args(
+            [
+                "prefix", 
+                "verbose level", 
+                "authorized users", 
+                "available keys"
+            ], 
+            [
+                Config.getPrefix(), 
+                Config.getVerbose().toString(), 
+                Config.getAuthorizedUsers().reduce((previous, current) => previous += ", " + current),
+                reduced
+            ]
+        , false, false);
     }
 
     public static print(content: any): void
@@ -79,7 +109,7 @@ export class Printer
      * @param contents
      * @param values
      */
-    public static args(contents: string[], values: string[], inline: boolean = false): void
+    public static args(contents: string[], values: string[], inline: boolean = false, cut: boolean = true): void
     {
         if (contents.length == values.length)
         {
@@ -94,32 +124,40 @@ export class Printer
                     }
                 }
 
-                maxLength += 4;
+                maxLength += Printer.ARGS_SPACES;
                 let lines = "";
                 for (let i = 0; i < contents.length; i++)
                 {
-                    let arg = "↳ " + contents[i];
+                    let arg = "↳ " + Printer.pCyan(contents[i]);
 
-                    while (arg.length < maxLength) 
+                    while (arg.length - Printer.pCyan("").length < maxLength) 
                     {
                         arg += " ";
                     }
 
-                    if (i != contents.length - 1)
+                    if (inline && i % 3 != 0)
                     {
-                        if (inline && i % 3 != 0)
+                        if (cut)
                         {
-                            arg += ` : ${Printer.getLongString(values[i])} `;
+                            arg += ` : ${Printer.shorten(values[i])} `;
                         }
-                        else
+                        else 
                         {
-                            arg += ` : ${Printer.getLongString(values[i])} \n`;
+                            arg += ` : ${values[i]}`;
                         }
                     }
                     else
                     {
-                        arg += ` : ${Printer.getLongString(values[i])}`;
+                        if (cut)
+                        {
+                            arg += ` : ${Printer.shorten(values[i])} \n`;
+                        }
+                        else 
+                        {
+                            arg += ` : ${values[i]} \n`;
+                        }
                     }
+
                     lines += arg;
                 }
                 console.log(lines);
@@ -195,6 +233,37 @@ export class Printer
         return str;
     }
 
+    public static shorten(name: string)
+    {
+        if (!name || name.length == 0)
+        {
+            return "not valued";
+        }
+        else if (name.length > Printer.LONG_STRING_MAX_LENGTH)
+        {
+            let firstName = "";
+
+            for (var i = 0; i < 10; i++)
+            {
+                firstName += name.charAt(i);
+            }
+            
+            firstName += "[...]";
+            let endName = "";
+
+            for (var j = name.length - 10; j < name.length; j++)
+            {
+                endName += name.charAt(j);
+            }
+            
+            return firstName + endName;
+        }
+        else
+        {
+            return name;
+        }
+    }
+
     //#region colors
     public static pRed(content: string): string
     {
@@ -238,40 +307,9 @@ export class Printer
     }
     //#endregion
 
-    private static getLongString(name: string)
-    {
-        if (!name || name.length == 0)
-        {
-            return "not valued";
-        }
-        else if (name.length > 25)
-        {
-            let firstName = "";
-
-            for (var i = 0; i < 10; i++)
-            {
-                firstName += name.charAt(i);
-            }
-            
-            firstName += "[...]";
-            let endName = "";
-
-            for (var j = name.length - 10; j < name.length; j++)
-            {
-                endName += name.charAt(j);
-            }
-            
-            return firstName + endName;
-        }
-        else
-        {
-            return name;
-        }
-    }
-
     private static appTitle(): string
     {
-        let spaces = 4;
+        let spaces = 8;
         let title = "Julie V2";
         let right = "<<<<<";
         let left = ">>>>>";

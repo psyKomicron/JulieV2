@@ -6,10 +6,9 @@ import { Config } from './src/dal/Config';
 import { TwitterBot } from './src/bot/twitter/TwitterBot';
 
 Config.init();
-
 Printer.startUp();
 
-let loadingEffect = new StarEffect([-12, -1]);
+let loadingEffect = new StarEffect([-16, -1]);
 loadingEffect.start();
 
 try
