@@ -132,30 +132,48 @@ export class DeleteCommand extends Command
 
     private getParams(wrapper: MessageWrapper): Params
     {
-        let messages = 1;
+        if (wrapper.hasArgs())
+        {
+            let messages = 1;
         
-        if (!Number.isNaN(Number.parseInt(wrapper.get("n"))))
-        {
-            messages = Number.parseInt(wrapper.get("n")) + 1;
-        }
-
-        let username: string = undefined; 
-        if (wrapper.get("u"))
-        {
-            let value = wrapper.getValue(["u", "user", "username"]);
-            let res = /([A-Za-z0-9]+#+[0-9999])\w+/.exec(value);
-
-            if (res && res[0] == value)
+            if (!Number.isNaN(Number.parseInt(wrapper.get("n"))))
             {
-                username = wrapper.get("u");
+                messages = Number.parseInt(wrapper.get("n")) + 1;
             }
+
+            let username: string = undefined; 
+            if (wrapper.get("u"))
+            {
+                let value = wrapper.getValue(["u", "user", "username"]);
+                let res = /([A-Za-z0-9]+#+[0-9999])\w+/.exec(value);
+
+                if (res && res[0] == value)
+                {
+                    username = wrapper.get("u");
+                }
+            }
+
+            let channel = this.resolveTextChannel(wrapper);
+
+            let deletePinned = wrapper.hasValue(["pins", "p"]);
+            
+            return { messages, channel, username, deletePinned };
         }
+        else 
+        {
+            let messages: number = 1;
+            if (!Number.isNaN(Number.parseInt(wrapper.commandContent)))
+            {
+                messages = Number.parseInt(wrapper.commandContent) + 1;
+            }
 
-        let channel = this.resolveTextChannel(wrapper);
-
-        let deletePinned = wrapper.hasValue(["pins", "p"]);
-        
-        return { messages, channel, username, deletePinned };
+            return { 
+                messages: messages, 
+                channel: wrapper.message.channel as TextChannel, 
+                username: undefined, 
+                deletePinned: false
+            };
+        }
     }
 }
 

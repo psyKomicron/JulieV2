@@ -1,11 +1,11 @@
 import { Bot } from "../../Bot";
 import { Printer } from "../../../../console/Printer";
-import { YTExplorer } from "../../command_modules/explore/YoutubeExplorer";
-import { WikiExplorer } from "../../command_modules/explore/WikiExplorer";
+import { YTExplorer } from "../../command_modules/YoutubeExplorer";
+import { WikiExplorer } from "../../command_modules/WikiExplorer";
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
 import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyntaxError";
 import { Command } from "../Command";
-import { Explorer } from "../../command_modules/explore/Explorer";
+import { Explorer } from "../../command_modules/Explorer";
 import { MessageWrapper } from "../../../common/MessageWrapper";
 
 export class ExploreCommand extends Command

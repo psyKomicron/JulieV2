@@ -7,6 +7,9 @@ import { EmbedResolvable } from "../../../../dtos/EmbedResolvable";
 import { Command } from "../Command";
 import { MessageWrapper } from "../../../common/MessageWrapper";
 
+/**
+ * @command-prefix su/showusers
+ */
 export class ShowUsersCommand extends Command
 {
     public constructor(bot: Bot)
@@ -18,10 +21,16 @@ export class ShowUsersCommand extends Command
     {
         Printer.title(this.name);
 
-        let embed: MessageEmbed = EmbedFactory.build(new EmbedResolvable()
-            .setTitle("Authorized users")
-            .addField({ name: "Tip", value: "You can add users to the authorized user list with the /adduser (/a, /add) command", inline: false })
-        );
+        let embed: MessageEmbed = EmbedFactory.build({
+            title: "Authorized users",
+            description: "",
+            fields: [
+                { 
+                    name: "Tip", 
+                    value: "You can add users to the authorized user list with the /adduser (/a, /add) command", 
+                    inline: false 
+                }]
+            });
 
         let users = "";
         Config.getAuthorizedUsers().forEach(user =>

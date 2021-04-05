@@ -9,7 +9,7 @@ import { HelpCommand } from "../bot/discord/commands/commands/HelpCommand";
 import { TestCommand } from "../bot/discord/commands/commands/TestCommand";
 import { VoteCommand } from "../bot/discord/commands/commands/VoteCommand";
 import { AddUserCommand } from "../bot/discord/commands/commands/AddUserCommand";
-import { ChannelCleanerCommand } from "../bot/discord/commands/commands/ChannelCleanerCommand";
+import { CleanChannelCommand } from "../bot/discord/commands/commands/CleanChannelCommand";
 import { ShowUsersCommand } from "../bot/discord/commands/commands/ShowUsersCommand";
 import { ChangePrefixCommand } from "../bot/discord/commands/commands/ChangePrefixCommand";
 import { DefaultCommand } from "../bot/discord/commands/commands/DefaultCommand";
@@ -62,7 +62,7 @@ export class CommandFactory
                 break;
             case "c":
             case "clean":
-                command = new ChannelCleanerCommand(bot);
+                command = new CleanChannelCommand(bot);
                 break;
             case "su":
             case "showusers":

@@ -6,8 +6,12 @@ import { ProgressBar } from "../../../../console/effects/ProgressBar";
 import { DiscordObjectGetter } from "../../../common/DiscordObjectGetter";
 import { MessageWrapper } from "../../../common/MessageWrapper";
 
-export class ChannelCleanerCommand extends Command
+/**
+ * @command-syntax clean
+ */
+export class CleanChannelCommand extends Command
 {
+    private deleteMessages: boolean;
     private dog: DiscordObjectGetter = new DiscordObjectGetter();
 
     public constructor(bot: Bot)
@@ -53,8 +57,15 @@ export class ChannelCleanerCommand extends Command
 
                             if (messagesByAuthor.get(author) > numberPerUser && messages[j].deletable)
                             {
-                                message[j].delete({timeout: 100, reason: "Cleaned from channel by bot."})
-                                    .catch(error => Printer.error(error.toString()));
+                                if (this.deleteMessages)
+                                {
+                                    messages[j].delete({timeout: 100, reason: "Cleaned from channel by bot."})
+                                               .catch(error => Printer.error(error.toString()));
+                                }
+                                else 
+                                {
+                                    Printer.info("\tselected " + Printer.shorten(message[j]) + " to be cleaned");
+                                }
                             }
                         }
                         else
@@ -95,6 +106,15 @@ export class ChannelCleanerCommand extends Command
         }
 
         channel = this.resolveTextChannel(wrapper);
+
+        if (wrapper.has("-d"))
+        {
+            this.deleteMessages = true;
+        }
+        else 
+        {
+            this.deleteMessages = false;
+        }
 
         return [maxMessages, channel];
     }

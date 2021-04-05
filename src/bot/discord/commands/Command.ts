@@ -38,9 +38,16 @@ export abstract class Command extends EventEmitter
      */
     public resolveTextChannel(wrapper: MessageWrapper): TextChannel
     {
-        return this.resolveFromID(wrapper.args.get("c"), wrapper.message.guild.channels)
-            ?? this.resolveFromID(wrapper.args.get("channel"), wrapper.message.guild.channels)
-            ?? wrapper.message.channel as TextChannel;
+        if (wrapper.args)
+        {
+            return this.resolveFromID(wrapper.args.get("c"), wrapper.message.guild.channels)
+                ?? this.resolveFromID(wrapper.args.get("channel"), wrapper.message.guild.channels)
+                ?? wrapper.message.channel as TextChannel;
+        }
+        else 
+        {
+            return wrapper.message.channel as TextChannel;
+        }
     }
 
     /**
