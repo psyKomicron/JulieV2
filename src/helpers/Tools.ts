@@ -1,6 +1,3 @@
-import { Message } from "discord.js";
-import { isNullOrUndefined } from "util";
-
 export class Tools
 {
     /**
