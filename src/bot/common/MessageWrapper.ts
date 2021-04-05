@@ -58,8 +58,15 @@ export class MessageWrapper
     {
         let content: string = this.preParseMessage(this.content.substring(prefixLength));
 
-        let map = new Map<string, string>();
+        this._parsedArgs = new Map<string, string>();
         let i = 0;
+
+        if (content[i] != "-")
+        {
+            this._isParsed = true;
+            return;
+        }
+
         while (i < content.length && i < Number.MAX_SAFE_INTEGER)
         {
             if (content[i] == "-")
@@ -113,14 +120,11 @@ export class MessageWrapper
                         if (marker) i++;
                     }
 
-                    map.set(key, value);
+                    this._parsedArgs.set(key, value);
                 }
             }
             else i++;
         }
-
-        this.args = map;
-        this._isParsed = true;
     }
 
     /**
@@ -205,6 +209,18 @@ export class MessageWrapper
         else
         {
             return undefined;
+        }
+    }
+
+    public hasArgs(): boolean
+    {
+        if (this.isParsed && this.args && this.args.size > 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 

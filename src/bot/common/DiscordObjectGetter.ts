@@ -5,6 +5,7 @@ import { Tools } from "../../helpers/Tools";
 export class DiscordObjectGetter
 {
     public readonly DEFAULT_CHUNK_VALUE = 50;
+
     /**
      * Fetches messages in a channel.
      * @param channel Where to fetch the messages
@@ -64,7 +65,7 @@ export class DiscordObjectGetter
     {
         this.isChannelNullOrUndefined(channel);
 
-        let date: Date = new Date(Date.now());
+        var date: Date = new Date(Date.now());
 
         var filter: Filter = (message: Message, ignoreList: Array<Message> | Message, date: Date) =>
         {
@@ -88,8 +89,7 @@ export class DiscordObjectGetter
                 && (message.createdAt.getFullYear() == date.getFullYear()
                     && message.createdAt.getMonth() == date.getMonth()
                     && message.createdAt.getDate() == date.getDate()
-                    && message.createdAt.getDay() == date.getDay()
-                )
+                    && message.createdAt.getDay() == date.getDay())
                 && isIn;
         }
 
@@ -134,13 +134,13 @@ export class DiscordObjectGetter
         // adding to resMessages and removing null/undefined messages
         messages = messages.filter(nullMessageFilter);
 
-        messages = messages.filter((message: Message) =>
+        messages.forEach(value => 
         {
-            return filter(message, args);
+            if (filter(value, ...args))
+            {
+                filteredMessages.push(value);
+            }
         });
-
-        // add messages to result array
-        messages.forEach((message: Message) => filteredMessages.push(message));
 
         if (filteredMessages.length < messagesAmount)
         {
@@ -155,10 +155,10 @@ export class DiscordObjectGetter
                 else
                 {
                     messages = await channel.messages.fetch(
-                        {
-                            limit: this.getChunk(options.chunk, filteredMessages.length),
-                            before: lastMessageID
-                        });
+                    {
+                        limit: this.getChunk(options.chunk, filteredMessages.length),
+                        before: lastMessageID
+                    });
 
                     // apply not null/undefined filter && user filter
                     messages.filter((message: Message) =>
