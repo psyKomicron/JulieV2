@@ -1,6 +1,7 @@
-import { IFlattenable } from "./IFlattenable";
+import { IEquatable } from "../IEquatable";
+import { IFlattenable } from "../IFlattenable";
 
-export class YoutubeInput implements IFlattenable
+export class YoutubeInput implements IFlattenable, IEquatable<YoutubeInput>
 {
     private _token: string;
     private _part: string;
@@ -54,15 +55,28 @@ export class YoutubeInput implements IFlattenable
             maxResults: this.maxResults
         };
     }
+
+    public equals(other: YoutubeInput): boolean
+    {
+        return this.token == other.token 
+            && this.part == other.part 
+            && this.order == other.order
+            && this.keyword == other.keyword
+            && this.type == other.type
+            && this.relevanceLanguage == other.relevanceLanguage
+            && this.maxResults == other.maxResults;
+    }
 }
 
 export interface Params 
 {
     token: string;
     part: string;
-    order: string;
-    keyword: string;
-    type: string;
+    order?: string;
+    keyword?: string;
+    type?: string;
     relevanceLanguage?: string;
     maxResults?: number;
+    id?: string;
+    playlistId?: string;
 }
