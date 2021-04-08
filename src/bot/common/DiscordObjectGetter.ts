@@ -65,7 +65,7 @@ export class DiscordObjectGetter
     {
         this.isChannelNullOrUndefined(channel);
 
-        var date: Date = new Date(Date.now());
+        let date: Date = new Date(Date.now());
 
         var filter: Filter = (message: Message, ignoreList: Array<Message> | Message, date: Date) =>
         {
@@ -187,10 +187,15 @@ export class DiscordObjectGetter
 
     private getChunk(chunk: Chunk, iterator: number): number
     {
-        if (!chunk) return this.DEFAULT_CHUNK_VALUE;
-        else return typeof chunk == "function" ? chunk(iterator) : chunk
+        if (!chunk) 
+        {
+            return this.DEFAULT_CHUNK_VALUE;
+        }
+        else 
+        {
+            return typeof chunk == "function" ? chunk(iterator) : chunk;
+        }
     }
-
 }
 
 type Filter = (message: Message, ...args: any[]) => boolean;
