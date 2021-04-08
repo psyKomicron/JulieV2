@@ -21,7 +21,8 @@ imgs
 *.jpg
 *.pdf
 *.txt
-config.json
-config/config.json
 .vscode/settings.json
 workspace.code-workspace
+files
+*.json
+*.json
