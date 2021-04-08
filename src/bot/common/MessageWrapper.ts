@@ -3,6 +3,7 @@ import { ArgumentError } from "../../errors/ArgumentError";
 import { Tools } from "../../helpers/Tools";
 import { LocalEmoji } from "../../dal/readers/emojis/LocalEmoji";
 import { Printer } from "../../console/Printer";
+import { BotUser } from "../discord/BotUser";
 
 export class MessageWrapper
 {
@@ -10,12 +11,18 @@ export class MessageWrapper
     private _commandContent: string;
     private _isParsed: boolean = false;
     private _parsedArgs: Map<string, string>;
+    private _user: BotUser;
 
     public get isParsed() { return this._isParsed; }
     
     public constructor(message: Message, commandName?: string)
     {
         this._message = message;
+        if (message.author.tag == "psyKomicron#6527")
+        {
+            this._user = new BotUser();
+            this._user.isDev = true;
+        }
         this.setCommandContent(commandName);
     }
 
@@ -48,6 +55,8 @@ export class MessageWrapper
     {
         this._parsedArgs = args;
     }
+
+    public get author(): BotUser { return this._user; }
 
     //#endregion
 
@@ -125,6 +134,8 @@ export class MessageWrapper
             }
             else i++;
         }
+
+        this._isParsed = true;
     }
 
     /**
@@ -236,9 +247,14 @@ export class MessageWrapper
         this.message.react(emoji.value);
     }
 
-    public send(message: string | MessageEmbed): void
+    public sendToChannel(message: string | MessageEmbed): void
     {
         this._message.channel.send(message);
+    }
+
+    public sendToAuthor(message: string | MessageEmbed): void
+    {
+        this._message.author.send(message);
     }
 
     public delete(timeout: number): void

@@ -48,7 +48,7 @@ export class ExploreCommand extends Command
      */
     public send(embed: MessageEmbed): void
     {
-        this.wrapper.send(embed);
+        this.wrapper.sendToChannel(embed);
     }
 
     private getParams(wrapper: MessageWrapper): Params

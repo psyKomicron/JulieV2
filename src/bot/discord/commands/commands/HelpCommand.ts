@@ -25,7 +25,7 @@ export class HelpCommand extends Command
             .setURL(url)
             .addFields({ name: "Link", value: url });
 
-        wrapper.send(embed);
+        wrapper.sendToChannel(embed);
     }
 
     private getUrl(wrapper: MessageWrapper): string

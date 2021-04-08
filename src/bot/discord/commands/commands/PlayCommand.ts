@@ -167,7 +167,7 @@ export class PlayCommand extends Command
             this.dispacher.on("start", () =>
             {
                 this.playing = true;
-                this.wrapper.send("Playing " + url);
+                this.wrapper.sendToChannel("Playing " + url);
             });
 
             this.dispacher.on("speaking", (speaking) => { if (!speaking) this.next(); });
@@ -214,7 +214,7 @@ export class PlayCommand extends Command
                     }
                 }
                 embed.setURL(searchResult.items[0].videoURL);
-                this._wrapper.send(embed);
+                this._wrapper.sendToChannel(embed);
             }
         }
         else
