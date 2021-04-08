@@ -118,11 +118,6 @@ export class Bot extends EventEmitter
         }
     }
 
-    private sendErrorMessage(message: Message): void
-    {
-        message.author.send("Uh oh... Something went wrong ! Try again !");
-    }
-
     private isAuthorized(user: User): boolean
     {
         return this.parents.includes(user.tag);

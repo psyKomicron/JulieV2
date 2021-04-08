@@ -9,6 +9,6 @@ export class ExecutionError extends Error
 
     public toString(): string
     {
-        return this.message + "\n\t" + this.stack;
+        return this.stack;
     }
 }

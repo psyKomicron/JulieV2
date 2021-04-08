@@ -4,6 +4,6 @@ export class ArgumentError extends ExecutionError
 {
     public constructor(message: string, parameterName: string)
     {
-        super(message + "\nParameter name :" + parameterName, ArgumentError.name);
+        super(message + "\nParameter name: " + parameterName, ArgumentError.name);
     }
 }

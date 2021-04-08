@@ -10,15 +10,13 @@ export class ErrorTranslater
 {
     public translate(error: ExecutionError, wrapper: MessageWrapper): MessageEmbed
     {
-        if (wrapper.message.author.tag == "psyKomicron#6527")
+        if (wrapper.author.isDev)
         {
+            wrapper.sendToAuthor("```js\n" + error.toString() + "```");
+
             return EmbedFactory.build({
-                title: "Command failed !",
-                description: error.name,
-                fields: [
-                    { name: "Full message", value: error.message },
-                    { name: "Stack trace", value: error.toString() }
-                ]
+                title: "Command failed",
+                description: "The last command that you used failed because you did not wrote it properly, you can check the help page to get more information on how to use this command with " + Config.getPrefix() + "help"
             });
         }
         else 
