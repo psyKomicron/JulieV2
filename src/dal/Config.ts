@@ -5,6 +5,7 @@ import { EventEmitter } from 'events';
 import { User } from 'discord.js';
 import { Printer } from '../console/Printer';
 import { EmojiReader } from './readers/EmojiReader';
+import { Tools } from "../helpers/Tools";
 
 /**The parameters are loaded into the class attribute with the init() method. */
 export class Config extends EventEmitter
@@ -56,7 +57,7 @@ export class Config extends EventEmitter
                     let users = config["authorizedusers"];
                     users.forEach(user =>
                     {
-                        if ((user as string)?.match(/[A-Za-z0-9]+#+[0-9]{3,}/))
+                        if ((user as string)?.match(Tools.getUserRegex()))
                         {
                             this.authorizedUsers.push(user);
                         }

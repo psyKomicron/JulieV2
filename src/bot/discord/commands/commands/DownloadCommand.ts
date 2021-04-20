@@ -13,6 +13,7 @@ import { Tools } from '../../../../helpers/Tools';
 import { ArgumentError } from '../../../../errors/ArgumentError';
 import { MessageWrapper } from '../../../common/MessageWrapper';
 import { CommandError } from '../../../../errors/command_errors/CommandError';
+import { CommandArgumentError } from "../../../../errors/command_errors/CommandArgumentError";
 
 export class DownloadCommand extends Command
 {
@@ -30,9 +31,7 @@ export class DownloadCommand extends Command
         let limit = this.values.limit;
         if (limit < 0)
         {
-            throw new CommandError(this,
-                new ArgumentError("Given limit is not integer", "url"),
-                "Please provide a number of message (to download) greater than 0");
+            throw new CommandArgumentError(this, "Given limit is not integer. Please provide a number of message (to download) greater than 0", "url");
         }
 
         let type = this.values.type;

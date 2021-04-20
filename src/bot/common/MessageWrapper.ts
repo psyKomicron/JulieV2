@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from "discord.js";
+import { Collection, Guild, GuildMember, Message, MessageEmbed } from "discord.js";
 import { ArgumentError } from "../../errors/ArgumentError";
 import { Tools } from "../../helpers/Tools";
 import { LocalEmoji } from "../../dal/readers/emojis/LocalEmoji";
@@ -7,6 +7,7 @@ import { BotUser } from "../discord/BotUser";
 
 export class MessageWrapper
 {
+    private _instanceDate: number;
     private _message: Message;
     private _commandContent: string;
     private _isParsed: boolean = false;
@@ -17,6 +18,7 @@ export class MessageWrapper
     
     public constructor(message: Message, commandName?: string)
     {
+        this._instanceDate = Date.now();
         this._message = message;
         if (message.author.tag == "psyKomicron#6527")
         {
@@ -27,37 +29,29 @@ export class MessageWrapper
     }
 
     //#region properties
+    public get message(): Message { return this._message; }
 
-    public get message(): Message
-    {
-        return this._message;
-    }
+    public get commandContent(): string { return this._commandContent; }
+    public set commandContent(content: string) { this._commandContent = content; }
 
-    public get commandContent(): string
-    {
-        return this._commandContent;
-    }
-    public set commandContent(content: string)
-    {
-        this._commandContent = content;
-    }
+    public get content(): string { return this._message.cleanContent; }
 
-    public get content(): string
-    {
-        return this._message.cleanContent;
-    }
-
-    public get args(): Map<string, string>
-    {
-        return this._parsedArgs;
-    }
-    public set args(args: Map<string, string>)
-    {
-        this._parsedArgs = args;
-    }
+    public get args(): Map<string, string> { return this._parsedArgs; }
+    public set args(args: Map<string, string>) { this._parsedArgs = args; }
 
     public get author(): BotUser { return this._user; }
 
+    public get guild(): Guild 
+    { 
+        if (this._message.guild.available)
+        {
+            return this._message.guild;
+        }
+        else 
+        {
+            return undefined;
+        }
+    }
     //#endregion
 
     /**
@@ -235,6 +229,26 @@ export class MessageWrapper
         }
     }
 
+    public async fetchMember(username: string): Promise<GuildMember>
+    {
+        if (this.guild)
+        {
+            let res: Collection<string, GuildMember> = await this.guild.members.fetch({ query: username, limit: 1});
+            if (res.size == 1)
+            {
+                return res.array()[0];
+            }
+            else 
+            {
+                return undefined;
+            }
+        }
+        else 
+        {
+            return undefined;
+        }
+    }
+
     //#region discord decorator
 
     public reply(message: string | MessageEmbed): void
@@ -249,12 +263,14 @@ export class MessageWrapper
 
     public sendToChannel(message: string | MessageEmbed): void
     {
-        this._message.channel.send(message);
+        this._message.channel.send(message)
+            .catch(error => Printer.error(error.toString()));
     }
 
     public sendToAuthor(message: string | MessageEmbed): void
     {
-        this._message.author.send(message);
+        this._message.author.send(message)
+            .catch(error => Printer.error(error.toString()));
     }
 
     public delete(timeout: number): void

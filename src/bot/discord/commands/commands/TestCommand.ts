@@ -29,7 +29,7 @@ export class TestCommand extends Command
                 case "exec":
                     throw new ExecutionError("Execution error", "execution error test string");
                 case "command":
-                    throw new CommandError(this, new Error("Test error"), "This is a test error");
+                    throw new CommandError(this, "This is a test error", new Error("Test error"));
                 case "syntax":
                     throw new CommandSyntaxError(this, "Command error syntax test string");
                 case "depre":

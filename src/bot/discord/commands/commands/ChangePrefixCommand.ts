@@ -48,10 +48,7 @@ export class ChangePrefixCommand extends Command
         else
         {
             Printer.warn("new prefix invalid, not updating current prefix");
-            throw new CommandError(this,
-                new CommandSyntaxError(this),
-                "New prefix invalid (" + prefix + "), not updating current prefix"
-            );
+            new CommandSyntaxError(this, "New prefix invalid (" + prefix + "), not updating current prefix");
         }
     }
 }

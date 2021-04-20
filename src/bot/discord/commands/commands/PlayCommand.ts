@@ -19,6 +19,7 @@ import internal = require("stream");
 import { CommandError } from "../../../../errors/command_errors/CommandError";
 import { MessageWrapper } from "../../../common/MessageWrapper";
 import { Playlist } from "../../command_modules/Playlist";
+import { CommandArgumentError } from "../../../../errors/command_errors/CommandArgumentError";
 
 export class PlayCommand extends Command
 {
@@ -71,7 +72,7 @@ export class PlayCommand extends Command
             }
             else
             {
-                throw new CommandError(this, new ArgumentError("No channel to connect to was provided", "voice channel"));
+                throw new CommandArgumentError(this, "No channel to connect to was provided", "voice channel");
             }
         }
         else
@@ -279,7 +280,7 @@ export class PlayCommand extends Command
             }
             else 
             {
-                throw new CommandError(this, new CommandSyntaxError(this, "Playlist url is not valid"));
+                throw new CommandSyntaxError(this, "Playlist url is not valid");
             }
         }
         // matches keyword (to initiate a search through the YouTube's API)

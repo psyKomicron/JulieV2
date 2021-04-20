@@ -4,7 +4,7 @@ import { DiscordObjectGetter } from "../common/DiscordObjectGetter";
 import { Downloader } from "../discord/command_modules/Downloader";
 import { Printer } from "../../console/Printer";
 import { Tools } from "../../helpers/Tools";
-import { Alarm } from "./Alarm";
+import { Alarm } from "../common/Alarm";
 
 export class TwitterBot
 {

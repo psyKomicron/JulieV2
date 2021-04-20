@@ -145,7 +145,7 @@ export class Bot extends EventEmitter
 
             if (this.isAuthorized(wrapper.message.author))
             {
-                Printer.info("\ncommand requested by : " + wrapper.message.author.tag);
+                Printer.info("\n(" + new Date(Date.now()).toISOString() + ") command requested by : " + wrapper.message.author.tag);
 
                 if (this._logger)
                 {

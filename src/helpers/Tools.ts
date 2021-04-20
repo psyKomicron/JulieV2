@@ -20,12 +20,17 @@ export class Tools
 
     public static getUrlRegex(): RegExp
     {
-        return new RegExp(/(https?: \/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi);
+        return /(https?: \/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
     }
 
     public static getNumbersRegex(): RegExp
     {
-        return new RegExp(/([0-9]{2}|[0-9]{1}):([0-9]{2}|[0-9]{1})/g);
+        return /([0-9]{2}|[0-9]{1}):([0-9]{2}|[0-9]{1})/g;
+    }
+
+    public static getUserRegex(): RegExp
+    {
+        return /[A-Za-z0-9]+#+[0-9]{3,}/g;
     }
 
     public static isUrl(url: string): boolean

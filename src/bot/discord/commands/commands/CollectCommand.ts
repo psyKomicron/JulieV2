@@ -5,6 +5,7 @@ import { Tools } from "../../../../helpers/Tools";
 import { CommandError } from "../../../../errors/command_errors/CommandError";
 import { ArgumentError } from "../../../../errors/ArgumentError";
 import { MessageWrapper } from "../../../common/MessageWrapper";
+import { CommandArgumentError } from "../../../../errors/command_errors/CommandArgumentError";
 
 /**Asks the TwitterBot to collect images from a channel.*/
 export class CollectCommand extends Command
@@ -35,10 +36,7 @@ export class CollectCommand extends Command
                 let numbers = date.split(":");
                 if (Number.isNaN(Number.parseInt(numbers[0])) || Number.isNaN(Number.parseInt(numbers[1])))
                 {
-                    throw new CommandError(
-                        this,
-                        new ArgumentError("Date parameters could not be parsed from the command message", "date"),
-                    );
+                    throw new CommandArgumentError(this, "Date parameters could not be parsed from the command message", "date");
                 }
                 else
                 {
@@ -55,10 +53,7 @@ export class CollectCommand extends Command
             }
             else
             {
-                throw new CommandError(
-                    this,
-                    new ArgumentError("Date parameters could not be parsed from the command message", "date")
-                );
+                throw new CommandArgumentError(this, "Date is invalid", "date");
             }
         }
         else
