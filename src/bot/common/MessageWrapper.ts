@@ -60,7 +60,6 @@ export class MessageWrapper
     public parseMessage(prefixLength: number): void
     {
         let content: string = this.preParseMessage(this.content.substring(prefixLength));
-
         this._parsedArgs = new Map<string, string>();
         let i = 0;
 
@@ -90,39 +89,41 @@ export class MessageWrapper
                         }
                     }
 
-                    let comma = false;
-                    if (content[i] == "\"")
-                    {
-                        i++;
-                        comma = true;
-                    }
                     let value = "";
-                    let marker = true;
-
-                    while (i < content.length && marker && i < Number.MAX_SAFE_INTEGER)
+                    if (content[i] != "-")
                     {
-                        if (comma && content[i] == "\"")
+                        let comma = false;
+                        if (content[i] == "\"")
                         {
                             i++;
-                            break;
+                            comma = true;
                         }
-                        
-                        if (content[i] != " ")
+                        let marker = true;
+    
+                        while (i < content.length && marker && i < Number.MAX_SAFE_INTEGER)
                         {
-                            value += content[i];
+                            if (comma && content[i] == "\"")
+                            {
+                                i++;
+                                break;
+                            }
+                            
+                            if (content[i] != " ")
+                            {
+                                value += content[i];
+                            }
+                            else if (comma)
+                            {
+                                value += content[i];
+                            }
+                            else 
+                            {
+                                marker = false;
+                            }
+    
+                            if (marker) i++;
                         }
-                        else if (comma)
-                        {
-                            value += content[i];
-                        }
-                        else 
-                        {
-                            marker = false;
-                        }
-
-                        if (marker) i++;
                     }
-
                     this._parsedArgs.set(key, value);
                 }
             }
@@ -213,8 +214,20 @@ export class MessageWrapper
         }
         else
         {
-            return undefined;
+            return false;
         }
+    }
+
+    public hasKeys(keys: string[]): boolean
+    {
+        for (var i = 0; i < keys.length; i++)
+        {
+            if (this.has(keys[i]))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public hasArgs(): boolean
