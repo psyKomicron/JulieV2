@@ -1,17 +1,15 @@
 import readline = require('readline');
 import { TokenReader } from '../../dal/readers/TokenReader';
-import { Client, Message, User, TextChannel } from 'discord.js';
+import { Client, User, TextChannel } from 'discord.js';
 import { DefaultLogger } from './command_modules/logger/loggers/DefaultLogger';
 import { Logger } from './command_modules/logger/Logger';
 import { Printer } from '../../console/Printer';
-import { ExecutionError } from '../../errors/ExecutionError';
 import { CommandFactory } from '../../factories/CommandFactory';
 import { Tools } from '../../helpers/Tools';
 import { Config } from '../../dal/Config';
 import { ConfigurationError } from '../../errors/dal_errors/ConfigurationError';
 import { LoadingEffect } from '../../console/effects/LoadingEffect';
 import { Moderator } from './command_modules/moderation/Moderator';
-import { CommandError } from '../../errors/command_errors/CommandError';
 import { EventEmitter } from 'events';
 import { MessageWrapper } from '../common/MessageWrapper';
 import { ErrorTranslater } from "../../errors/ErrorTranslater";
@@ -128,6 +126,14 @@ export class Bot extends EventEmitter
     // #region events handlers
     private onMessage(wrapper: MessageWrapper): void 
     {
+        if (!Tools.isNullOrEmpty(Config.getGuild()) 
+            && wrapper.message.guild 
+            && wrapper.message.guild.available 
+            && wrapper.message.guild.name != Config.getGuild())
+        {
+            return;
+        }
+        
         wrapper.parseMessage(this.prefix.length);
         let content = wrapper.content;
 

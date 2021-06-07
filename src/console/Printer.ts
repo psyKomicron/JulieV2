@@ -43,12 +43,14 @@ export class Printer
                 "prefix", 
                 "verbose level", 
                 "authorized users", 
+                "current guild",
                 "available keys"
             ], 
             [
                 Config.getPrefix(), 
                 Config.getVerbose().toString(), 
                 Config.getAuthorizedUsers().reduce((previous, current) => previous += ", " + current),
+                Config.getGuild(),
                 reduced
             ]
         , false, false);

@@ -13,13 +13,29 @@ export class Config extends EventEmitter
     // self
     private static readonly config = new Config();
     private static isInit: boolean = false;
-    private static readonly configTemplate = { "prefix": "", "authorizedusers": [""], "verbose": 1, "startdirectories": [""] };
+    private static readonly configTemplate = { 
+        "prefix": "", 
+        "authorizedusers": [
+            ""
+        ],
+        "authorizedroles": [
+            ""
+        ], 
+        "guild": [
+            ""
+        ],
+        "verbose": 1, 
+        "startdirectories": [
+            ""
+        ] 
+    };
     // external
     private static prefix: string;
     private static startDirectories: Array<string> = new Array<string>();
     private static authorizedUsers: Array<string> = new Array<string>();
     private static verbose: number;
     private static keys: Map<string, string> = new Map<string, string>();
+    private static guild: string;
         // paths
     private static readonly path = "./config/config.json";
     private static readonly emojisFilePath: string = "./config/emojis.json";
@@ -76,6 +92,8 @@ export class Config extends EventEmitter
                             throw new ConfigurationError("API key does not match required format (chars without spaces) or key name contains a space");
                         }
                     });
+
+                    this.guild = config["guild"];
                 }
                 else
                 {
@@ -180,6 +198,11 @@ export class Config extends EventEmitter
             throw new ConfigurationError("The key does not exist (" + keyName + ")");
         }
         return value;
+    }
+
+    public static getGuild(): string
+    {
+        return this.guild;
     }
     // #endregion
 
