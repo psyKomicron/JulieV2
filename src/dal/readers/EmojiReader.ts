@@ -46,8 +46,9 @@ export class EmojiReader
             }
             catch (error)
             {
-                Printer.error(error.toString());
-                throw new ConfigurationError(EmojiReader.jsonReadError);
+                var configError = new ConfigurationError(EmojiReader.jsonReadError);
+                error.internalError = error;
+                throw configError;
             }
         }
         else
