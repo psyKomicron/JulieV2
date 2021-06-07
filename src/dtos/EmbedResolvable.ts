@@ -17,7 +17,7 @@ export interface EmbedResolvable
     provider?: string;
     thumbnail?: string;
     timestamp?: Date;
-    title?: string;
+    title: string;
     type?: string;
     url?: string;
     video?: string;
