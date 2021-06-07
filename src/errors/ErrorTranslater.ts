@@ -8,7 +8,7 @@ import { ExecutionError } from "./ExecutionError";
 
 export class ErrorTranslater 
 {
-    public translate(error: ExecutionError, wrapper: MessageWrapper): MessageEmbed
+    public translate(error: Error, wrapper: MessageWrapper): MessageEmbed
     {
         if (wrapper.author.isDev)
         {
@@ -19,7 +19,7 @@ export class ErrorTranslater
                 description: "The last command that you used failed because you did not wrote it properly, you can check the help page to get more information on how to use this command with " + Config.getPrefix() + "help"
             });
         }
-        else 
+        else if (error instanceof ExecutionError)
         {
             if (error instanceof CommandError)
             {
