@@ -1,22 +1,25 @@
 import { Command } from "../Command";
-import { Message, Channel, TextChannel, Collection, User } from "discord.js";
+import { Message, TextChannel, User, EmbedField } from "discord.js";
 import { Bot } from "../../Bot";
 import { Printer } from "../../../../console/Printer";
 import { ProgressBar } from "../../../../console/effects/ProgressBar";
 import { DiscordObjectGetter } from "../../../common/DiscordObjectGetter";
 import { MessageWrapper } from "../../../common/MessageWrapper";
+import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyntaxError";
+import { EmojiReader } from "../../../../dal/readers/EmojiReader";
+import { Tools } from "../../../../helpers/Tools";
+import { EmbedFactory } from "../../../../factories/EmbedFactory";
 
 /**
  * @command-syntax clean
  */
 export class CleanChannelCommand extends Command
 {
-    private deleteMessages: boolean;
     private dog: DiscordObjectGetter = new DiscordObjectGetter();
 
     public constructor(bot: Bot)
     {
-        super("channel-cleaner", bot, true);
+        super("channel-cleaner", bot, false);
     }
 
     public async execute(message: MessageWrapper): Promise<void>
@@ -26,64 +29,113 @@ export class CleanChannelCommand extends Command
         if (values[1] != undefined)
         {
             Printer.args(["number of unique messages", "channel"], [`${values[0]}`, `${values[1].name}`]);
-            this.cleanChannel(values[1], values[0], message.message);
+            await this.cleanChannel(message, values[0], values[1], values[2], values[3]);
         }
+        else
+        {
+            throw new CommandSyntaxError(this, "Missing number per user argument (u)");
+        }
+
     }
 
-    private async cleanChannel(channel: TextChannel, numberPerUser: number, message: Message): Promise<void>
+    private async cleanChannel(message: MessageWrapper, numberPerUser: number, channel: TextChannel, onlyToday: boolean,
+        preview: boolean): Promise<void>
     {
-        let messages: Array<Message> = await this.dog.fetchToday(channel, message);
-
-        let bar = new ProgressBar(messages.length, "cleaning channel [" + channel.name + "]");
-        bar.start();
-
-        // start sorting and selecting messages
-        for (var i = 0; i < messages.length; i++)
+        let messages: Array<Message>;
+        if (onlyToday)
         {
-            let message = messages[i];
+            messages = await this.dog.fetchToday(channel, message.message);
+        }
+        else 
+        {
+            messages = await this.dog.fetch(channel, 100, {maxIterations: 500, chunk: Tools.sigmoid, allowOverflow: false});
+        }
+        
+        if (messages.length == 0)
+        {   
+            message.react(EmojiReader.getEmoji("warning"));
+            Printer.print("No messages found !");
+        }
+        else 
+        {
+            let toDelete = new Array<Message>();
 
-            if (!this.hasAnyData(message))
+            let bar = new ProgressBar(messages.length, "cleaning channel [" + channel.name + "]");
+            bar.start();
+
+            
+            // start sorting and selecting messages
+            for (var i = 0; i < messages.length; i++)
             {
-                let messagesByAuthor = new Map<User, number>();
+                let message = messages[i];
 
-                for (var j = i; j < messages.length; j++)
+                if (!this.hasAnyData(message))
                 {
-                    let author = messages[j].author;
-                    if (!this.hasAnyData(messages[j]))
-                    {
-                        if (messagesByAuthor.has(author))
-                        {
-                            messagesByAuthor.set(author, messagesByAuthor.get(author) + 1);
+                    let messagesByAuthor = new Map<User, number>();
 
-                            if (messagesByAuthor.get(author) > numberPerUser && messages[j].deletable)
+                    for (var j = i; j < messages.length; j++)
+                    {
+                        let author = messages[j].author;
+                        if (!this.hasAnyData(messages[j]))
+                        {
+                            if (messagesByAuthor.has(author))
                             {
-                                if (this.deleteMessages)
+                                messagesByAuthor.set(author, messagesByAuthor.get(author) + 1);
+
+                                if (messagesByAuthor.get(author) > numberPerUser && messages[j].deletable)
                                 {
-                                    messages[j].delete({timeout: 100, reason: "Cleaned from channel by bot."})
-                                               .catch(error => Printer.error(error.toString()));
+                                    toDelete.push(messages[j]);
                                 }
-                                else 
-                                {
-                                    Printer.info("\tselected " + Printer.shorten(message[j]) + " to be cleaned");
-                                }
+                            }
+                            else
+                            {
+                                messagesByAuthor.set(author, 1);
                             }
                         }
                         else
                         {
-                            messagesByAuthor.set(author, 1);
+                            break;
                         }
                     }
-                    else
+
+                    i = j;
+                }
+                bar.update(i);
+            }
+            bar.stop();
+
+            if (preview)
+            {
+                let embed = EmbedFactory.build({
+                    title: "Clean command preview",
+                    description: "List of messages that will be deleted"
+                });
+                let embedField = { name: "Messages", value: "", inline: false }
+                for (i = 0; i < toDelete.length; i++)
+                {
+                    const shorten = Printer.shorten(toDelete[i].cleanContent) + "\n";
+                    if (embedField.value.length + shorten.length > 1024)
                     {
-                        break;
+                        embed.fields.push(embedField);
+                        embedField = { name: "-", value: shorten, inline: false };
+                    }
+                    else 
+                    {
+                        embedField.value += shorten;
                     }
                 }
 
-                i = j;
+                message.sendToChannel(embed);
             }
-            bar.update(i);
+            else 
+            {
+                for (i = 0; i < toDelete.length; i++)
+                {
+                    messages[i].delete({timeout: 100, reason: "Cleaned from channel by bot."})
+                        .catch(error => Printer.error(error.toString()));
+                }
+            }
         }
-        bar.stop();
     }
 
     private hasAnyData(message: Message): boolean
@@ -95,7 +147,7 @@ export class CleanChannelCommand extends Command
         else return false;
     }
 
-    private getParams(wrapper: MessageWrapper): [number, TextChannel]
+    private getParams(wrapper: MessageWrapper): [number, TextChannel, boolean, boolean]
     {
         let maxMessages = 3;
         let channel: TextChannel = undefined;
@@ -107,15 +159,6 @@ export class CleanChannelCommand extends Command
 
         channel = this.resolveTextChannel(wrapper);
 
-        if (wrapper.has("-d"))
-        {
-            this.deleteMessages = true;
-        }
-        else 
-        {
-            this.deleteMessages = false;
-        }
-
-        return [maxMessages, channel];
+        return [maxMessages, channel, !wrapper.hasKeys(["a", "all"]), wrapper.has("p")];
     }
 }

@@ -1,8 +1,24 @@
-import { TextChannel, Message, Collection } from "discord.js";
+import { TextChannel, Message } from "discord.js";
+import EventEmitter from "events";
 import { ArgumentError } from "../../errors/ArgumentError";
 import { Tools } from "../../helpers/Tools";
 
-export class DiscordObjectGetter
+type Filter = (message: Message, ...args: any[]) => boolean;
+type Chunk = (i: number) => number | number;
+
+interface AdditionalParams
+{
+    maxIterations: number;
+    chunk?: Chunk;
+    allowOverflow?: boolean;
+}
+
+interface DOGEvent 
+{
+    progress: [number]
+}
+
+export class DiscordObjectGetter extends EventEmitter
 {
     public readonly DEFAULT_CHUNK_VALUE = 50;
 
@@ -27,25 +43,28 @@ export class DiscordObjectGetter
 
         if (resMessages.length < messagesAmount)
         {
-            while (resMessages.length < messagesAmount)
+            var i = 0;
+            while (resMessages.length < messagesAmount && i < options.maxIterations)
             {
-                let lastMessageID = await messages.last()?.id;
+                let lastMessageID = messages.last()?.id;
                 if (lastMessageID == undefined)
                 {
                     break;
                 }
                 else
                 {
-                    messages = await channel.messages.fetch({ limit: this.getChunk(options?.chunk, resMessages.length), before: lastMessageID });
+                    messages = await channel.messages.fetch({ limit: this.getChunk(options?.chunk, i), before: lastMessageID });
 
-                    // apply not null/undefined filter && user filter
+                    // apply not null/undefined filter
                     messages.filter(nullMessageFilter)
                             .forEach((message: Message) => resMessages.push(message));
+                    this.emit("progress", resMessages.length);
                 }
+                i++;
             }
         }
 
-        if (!options?.overflow)
+        if (!options?.allowOverflow)
         {
             return Tools.slice(resMessages, messagesAmount);
         }
@@ -86,14 +105,15 @@ export class DiscordObjectGetter
             }
 
             return message != undefined
+                && isIn
+                && message.createdAt
                 && (message.createdAt.getFullYear() == date.getFullYear()
                     && message.createdAt.getMonth() == date.getMonth()
                     && message.createdAt.getDate() == date.getDate()
-                    && message.createdAt.getDay() == date.getDay())
-                && isIn;
+                    && message.createdAt.getDay() == date.getDay());
         }
 
-        let messages: Array<Message> = await this.fetchAndFilter(channel, 100, filter, undefined, true, ignoreList, date);
+        let messages: Array<Message> = await this.fetchAndFilter(channel, 100, filter, {chunk: undefined, allowOverflow: true, maxIterations: 200}, true, ignoreList, date);
 
         return messages.sort((a: Message, b: Message) =>
         {
@@ -118,10 +138,9 @@ export class DiscordObjectGetter
      * @param channel Channel to collect the messages from
      * @param messagesAmount Number of messages to collect
      * @param filter Filter function to apply to the collection (null/undefined messages will be removed automatically)
-     * @param chunk Optional parameter to set the number of messages to get each loop if the initial fetch was too small (limit)
-     * @param overflow If set to true the collection size may be bigger than messagesAmount, if left on false the collection
-     * will be trimmed
+     * @param options Function options (chunk, max messages, overflow).
      * @param args Args to provide to the filter function (if needed)
+     * @returns 
      */
     public async fetchAndFilter(channel: TextChannel, messagesAmount: number, filter: Filter, options: AdditionalParams, ...args: any[]): Promise<Array<Message>>
     {
@@ -147,7 +166,7 @@ export class DiscordObjectGetter
             // get more messages manually
             while (filteredMessages.length < messagesAmount)
             {
-                let lastMessageID = await messages.last()?.id;
+                let lastMessageID = messages.last()?.id;
                 if (lastMessageID == undefined)
                 {
                     break;
@@ -169,12 +188,22 @@ export class DiscordObjectGetter
             }
         }
 
-        if (!options.overflow)
+        if (!options.allowOverflow)
         {
             return Tools.slice(filteredMessages, messagesAmount);
         }
 
         return filteredMessages;
+    }
+
+    public on<K extends keyof DOGEvent>(event: K, listener: (...args: DOGEvent[K]) => void): this
+    {
+        return super.on(event, listener);
+    }
+
+    public emit<K extends keyof DOGEvent>(event: K, ...args: DOGEvent[K]): boolean
+    {
+        return super.emit(event, ...args);
     }
 
     private isChannelNullOrUndefined(channel: TextChannel)
@@ -193,17 +222,7 @@ export class DiscordObjectGetter
         }
         else 
         {
-            return typeof chunk == "function" ? chunk(iterator) : chunk;
+            return typeof chunk == "function" ? Math.round(chunk(iterator) * 100) : chunk;
         }
     }
-}
-
-type Filter = (message: Message, ...args: any[]) => boolean;
-type Chunk = (i: number) => number | number;
-
-interface AdditionalParams
-{
-    chunk?: Chunk;
-    overflow?: boolean;
-    maxMessages?: number;
 }

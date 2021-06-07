@@ -5,8 +5,6 @@ import { VoteLogger } from '../../command_modules/logger/loggers/VoteLogger';
 import { Printer } from '../../../../console/Printer';
 import { EmojiReader } from '../../../../dal/readers/EmojiReader';
 import { CommandError } from '../../../../errors/command_errors/CommandError';
-import { ExecutionError } from '../../../../errors/ExecutionError';
-import { ArgumentError } from '../../../../errors/ArgumentError';
 import { MessageWrapper } from '../../../common/MessageWrapper';
 import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyntaxError";
 

@@ -90,15 +90,15 @@ export class DeleteCommand extends Command
                 filter = (message: Message) => message.author.tag == username && !message.pinned;
             }
 
-            messages = await dog.fetchAndFilter(channel, params.messages, filter, { overflow: false });
+            messages = await dog.fetchAndFilter(channel, params.messages, filter, {maxIterations: 5000, allowOverflow: false });
         }
         else if (!params.deletePinned)
         {
-            messages = await dog.fetchAndFilter(channel, params.messages, (message: Message) => !message.pinned, { overflow: false });
+            messages = await dog.fetchAndFilter(channel, params.messages, (message: Message) => !message.pinned, {maxIterations: 5000, allowOverflow: false });
         }
         else
         {
-            messages = await dog.fetch(channel, params.messages, { overflow: false });
+            messages = await dog.fetch(channel, params.messages, {maxIterations: 5000, allowOverflow: false });
         }
 
         let bar = new ProgressBar(params.messages, "deleting messages");

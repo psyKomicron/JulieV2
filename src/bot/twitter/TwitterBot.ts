@@ -58,7 +58,7 @@ export class TwitterBot
                 else return Tools.isUrl(message.cleanContent);
             };
 
-            messages = await this.dog.fetchAndFilter(channel, 50, filter, { overflow: false, chunk: Tools.sigmoid });
+            messages = await this.dog.fetchAndFilter(channel, 50, filter, {maxIterations: 200, allowOverflow: false, chunk: Tools.sigmoid });
         }
     
         let downloader: Downloader = new Downloader(channel.name);
