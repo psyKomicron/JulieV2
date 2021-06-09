@@ -1,6 +1,6 @@
 # Julie
 # **How to use commands**
-Each commande starts with what is called a prefix (by default for this bot it's "/"). For example to create a vote you need to send `/vote` or else the bot will not understand it as a command. After that comes what is called arguments, those who have dealt a bit with command lines on Linux/NT systems know what i am talking about. Arguments a things (parameters) that you can give to a command to set it's parameters. If we take the `/vote` example you can give a few parameters :
+Each command starts with what is called a prefix (by default for this bot it's "/"). For example to create a vote you need to send `/vote` or else the bot will not understand it as a command. After that comes what is called arguments, those who have dealt a bit with command lines on Linux/NT systems know what i am talking about. Arguments a things (parameters) that you can give to a command to set it's parameters. If we take the `/vote` example you can give a few parameters :
  - `-n` : (n for number) this will set how long the vote will stay active in seconds.
  - `-r` : (r for reason) this will set the title of the vote.
 
