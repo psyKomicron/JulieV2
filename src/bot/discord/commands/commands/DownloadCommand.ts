@@ -1,18 +1,13 @@
 import { FileType } from '../../../../helpers/enums/FileType';
 import { Bot } from '../../Bot';
 import { Channel, Message, TextChannel, Snowflake, Collection } from 'discord.js';
-import { FileSystem as fs } from '../../../../dal/FileSystem';
 import { EmojiReader } from '../../../../dal/readers/EmojiReader';
 import { Printer } from '../../../../console/Printer';
-import { EmbedResolvable } from '../../../../dtos/EmbedResolvable';
-import { EmbedFactory } from '../../../../factories/EmbedFactory';
 import { ProgressBar } from '../../../../console/effects/ProgressBar';
 import { Downloader } from '../../command_modules/Downloader';
 import { Command } from '../Command';
 import { Tools } from '../../../../helpers/Tools';
-import { ArgumentError } from '../../../../errors/ArgumentError';
 import { MessageWrapper } from '../../../common/MessageWrapper';
-import { CommandError } from '../../../../errors/command_errors/CommandError';
 import { CommandArgumentError } from "../../../../errors/command_errors/CommandArgumentError";
 
 export class DownloadCommand extends Command

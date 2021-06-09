@@ -18,6 +18,7 @@ export class VoteLogger extends Logger
     public handle(message: MessageWrapper): boolean 
     {
         let can: boolean;
+        // change to allow for prefix change
         if (message.content.substr(1, 3) == "end" && this.isID(message.content))
         {
             can = true;
