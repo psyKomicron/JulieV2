@@ -5,7 +5,6 @@ import { YoutubeItem } from "../../dtos/YoutubeItem";
 import { Tools } from "../Tools";
 import { WrongYoutubeResponseType } from "../../errors/dal_errors/WrongYoutubeResponseType";
 import { Printer } from "../../console/Printer";
-import { NotImplementedError } from "../../errors/NotImplementedError";
 import { YoutubePlaylistOutput } from "../../dtos/YoutubePlaylistOutput";
 import { YoutubePlaylistInput } from "../../dtos/YoutubePlaylistInput";
 
