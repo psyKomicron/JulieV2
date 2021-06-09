@@ -36,7 +36,7 @@ export class DiscordObjectGetter extends EventEmitter
         let resMessages: Array<Message> = new Array();
         let nullMessageFilter = (message: Message) => message != undefined;
 
-        messages.filter(nullMessageFilter);
+        messages = messages.filter(nullMessageFilter);
 
         // add messages to result array
         messages.forEach((message: Message) => resMessages.push(message));
@@ -88,34 +88,77 @@ export class DiscordObjectGetter extends EventEmitter
 
         var filter: Filter = (message: Message, ignoreList: Array<Message> | Message, date: Date) =>
         {
-            let isIn = false;
             if (ignoreList instanceof Array)
             {
                 for (var i = 0; i < ignoreList.length; i++)
                 {
                     if (ignoreList[i].id == message.id)
                     {
-                        return true;
+                        return false;
                     }
                 }
             }
-            else if (ignoreList)
+            else if (ignoreList && (ignoreList.id == message.id))
             {
-                return ignoreList.id == message.id;
+                return false;
             }
 
-            return message != undefined
-                && isIn
-                && message.createdAt
-                && (message.createdAt.getFullYear() == date.getFullYear()
-                    && message.createdAt.getMonth() == date.getMonth()
-                    && message.createdAt.getDate() == date.getDate()
-                    && message.createdAt.getDay() == date.getDay());
+            return message.createdAt != undefined
+                && Tools.isSameDay(message.createdAt, date);
         }
 
-        let messages: Array<Message> = await this.fetchAndFilter(channel, 100, filter, {chunk: undefined, allowOverflow: true, maxIterations: 200}, true, ignoreList, date);
+        let alive = true;
+        let messages = await channel.messages.fetch();
+        let filteredMessages: Array<Message> = new Array();
 
-        return messages.sort((a: Message, b: Message) =>
+        let nullMessageFilter = (message: Message) => message != undefined;
+        // adding to resMessages and removing null/undefined messages
+        messages = messages.filter(nullMessageFilter);
+
+        messages.forEach(message => 
+        {
+            if (filter(message, ignoreList, date))
+            {
+                filteredMessages.push(message);
+            }
+            if (message.createdAt && !Tools.isSameDay(message.createdAt, date))
+            {
+                alive = false;
+            }
+        });
+        if (alive)
+        {
+            // get more messages manually
+            let iterations = 0;
+            while (alive && iterations < 5000)
+            {
+                let lastMessageID = messages.last()?.id;
+                if (lastMessageID == undefined)
+                {
+                    break;
+                }
+                else
+                {
+                    messages = await channel.messages.fetch(
+                    {
+                        limit: 100,
+                        before: lastMessageID
+                    });
+
+                    // apply not null/undefined filter && 'today' filter
+                    messages.forEach((message: Message) => 
+                    {
+                        if (nullMessageFilter(message) && filter(message, ignoreList, date))
+                        {
+                            filteredMessages.push(message);
+                        }
+                    });
+                }
+            }
+        }
+
+        // sort by date
+        return filteredMessages.sort((a: Message, b: Message) =>
         {
             if (a.createdAt.getTime() == b.createdAt.getTime())
             {
@@ -163,8 +206,9 @@ export class DiscordObjectGetter extends EventEmitter
 
         if (filteredMessages.length < messagesAmount)
         {
+            let iterations = 0;
             // get more messages manually
-            while (filteredMessages.length < messagesAmount)
+            while (filteredMessages.length < messagesAmount && iterations < options.maxIterations)
             {
                 let lastMessageID = messages.last()?.id;
                 if (lastMessageID == undefined)
@@ -180,11 +224,15 @@ export class DiscordObjectGetter extends EventEmitter
                     });
 
                     // apply not null/undefined filter && user filter
-                    messages.filter((message: Message) =>
+                    messages.forEach(value => 
                     {
-                        return nullMessageFilter(message) && filter(message, args);
-                    }).forEach((message: Message) => filteredMessages.push(message));
+                        if (nullMessageFilter(value) && filter(value, ...args))
+                        {
+                            filteredMessages.push(value);
+                        }
+                    });
                 }
+                iterations++;
             }
         }
 

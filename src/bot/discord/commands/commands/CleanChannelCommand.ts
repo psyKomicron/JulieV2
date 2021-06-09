@@ -9,6 +9,7 @@ import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyn
 import { EmojiReader } from "../../../../dal/readers/EmojiReader";
 import { Tools } from "../../../../helpers/Tools";
 import { EmbedFactory } from "../../../../factories/EmbedFactory";
+import { StarEffect } from "../../../../console/effects/StarEffect";
 
 /**
  * @command-syntax clean
@@ -29,7 +30,9 @@ export class CleanChannelCommand extends Command
         if (values[1] != undefined)
         {
             Printer.args(["number of unique messages", "channel"], [`${values[0]}`, `${values[1].name}`]);
+            
             await this.cleanChannel(message, values[0], values[1], values[2], values[3]);
+            
         }
         else
         {
@@ -42,14 +45,17 @@ export class CleanChannelCommand extends Command
         preview: boolean): Promise<void>
     {
         let messages: Array<Message>;
+        let effect = new StarEffect([null, -1]);
+        effect.start();
         if (onlyToday)
         {
             messages = await this.dog.fetchToday(channel, message.message);
         }
         else 
         {
-            messages = await this.dog.fetch(channel, 100, {maxIterations: 500, chunk: Tools.sigmoid, allowOverflow: false});
+            messages = await this.dog.fetch(channel, 100, { maxIterations: 500, chunk: Tools.sigmoid, allowOverflow: false });
         }
+        effect.stop();
         
         if (messages.length == 0)
         {   
@@ -59,11 +65,9 @@ export class CleanChannelCommand extends Command
         else 
         {
             let toDelete = new Array<Message>();
-
             let bar = new ProgressBar(messages.length, "cleaning channel [" + channel.name + "]");
             bar.start();
 
-            
             // start sorting and selecting messages
             for (var i = 0; i < messages.length; i++)
             {
@@ -111,10 +115,11 @@ export class CleanChannelCommand extends Command
                     description: "List of messages that will be deleted"
                 });
                 let embedField = { name: "Messages", value: "", inline: false }
+                let ids = "";
                 for (i = 0; i < toDelete.length; i++)
                 {
                     const shorten = Printer.shorten(toDelete[i].cleanContent) + "\n";
-                    if (embedField.value.length + shorten.length > 1024)
+                    if (embedField.value.length + shorten.length >= 1024)
                     {
                         embed.fields.push(embedField);
                         embedField = { name: "-", value: shorten, inline: false };
@@ -123,8 +128,27 @@ export class CleanChannelCommand extends Command
                     {
                         embedField.value += shorten;
                     }
-                }
 
+                    ids += "`" + toDelete[i].id + "`,";
+                }
+                ids = ids.substring(0, ids.length - 1);
+                embed.fields.push(embedField);
+                
+                if (ids.length >= 1024)
+                {
+                    let size = Math.ceil(ids.length / 1024);
+                    for (i = 0; i < size; i++)
+                    {
+                        let idsField = { name: "IDs (" + (i + 1) + ")", value: "", inline: false };
+                        idsField.value = ids.substr(0, ids.length > 1024 ? 1024 : ids.length);
+                        embed.fields.push(idsField);
+                        ids = ids.substring(idsField.value.length);
+                    }
+                }
+                else 
+                {
+                    embed.fields.push({ name: "IDs", value: ids, inline: false });
+                }
                 message.sendToChannel(embed);
             }
             else 
