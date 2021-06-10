@@ -1,9 +1,12 @@
 import readline = require('readline');
+import { FileSystem as fs } from '../dal/FileSystem';
 import { Command } from '../bot/discord/commands/Command';
 import { Config } from '../dal/Config';
 
 export class Printer
 {
+    static readonly filepath = "./files/logs/";
+    static readonly logFileName = "command_logs";
     public static ARGS_SPACES: number = 4;
     public static LONG_STRING_MAX_LENGTH: number = 25;
 
@@ -21,8 +24,8 @@ export class Printer
         {
             this.init();
         }
-        this.printEscCode(EscapeCodes.CLEAR_SCREEN);
-        this.printEscCode(EscapeCodes.HIDE_CURSOR);
+        this.printEscCode(EscapeCodes.ClearScreen);
+        this.printEscCode(EscapeCodes.HideCursor);
         readline.cursorTo(process.stdout, 0, 7);
         process.stdout.write(this.appTitle());
     }
@@ -69,7 +72,7 @@ export class Printer
     {
         if (!position)
         {
-            this.printEscCode(EscapeCodes.CLEAR_SCREEN);
+            this.printEscCode(EscapeCodes.ClearScreen);
         }
         else
         {
@@ -91,7 +94,7 @@ export class Printer
         {
             if (Command.commands > 10)
             {
-                this.printEscCode(EscapeCodes.CLEAR_SCREEN);
+                this.printEscCode(EscapeCodes.ClearScreen);
                 this.lines = 0;
                 readline.cursorTo(process.stdout, 0, 0);
             }
@@ -200,27 +203,28 @@ export class Printer
     {
         console.error(this.pRed(content));
         this.lines++;
+        this.writeLog(content, LogLevels.Error);
     }
 
     public static hideCursor(): void
     {
-        this.printEscCode(EscapeCodes.HIDE_CURSOR);
+        this.printEscCode(EscapeCodes.HideCursor);
     }
 
     public static saveCursor(): void
     {
-        this.printEscCode(EscapeCodes.SAVE_CURSOR);
+        this.printEscCode(EscapeCodes.SaveCursor);
     }
 
     public static restoreCursor(): void
     {
-        this.printEscCode(EscapeCodes.RESTORE_CURSOR);
+        this.printEscCode(EscapeCodes.RestoreCursor);
     }
 
     public static clear(): void
     {
         readline.cursorTo(process.stdout, 0, this.lines);
-        console.log(EscapeCodes.CLEAR_SCREEN);
+        console.log(EscapeCodes.ClearScreen);
         readline.cursorTo(process.stdout, 0, 0);
         this.lines = 0;
     }
@@ -266,42 +270,58 @@ export class Printer
         }
     }
 
+    public static writeLog(message: string, level: LogLevels)
+    {
+        switch (level)
+        {
+            case LogLevels.Log:
+                fs.appendToFile(`${this.filepath}${this.logFileName}`, "[LOG]" + "(" + new Date(Date.now()).toISOString() + ") " + message);
+                break;
+            case LogLevels.Warning:
+                fs.appendToFile(`${this.filepath}${this.logFileName}`, "[WARNING]" + "(" + new Date(Date.now()).toISOString() + ") " + message);
+                break;
+            case LogLevels.Log:
+                fs.appendToFile(`${this.filepath}${this.logFileName}`, "[ERROR]" + "(" + new Date(Date.now()).toISOString() + ") " + message);
+                break;
+        }
+    }
+
     //#region colors
     public static pRed(content: string): string
     {
-        return this.printColor(content, Colors.RED);
+        return this.printColor(content, Colors.Red);
     }
     public static pGreen(content: string): string
     {
-        return this.printColor(content, Colors.GREEN);
+        return this.printColor(content, Colors.Green);
     }
     public static pBlue(content: string): string
     {
-        return this.printColor(content, Colors.BLUE);
+        return this.printColor(content, Colors.Blue);
     }
     public static pYell(content: string): string
     {
-        return this.printColor(content, Colors.YELLOW);
+        return this.printColor(content, Colors.Yellow);
     }
     public static pPurp(content: string): string
     {
-        return this.printColor(content, Colors.PURPLE);
+        return this.printColor(content, Colors.Purple);
     }
     public static pCyan(content: string): string
     {
-        return this.printColor(content, Colors.CYAN);
+        return this.printColor(content, Colors.Cyan);
     }
     public static pWhite(content: string): string
     {
-        return this.printColor(content, Colors.WHITE);
+        return this.printColor(content, Colors.White);
     }
     public static pBlack(content: string): string
     {
-        return this.printColor(content, Colors.BLACK);
+        return this.printColor(content, Colors.Black);
     }
     public static printColor(content: string, color: Colors): string
     {
-        return color + content + Colors.RESET;
+        return color + content + Colors.Reset;
     }
     public static printEscCode(code: EscapeCodes)
     {
@@ -329,22 +349,29 @@ export class Printer
 
 enum EscapeCodes
 {
-    SAVE_CURSOR = "\u001B[s",
-    RESTORE_CURSOR = "\u001B[u",
-    HIDE_CURSOR = "\u001B[?25l",
-    CLEAR_SCREEN = "\u001B[1J",
-    CLEAR_SCREEN_R = "\u001B[3J",
+    SaveCursor = "\u001B[s",
+    RestoreCursor = "\u001B[u",
+    HideCursor = "\u001B[?25l",
+    ClearScreen = "\u001B[1J",
+    ClearScreenR = "\u001B[3J",
 }
 
 enum Colors
 {
-    RESET = "\u001B[0m",
-    RED = "\u001B[1;31m",
-    GREEN = "\u001B[32m",
-    BLUE = "\u001B[34m",
-    YELLOW = "\u001B[33m",
-    PURPLE = "\u001B[35m",
-    CYAN = "\u001B[36m",
-    WHITE = "\u001B[37m",
-    BLACK = "\u001B[30m",
+    Reset = "\u001B[0m",
+    Red = "\u001B[1;31m",
+    Green = "\u001B[32m",
+    Blue = "\u001B[34m",
+    Yellow = "\u001B[33m",
+    Purple = "\u001B[35m",
+    Cyan = "\u001B[36m",
+    White = "\u001B[37m",
+    Black = "\u001B[30m",
+}
+
+export enum LogLevels 
+{
+    Log,
+    Error,
+    Warning
 }
