@@ -30,9 +30,7 @@ export class CleanChannelCommand extends Command
         if (values[1] != undefined)
         {
             Printer.args(["number of unique messages", "channel"], [`${values[0]}`, `${values[1].name}`]);
-            
             await this.cleanChannel(message, values[0], values[1], values[2], values[3]);
-            
         }
         else
         {
@@ -53,7 +51,7 @@ export class CleanChannelCommand extends Command
         }
         else 
         {
-            messages = await this.dog.fetch(channel, 100, { maxIterations: 500, chunk: Tools.sigmoid, allowOverflow: false });
+            messages = await this.dog.fetch(channel, 300, { maxIterations: 500, chunk: Tools.sigmoid, allowOverflow: false });
         }
         effect.stop();
         
@@ -110,44 +108,47 @@ export class CleanChannelCommand extends Command
 
             if (preview)
             {
+                message.message.channel.startTyping();
+
                 let embed = EmbedFactory.build({
                     title: "Clean command preview",
                     description: "List of messages that will be deleted"
                 });
                 let embedField = { name: "Messages", value: "", inline: false }
                 let ids = "";
+
                 for (i = 0; i < toDelete.length; i++)
                 {
                     const shorten = Printer.shorten(toDelete[i].cleanContent) + "\n";
                     if (embedField.value.length + shorten.length >= 1024)
                     {
                         embed.fields.push(embedField);
-                        embedField = { name: "-", value: shorten, inline: false };
+                        embedField = { name: "-", value: shorten, inline: true };
                     }
                     else 
                     {
                         embedField.value += shorten;
                     }
 
-                    ids += "`" + toDelete[i].id + "`,";
+                    ids += toDelete[i].id;
                 }
                 ids = ids.substring(0, ids.length - 1);
                 embed.fields.push(embedField);
                 
-                if (ids.length >= 1024)
+                if (ids.length + 3 > 1024)
                 {
-                    let size = Math.ceil(ids.length / 1024);
+                    let size = Math.ceil(ids.length / 1022);
                     for (i = 0; i < size; i++)
                     {
-                        let idsField = { name: "IDs (" + (i + 1) + ")", value: "", inline: false };
-                        idsField.value = ids.substr(0, ids.length > 1024 ? 1024 : ids.length);
+                        let idsField = { name: "IDs (" + (i + 1) + ")", value: undefined, inline: false };
+                        idsField.value = "`" + ids.substr(0, ids.length > 1021 ? 1021 : ids.length) + "`,";
                         embed.fields.push(idsField);
                         ids = ids.substring(idsField.value.length);
                     }
                 }
                 else 
                 {
-                    embed.fields.push({ name: "IDs", value: ids, inline: false });
+                    embed.fields.push({ name: "IDs", value: "`" + ids + "`", inline: false });
                 }
                 message.sendToChannel(embed);
             }
@@ -164,11 +165,12 @@ export class CleanChannelCommand extends Command
 
     private hasAnyData(message: Message): boolean
     {
-        let urlRegex = /(https?: \/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
-
-        if (message.attachments.size > 0) return true;
-        else if (message.cleanContent.match(urlRegex) != undefined) return true;
-        else return false;
+        if (message.attachments.size > 0) 
+            return true;
+        else if (Tools.isUrl(message.cleanContent)) 
+            return true;
+        else 
+            return false;
     }
 
     private getParams(wrapper: MessageWrapper): [number, TextChannel, boolean, boolean]
