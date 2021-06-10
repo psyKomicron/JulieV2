@@ -28,5 +28,7 @@ try
 }
 catch (e)
 {
+    loadingEffect.stop();
     Printer.error(e.toString());
+    exit(-1);
 }
