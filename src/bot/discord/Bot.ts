@@ -1,9 +1,9 @@
 import readline = require('readline');
 import { TokenReader } from '../../dal/readers/TokenReader';
-import { Client, User, TextChannel } from 'discord.js';
+import { Client, User, TextChannel, PresenceData, ActivityFlags } from 'discord.js';
 import { DefaultLogger } from './command_modules/logger/loggers/DefaultLogger';
 import { Logger } from './command_modules/logger/Logger';
-import { Printer } from '../../console/Printer';
+import { LogLevels, Printer } from '../../console/Printer';
 import { CommandFactory } from '../../factories/CommandFactory';
 import { Tools } from '../../helpers/Tools';
 import { Config } from '../../dal/Config';
@@ -13,6 +13,7 @@ import { Moderator } from './command_modules/moderation/Moderator';
 import { EventEmitter } from 'events';
 import { MessageWrapper } from '../common/MessageWrapper';
 import { ErrorTranslater } from "../../errors/ErrorTranslater";
+import { Command } from "./commands/Command";
 
 export class Bot extends EventEmitter
 {
@@ -26,28 +27,62 @@ export class Bot extends EventEmitter
     private prefix: string;
     private _logger: Logger = new DefaultLogger();
     private errorTranslater: ErrorTranslater = new ErrorTranslater();
+    private currentPresenceData: PresenceData;
 
     private constructor(effect: LoadingEffect)
     {
         super();
         this._client = new Client();
         this.moderator = Moderator.get(this);
-        try
-        {
-            // bot parameters
-            this.verbose = Config.getVerbose();
-            this.parents = Config.getAuthorizedUsers();
 
-            // events init & login
-            this.init(effect);
-        }
-        catch (error)
+        // bot parameters
+        this.verbose = Config.getVerbose();
+        this.parents = Config.getAuthorizedUsers();
+        this.prefix = Config.getPrefix();
+
+        // config changes
+        Config.onEvent("prefixChange", (newPrefix) => this.onPrefixChange(newPrefix));
+        Config.onEvent("addUser", (user) => this.onUserAdd(user));
+
+        // initiate bot
+        this._client.on("message", (message) => this.onMessage(new MessageWrapper(message)));
+        this._client.on("ready", () =>
         {
             effect.stop();
-            Printer.clear();
-            Printer.error(error.toString());
-            Printer.error("\nFatal error, application will not start. Press CTRL+C to stop");
-        }
+            readline.moveCursor(process.stdout, -3, 0);
+            process.stdout.write("Ready\n");
+            Printer.error(Printer.repeat("-", 34));
+            Printer.printConfig();
+        });
+        this._client.on("disconnect", (arg_0, arg_1: number) => 
+        {
+            console.log("Client disconnected :");
+            console.log(`${JSON.stringify(arg_0)}, ${arg_1}`);
+        });
+
+        // login
+        this._client.login(TokenReader.getToken("discord"))
+            .then((value: string) => 
+            {
+                // set status
+                this.currentPresenceData = {
+                    status: "dnd",
+                    afk: false,
+                    activity: {
+                        name: this.prefix + "help",
+                        type: "PLAYING",
+                        url: "https://github.com/psyKomicron/JulieV2/tree/dev"
+                    }
+                };
+                this._client.user.setPresence(this.currentPresenceData);
+            })
+            .catch((reason) => 
+            {
+                effect.stop();
+                Printer.clear();
+                Printer.error(reason.toString());
+                Printer.error("\nFatal error, application will not start. Press CTRL+C to stop");
+            });
     }
 
     // #region properties
@@ -78,35 +113,6 @@ export class Bot extends EventEmitter
     }
 
     // #region private methods
-    private init(id: LoadingEffect): void
-    {
-        this.prefix = Config.getPrefix();
-
-        // config changes
-        Config.onEvent("prefixChange", (newPrefix) => this.onPrefixChange(newPrefix));
-        Config.onEvent("addUser", (user) => this.onUserAdd(user));
-
-        // initiate bot
-        this._client.on("ready", () =>
-        {
-            id.stop();
-            readline.moveCursor(process.stdout, -3, 0);
-            process.stdout.write("Ready\n");
-            Printer.error(Printer.repeat("-", 34));
-            Printer.printConfig();
-        });
-
-        this._client.on("message", (message) => this.onMessage(new MessageWrapper(message)));
-
-        this._client.on("disconnect", (arg_0, arg_1: number) => 
-        {
-            console.log("Client disconnected :");
-            console.log(`${JSON.stringify(arg_0)}, ${arg_1}`);
-        });
-
-        // login
-        this._client.login(TokenReader.getToken("discord"));
-    }
 
     private handleErrorForClient(error: Error, message: MessageWrapper): void
     {
@@ -124,13 +130,17 @@ export class Bot extends EventEmitter
     // #endregion
 
     // #region events handlers
-    private onMessage(wrapper: MessageWrapper): void 
+    private async onMessage(wrapper: MessageWrapper): Promise<void> 
     {
         if (!Tools.isNullOrEmpty(Config.getGuild()) 
             && wrapper.message.guild 
             && wrapper.message.guild.available 
             && wrapper.message.guild.name != Config.getGuild())
         {
+            if (Config.getVerbose() > 2 && !wrapper.message.guild)
+            {
+                Printer.writeLog("[UNDEFINED_GUILD] received message from undefined guild, not handling\n", LogLevels.Log);
+            }
             return;
         }
         
@@ -151,15 +161,16 @@ export class Bot extends EventEmitter
 
             if (this.isAuthorized(wrapper.message.author))
             {
+                wrapper.type();
                 Printer.info("\n(" + new Date(Date.now()).toISOString() + ") command requested by : " + wrapper.message.author.tag);
-
                 if (this._logger)
                 {
                     let handled = this._logger.handle(wrapper);
 
                     if (!handled)
                     {
-                        let name = Tools.getCommandName(content);
+                        let name = Command.getCommandName(content);
+                        Printer.writeLog("command requested by : " + wrapper.message.author.tag + " | command name: " + name + "\n", LogLevels.Log);
                         try
                         {
                             let command = CommandFactory.create(name.substr(this.prefix.length), this);
@@ -169,6 +180,8 @@ export class Bot extends EventEmitter
                                 .catch(error =>
                                 {
                                     Printer.error(error.toString());
+                                    Printer.writeLog(wrapper.content + " | ", LogLevels.Error);
+                                    Printer.writeLog(error.toString() + "\n", LogLevels.Error);
                                     this.handleErrorForClient(error, wrapper);
                                 })
                                 .then(() =>
@@ -182,10 +195,17 @@ export class Bot extends EventEmitter
                         catch (error)
                         {
                             Printer.error(error.toString());
+                            Printer.writeLog(wrapper.content + " | ", LogLevels.Error);
+                            Printer.writeLog(error.toString() + "\n", LogLevels.Error);
                             this.handleErrorForClient(error, wrapper);
                         }
                     }
                 }
+                wrapper.stopTyping();
+            }
+            else 
+            {
+                Printer.writeLog("[UNKNOWN PREFIX] unknown prefix, not handling message (message: " + wrapper.content + ")\n", LogLevels.Warning);
             }
         }
     }
@@ -195,6 +215,8 @@ export class Bot extends EventEmitter
         if (prefix.length > 0)
         {
             this.prefix = prefix;
+            this.currentPresenceData.activity.name = prefix + "help";
+            this.client.user.setPresence(this.currentPresenceData);
         }
         else
         {
