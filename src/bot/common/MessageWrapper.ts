@@ -1,4 +1,4 @@
-import { Collection, Guild, GuildMember, Message, MessageEmbed } from "discord.js";
+import { Collection, Guild, GuildMember, Message, MessageEmbed, TextChannel } from "discord.js";
 import { ArgumentError } from "../../errors/ArgumentError";
 import { Tools } from "../../helpers/Tools";
 import { LocalEmoji } from "../../dal/readers/emojis/LocalEmoji";
@@ -51,6 +51,23 @@ export class MessageWrapper
         {
             return undefined;
         }
+    }
+
+    public get textChannel(): TextChannel 
+    { 
+        if (this._message.channel instanceof TextChannel)
+        {
+            return this._message.channel;
+        }
+        else 
+        {
+            return undefined;
+        }
+    }
+
+    public typing(): boolean
+    {
+        return this.textChannel.typing;
     }
     //#endregion
 
@@ -303,6 +320,22 @@ export class MessageWrapper
             {
                 this.message.delete();
             }
+        }
+    }
+
+    public async type(): Promise<void> 
+    {
+        if (this.textChannel)
+        {
+            await this.textChannel.startTyping();
+        }
+    }
+
+    public stopTyping(): void
+    {
+        if (this.textChannel && this.typing)
+        {
+            this.textChannel.stopTyping();
         }
     }
 
