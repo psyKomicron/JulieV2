@@ -112,12 +112,11 @@ export class DeleteCommand extends Command
             .catch(async (pastErr) =>
             {
                 Printer.error("Bulk delete failed, switching to manual delete.");
-                Printer.error(pastErr.toString());
+                Printer.warn(pastErr.toString());
                 let dog = new DiscordObjectGetter();
                 try 
                 {
-                    let messages = await dog.fetch(channel, n, { maxIterations: 5000, allowOverflow: false });
-
+                    await this.overrideDelete(await dog.fetch(channel, n, { maxIterations: 5000, allowOverflow: false }));
                 }
                 catch (e)
                 {
