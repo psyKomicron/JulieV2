@@ -1,5 +1,8 @@
 import fs = require('fs');
+import { Printer } from "../console/Printer";
 import { IStreamOptions } from './IStreamOptions';
+
+export type NoParamCallback = (err?: Error) => void;
 
 export class FileSystem
 {
@@ -11,6 +14,18 @@ export class FileSystem
     public static appendToFile(path: string, content: string): void
     {
         fs.appendFileSync(path, content);
+    }
+
+    public static appendToFileAsync(path: string, content: string, callback?: NoParamCallback): void
+    {
+        if (callback != undefined)
+        {
+            fs.appendFile(path, content, callback);
+        }
+        else 
+        {
+            fs.appendFile(path, content, (err) => console.error(err));
+        }
     }
 
     public static writeFile(path: string, content: string): void
