@@ -22,7 +22,7 @@ Chosen prefix is `/`, but it can change based on your own bot configuration.
 | [Vote](#Vote) | `vote`, `v` | Creates a poll/vote. You can set the vote title, how long the vote will be active, where the vote message will be sent or on wich message to create the vote. |
 | [Play](#Play) | `play` | Plays a youtube video in a given channel, with of course a provided youtube link. Good to use with the explore command to search for a video. |
 | [Explore](#Explore) | `explore`, `search`, `e` | Start a search on a Wikipedia or Youtube on a keyword and display the result of the search in the channel. The search on Youtube will be made using YouTube search algorithm. |
-| [Show authorized users](<#Show users>) | `showusers` | Sends a embed (formatted message) to the channel showing every user authorized to use the bot. Other users can be added using the `adduser` command or by editing the .json configuration file (.\\config\\config.json -> field "`authorizedUsers`")|
+| [Show authorized users](<#Show users>) | `showusers` | Sends a embed (formatted message) to the channel showing every user authorized to use the bot. Other users can be added using the `adduser` command or by editing the .json configuration file (`./config/config.json` -> field "`authorizedUsers`")|
 | [Add user](<#Add user>) | `adduser` | Add a user to the authorized user list (those who can use the bot and it's commands).|
 | [Change prefix](#Prefix) | `changeprefix`, `prefix` | Change the prefix for the bot commands |
 | [Clean channel](<#Clean channel>) | `clean`, `c` | "Cleans" a channel. If you have a channel dedicated for pictures/files and should have a maximum amount of text messages to avoid clogging the channel, `clean` will clean those unwanted text messages. |
@@ -66,7 +66,7 @@ Sends an embed with a link to the right README section (`/help vote` will send y
 ## Clean channel
 - `clean` Cleans a channel with default parameters : 3 messages per user and deletes messages sent only today.
 ### Arguments :
-- `-a` (all). Get 100 messages instead of only today's messages (the bound limit can be set higher in the code).
+- `-a` (all). Get 300 messages instead of only today's messages (the bound limit can be set higher in the code).
 - `-p` (preview). Sends an embed in the message's channel of the messages selected to be deleted. The embed will list the content of the selected messages (shortened to 10 first, 10 last chars)
 
 ## Prefix
