@@ -5,9 +5,8 @@ import { VoteLogger } from '../../command_modules/logger/loggers/VoteLogger';
 import { Printer } from '../../../../console/Printer';
 import { EmojiReader } from '../../../../dal/readers/EmojiReader';
 import { CommandError } from '../../../../errors/command_errors/CommandError';
-import { ExecutionError } from '../../../../errors/ExecutionError';
-import { ArgumentError } from '../../../../errors/ArgumentError';
 import { MessageWrapper } from '../../../common/MessageWrapper';
+import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyntaxError";
 
 export class VoteCommand extends Command
 {
@@ -16,7 +15,6 @@ export class VoteCommand extends Command
     private collector: ReactionCollector;
     private votes: Map<User, MessageReaction> = new Map();
     private reactions: Map<MessageReaction, Array<User>> = new Map();
-    // persistent parameters
     private usingEmbed: boolean;
     private params: Params;
 
@@ -71,9 +69,7 @@ export class VoteCommand extends Command
             }
             else
             {
-                throw new CommandError(this,
-                    new ArgumentError("The vote command failed. Check syntax or see if the message used to host the vote was sent by me", "message")
-                );
+                throw new CommandSyntaxError(this);
             }
         }
     }
@@ -92,11 +88,11 @@ export class VoteCommand extends Command
         var collector = this.voteMessage.createReactionCollector(filter, { time: timeout, dispose: true });
 
         // using lambdas to keep context to this object
-        collector.on('collect', (reaction: MessageReaction, user: User) => this.onCollectorCollect(reaction, user));
+        collector.on("collect", (reaction: MessageReaction, user: User) => this.onCollectorCollect(reaction, user));
 
-        collector.on('remove', (reaction: MessageReaction, user: User) => this.onCollectorRemove(reaction, user));
+        collector.on("remove", (reaction: MessageReaction, user: User) => this.onCollectorRemove(reaction, user));
 
-        collector.on('end', () => this.onCollectorEnd());
+        collector.on("end", () => this.onCollectorEnd());
 
         emojis.forEach(emoji =>
         {
@@ -107,8 +103,6 @@ export class VoteCommand extends Command
                     Printer.error(e);
                 });
         });
-
-        this.voteMessage.pin();
 
         return collector;
     }
@@ -134,8 +128,8 @@ export class VoteCommand extends Command
         {
             throw new CommandError(
                 this,
-                error as ExecutionError,
-                "Uh oh something broke... A technician will fix this, give it little bit of time and try again !"
+                "Uh oh something broke... A technician will fix this, give it little bit of time and try again !",
+                error
             );
         }
     }
@@ -175,7 +169,7 @@ export class VoteCommand extends Command
         }
         else
         {
-            throw new ArgumentError("Message to use as vote message was not an embed, thus it cannot be used", "message");
+            throw new CommandSyntaxError(this, "Message to use as vote message was not an embed, it cannot be used for the vote.");
         }
 
         this.voteMessage = hostMessage;
@@ -255,6 +249,7 @@ export class VoteCommand extends Command
         // clean
         this.voteMessage.edit(embed);
         this.voteMessage.reactions.removeAll();
+        this.voteMessage.pin();
     }
 
     private getParams(wrapper: MessageWrapper): Params
@@ -266,55 +261,63 @@ export class VoteCommand extends Command
         let emojis: Array<Emoji> = new Array();
         let displayUsers = false;
 
-        let newTitle = wrapper.getValue(["r", "title"]);
-        if (newTitle != "")
-        {
-            title = newTitle;
-        }
-
-        if (!Number.isNaN(Number.parseInt(wrapper.getValue(["timeout", "n"]))))
-        {
-            timeout = Number.parseInt(wrapper.getValue(["timeout", "n"]));
-        }
-        else if (wrapper.getValue(["timeout", "n"]) == "nolimit")
-        {
-            timeout = undefined;
-        }
-
         channel = this.resolveTextChannel(wrapper);
 
-        let value = wrapper.getValue(["m", "message"]);
-        let desconstructedSnowflake = SnowflakeUtil.deconstruct(value);
-        if (desconstructedSnowflake)
+        if (wrapper.hasArgs())
         {
-            hostMessageID = value;
-        }
-
-        if (wrapper.getValue(["reactions", "e"]))
-        {
-            let names = wrapper.getValue(["reaction", "e"]).split(" ");
-            names.forEach(emoji =>
+            let newTitle = wrapper.getValue(["r", "title"]);
+            if (newTitle != "")
             {
-                try
+                title = newTitle;
+            }
+
+            if (!Number.isNaN(Number.parseInt(wrapper.getValue(["timeout", "n"]))))
+            {
+                timeout = Number.parseInt(wrapper.getValue(["timeout", "n"]));
+            }
+            else if (wrapper.getValue(["timeout", "n"]) == "nolimit")
+            {
+                timeout = undefined;
+            }
+
+
+            let value = wrapper.getValue(["m", "message"]);
+            let desconstructedSnowflake = SnowflakeUtil.deconstruct(value);
+            if (desconstructedSnowflake)
+            {
+                hostMessageID = value;
+            }
+
+            if (wrapper.hasValue(["reactions", "e"]))
+            {
+                let names = wrapper.getValue(["reaction", "e"]).split(" ");
+                names.forEach(emoji =>
                 {
-                    emojis.push(new Emoji(this.bot.client, emoji as Object));
-                } catch (error) { }
-            })
-        }
+                    try
+                    {
+                        emojis.push(new Emoji(this.bot.client, emoji as Object));
+                    } catch (error) { }
+                })
+            }
 
-        if (wrapper.has("displayusers"))
-        {
-            if (wrapper.get("displayusers"))
+            if (wrapper.has("displayusers"))
             {
-                if (wrapper.get("displayusers").match(/[y]|[yes]|[true]/gi))
+                if (wrapper.get("displayusers"))
+                {
+                    if (wrapper.get("displayusers").match(/[y]|[yes]|[true]/gi))
+                    {
+                        displayUsers = true;
+                    }
+                }
+                else
                 {
                     displayUsers = true;
                 }
             }
-            else
-            {
-                displayUsers = true;
-            }
+        }
+        else 
+        {
+            title = wrapper.commandContent;
         }
 
         return { timeout, title, channel, hostMessageID, emojis, displayUsers };

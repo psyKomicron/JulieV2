@@ -9,81 +9,82 @@ import { HelpCommand } from "../bot/discord/commands/commands/HelpCommand";
 import { TestCommand } from "../bot/discord/commands/commands/TestCommand";
 import { VoteCommand } from "../bot/discord/commands/commands/VoteCommand";
 import { AddUserCommand } from "../bot/discord/commands/commands/AddUserCommand";
-import { ChannelCleanerCommand } from "../bot/discord/commands/commands/ChannelCleanerCommand";
+import { CleanChannelCommand } from "../bot/discord/commands/commands/CleanChannelCommand";
 import { ShowUsersCommand } from "../bot/discord/commands/commands/ShowUsersCommand";
 import { ChangePrefixCommand } from "../bot/discord/commands/commands/ChangePrefixCommand";
 import { DefaultCommand } from "../bot/discord/commands/commands/DefaultCommand";
 import { GambleCommand } from "../bot/discord/commands/commands/GambleCommand";
 import { CollectCommand } from "../bot/discord/commands/commands/CollectCommand";
+import { RemindUserCommand } from "../bot/discord/commands/commands/RemindUserCommand";
 
 export class CommandFactory
 {
     public static create(name: string, bot: Bot): Command
     {
-        let command: Command = undefined;
         switch (name)
         {
-            case "dl":
-            case "download":
-                command = new DownloadCommand(bot);
-                break;
-            case "d":
-            case "delete":
-                command = new DeleteCommand(bot);
-                break;
-            case "embed":
-                command = new EmbedCommand(bot);
-                break;
-            case "search":
-            case "e":
-            case "explore":
-                command = new ExploreCommand(bot);
-                break;
-            case "p":
-            case "play":
-                command = new PlayCommand(bot);
-                break;
-            case "h":
-            case "help":
-                command = new HelpCommand(bot);
-                break;
-            case "t":
-            case "test":
-                command = new TestCommand(bot);
-                break;
-            case "v":
-            case "vote":
-                command = new VoteCommand(bot);
-                break;
             case "a":
-            case "add":
-            case "adduser":
-                command = new AddUserCommand(bot);
-                break;
+                case "add":
+                    case "adduser":
+                        return new AddUserCommand(bot);
+
             case "c":
-            case "clean":
-                command = new ChannelCleanerCommand(bot);
-                break;
-            case "su":
-            case "showusers":
-                command = new ShowUsersCommand(bot);
-                break;
-            case "changeprefix":
-            case "prefix":
-                command = new ChangePrefixCommand(bot);
-                break;
-            case "g":
-            case "gamble":
-                command = new GambleCommand(bot);
-                break;
+                case "clean":
+                    return new CleanChannelCommand(bot);
+
             case "collect":
-                command = new CollectCommand(bot);
-                break;
+                return new CollectCommand(bot);
+
+            case "changeprefix":
+                case "prefix":
+                    return new ChangePrefixCommand(bot);
+
+            case "dl":
+                case "download":
+                    return new DownloadCommand(bot);
+
+            case "d":
+                case "delete":
+                    return new DeleteCommand(bot);
+
+            case "embed":
+                return new EmbedCommand(bot);
+
+            case "explore":
+                case "search":
+                    case "e":
+                        return new ExploreCommand(bot);
+
+            case "g":
+                case "gamble":
+                    return new GambleCommand(bot);
+
+            case "h":
+                case "help":
+                    return new HelpCommand(bot);
+
+            case "remind":
+                return new RemindUserCommand(bot);
+
+            case "su":
+                case "showusers":
+                    return new ShowUsersCommand(bot);
+
+            case "p":
+                case "play":
+                    return new PlayCommand(bot);
+
+            case "t":
+                case "test":
+                    return new TestCommand(bot);
+
+            case "v":
+                case "vote":
+                    return new VoteCommand(bot);
+
             default:
-                command = new DefaultCommand(bot);
-                break;
+                return new DefaultCommand(bot);
         }
-        return command;
     }
 
     public static exist(commandName: string): boolean

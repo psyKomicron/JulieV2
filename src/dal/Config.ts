@@ -5,6 +5,7 @@ import { EventEmitter } from 'events';
 import { User } from 'discord.js';
 import { Printer } from '../console/Printer';
 import { EmojiReader } from './readers/EmojiReader';
+import { Tools } from "../helpers/Tools";
 
 /**The parameters are loaded into the class attribute with the init() method. */
 export class Config extends EventEmitter
@@ -12,12 +13,29 @@ export class Config extends EventEmitter
     // self
     private static readonly config = new Config();
     private static isInit: boolean = false;
-    private static readonly configTemplate = { "prefix": "", "authorizedusers": [""], "verbose": 1, "startdirectories": [""] };
+    private static readonly configTemplate = { 
+        "prefix": "", 
+        "authorizedusers": [
+            ""
+        ],
+        "authorizedroles": [
+            ""
+        ], 
+        "guild": [
+            ""
+        ],
+        "verbose": 1, 
+        "startdirectories": [
+            ""
+        ] 
+    };
     // external
     private static prefix: string;
-    private static startDirectories: Array<string> = new Array();
-    private static authorizedUsers: Array<string> = new Array();
+    private static startDirectories: Array<string> = new Array<string>();
+    private static authorizedUsers: Array<string> = new Array<string>();
     private static verbose: number;
+    private static keys: Map<string, string> = new Map<string, string>();
+    private static guild: string;
         // paths
     private static readonly path = "./config/config.json";
     private static readonly emojisFilePath: string = "./config/emojis.json";
@@ -55,11 +73,27 @@ export class Config extends EventEmitter
                     let users = config["authorizedusers"];
                     users.forEach(user =>
                     {
-                        if ((user as string)?.match(/([A-Za-z0-9]+#+[0-9999])\w+/))
+                        if ((user as string)?.match(Tools.getUserRegex()))
                         {
                             this.authorizedUsers.push(user);
                         }
                     });
+                    
+                    // get api keys
+                    let keys = config["keys"];
+                    keys.forEach(pair => 
+                    {
+                        if (pair.value.match(/^[A-z0-9.]+(?! )[A-z0-9.]+$/g) && !pair.key.match(/ +/))
+                        {
+                            this.keys.set(pair.key, pair.value);
+                        }
+                        else 
+                        {
+                            throw new ConfigurationError("API key does not match required format (chars without spaces) or key name contains a space");
+                        }
+                    });
+
+                    this.guild = config["guild"];
                 }
                 else
                 {
@@ -99,21 +133,6 @@ export class Config extends EventEmitter
         return this.authorizedUsers;
     }
 
-    public static getEmojisFilePath(): string
-    {
-        return this.emojisFilePath;
-    }
-    
-    public static getDownloadPath(): string
-    {
-        return this.downloadPath;
-    }
-
-    public static getGitRepoPath(): string
-    {
-        return this.gitRepoPath;
-    }
-
     public static addAuthorizedUser(user: User)
     {
         let configFile = JSON.parse(fs.readFile(this.path).toString());
@@ -140,6 +159,21 @@ export class Config extends EventEmitter
         }
     }
 
+    public static getEmojisFilePath(): string
+    {
+        return this.emojisFilePath;
+    }
+    
+    public static getDownloadPath(): string
+    {
+        return this.downloadPath;
+    }
+
+    public static getGitRepoPath(): string
+    {
+        return this.gitRepoPath;
+    }
+
     public static getPrefix(): string
     {
         return this.prefix;
@@ -149,6 +183,26 @@ export class Config extends EventEmitter
     {
         this.prefix = prefix;
         this.config.emit("prefixChange", prefix);
+    }
+
+    public static getKeys(): Map<string, string>
+    {
+        return this.keys;
+    }
+
+    public static getKey(keyName: string): string 
+    {
+        let value = this.keys.get(keyName);
+        if (!value)
+        {
+            throw new ConfigurationError("The key does not exist (" + keyName + ")");
+        }
+        return value;
+    }
+
+    public static getGuild(): string
+    {
+        return this.guild;
     }
     // #endregion
 

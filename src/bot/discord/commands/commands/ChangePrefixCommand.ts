@@ -33,23 +33,22 @@ export class ChangePrefixCommand extends Command
             Printer.info("new prefix valid, updating current prefix");
             Config.setPrefix(prefix);
 
-            message.reply(EmbedFactory.build(new EmbedResolvable()
-                .setTitle("Command successful, prefix updated.")
-                .addField({ name: "New prefix : ", value: prefix, inline: true })
-                .addField(
+            message.reply(EmbedFactory.build({
+                title: "Command successful, prefix updated.",
+                description: "",
+                fields : [
+                    { name: "New prefix : ", value: prefix, inline: true },
                     {
                         name: "Info",
                         value: "You can always change the prefix again. For prefix examples look at the help page (accessible with /help) section \"Prefix\""
-                    })
-            ));
+                    }
+                ]
+            }));
         }
         else
         {
             Printer.warn("new prefix invalid, not updating current prefix");
-            throw new CommandError(this,
-                new CommandSyntaxError(this),
-                "New prefix invalid (" + prefix + "), not updating current prefix"
-            );
+            new CommandSyntaxError(this, "New prefix invalid (" + prefix + "), not updating current prefix");
         }
     }
 }

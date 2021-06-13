@@ -38,9 +38,16 @@ export abstract class Command extends EventEmitter
      */
     public resolveTextChannel(wrapper: MessageWrapper): TextChannel
     {
-        return this.resolveFromID(wrapper.args.get("c"), wrapper.message.guild.channels)
-            ?? this.resolveFromID(wrapper.args.get("channel"), wrapper.message.guild.channels)
-            ?? wrapper.message.channel as TextChannel;
+        if (wrapper.args)
+        {
+            return this.resolveFromID(wrapper.args.get("c"), wrapper.message.guild.channels)
+                ?? this.resolveFromID(wrapper.args.get("channel"), wrapper.message.guild.channels)
+                ?? wrapper.message.channel as TextChannel;
+        }
+        else 
+        {
+            return wrapper.message.channel as TextChannel;
+        }
     }
 
     /**
@@ -59,6 +66,24 @@ export abstract class Command extends EventEmitter
         }
         return channel;
     }
+
+    /**
+     * Iterates through the string to get the command name from a message received by the bot
+     * Will stop if the message is too long
+     * @param content
+     */
+     public static getCommandName(content: string): string
+     {
+         let substr = 0;
+         let name = "";
+         // replace with a regex
+         while (substr < 100 && substr < content.length && content[substr] != "-" && content[substr] != " ")
+         {
+             name += content[substr];
+             substr++;
+         }
+         return name;
+     }
 
     //#region events
     public on<K extends keyof CommandEvents>(event: K, listener: (...args: CommandEvents[K]) => void): this
@@ -81,68 +106,6 @@ export abstract class Command extends EventEmitter
             channel = resolvedChannel;
         }
         return channel;
-    }
-
-    private async writeLogs(wrapper: MessageWrapper): Promise<void>
-    {
-        const map = wrapper.args;
-        const filepath = "./files/logs/";
-        const name = "command_logs";
-
-        fs.mkdir(filepath, true);
-
-        if (!fs.exists(filepath + name + ".json"))
-        {
-            let root = [];
-            fs.writeFile(filepath + name + ".json", JSON.stringify(root));
-        }
-
-        var logs = JSON.parse(fs.readFile(filepath + name + ".json").toString());
-        let now = new Date(Date.now());
-        let data = {};
-        
-        map.forEach((value, key) =>
-        {
-            data[key] = value;
-        });
-        
-        var json = {
-            "user": [
-                {
-                    "username": wrapper.message.author.username,
-                    "discriminator": wrapper.message.author.discriminator
-                }
-            ],
-            "command": [
-                {
-                    "name": this._name,
-                    "arguments": data,
-                    "command number": `${Command.commands}`,
-                    "message id": `${wrapper.message.id}`,
-                    "message": wrapper
-                }
-            ],
-            "date": [
-                {
-                    "day": now.getDate(),
-                    "month": now.getMonth(),
-                    "year": now.getFullYear(),
-                    "epoch": Date.now()
-                }
-            ]
-        }
-        
-        if (fs.getStats(filepath + name + ".json").size > 19000)
-        {
-            let index = 1;
-            while (fs.exists(`${filepath}${name}(${index})`)) index++;
-            fs.writeFile(`${filepath}${name}(${index}).json`, JSON.stringify(json));
-        }
-        else
-        {
-            logs.push(json);
-            fs.writeFile(filepath + name + ".json", JSON.stringify(logs));
-        }
     }
 }
 

@@ -1,18 +1,14 @@
 import { FileType } from '../../../../helpers/enums/FileType';
 import { Bot } from '../../Bot';
 import { Channel, Message, TextChannel, Snowflake, Collection } from 'discord.js';
-import { FileSystem as fs } from '../../../../dal/FileSystem';
 import { EmojiReader } from '../../../../dal/readers/EmojiReader';
 import { Printer } from '../../../../console/Printer';
-import { EmbedResolvable } from '../../../../dtos/EmbedResolvable';
-import { EmbedFactory } from '../../../../factories/EmbedFactory';
 import { ProgressBar } from '../../../../console/effects/ProgressBar';
 import { Downloader } from '../../command_modules/Downloader';
 import { Command } from '../Command';
 import { Tools } from '../../../../helpers/Tools';
-import { ArgumentError } from '../../../../errors/ArgumentError';
 import { MessageWrapper } from '../../../common/MessageWrapper';
-import { CommandError } from '../../../../errors/command_errors/CommandError';
+import { CommandArgumentError } from "../../../../errors/command_errors/CommandArgumentError";
 
 export class DownloadCommand extends Command
 {
@@ -30,9 +26,7 @@ export class DownloadCommand extends Command
         let limit = this.values.limit;
         if (limit < 0)
         {
-            throw new CommandError(this,
-                new ArgumentError("Given limit is not integer", "url"),
-                "Please provide a number of message (to download) greater than 0");
+            throw new CommandArgumentError(this, "Given limit is not integer. Please provide a number of message (to download) greater than 0", "url");
         }
 
         let type = this.values.type;

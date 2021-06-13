@@ -19,49 +19,110 @@ export class DeleteCommand extends Command
         let params: Params = this.getParams(wrapper);
 
         Printer.title("deleting messages");
+        Printer.args(
+            ["number of messages", "channel name", "target user"],
+            [`${params.messages}`, `${params.channel.name}`, `${params.username ? "none" : params.username}`]
+        );
 
-        if (params.channel != undefined && !params.username) // bulk delete
+        switch (params.action)
         {
-            Printer.args(
-                ["number of messages", "channel name", "target user"],
-                [`${params.messages}`, `${params.channel.name}`, `${params.username ? "none" : params.username}`]);
-
-            let channel: TextChannel = params.channel;
-
-            channel.bulkDelete(params.messages)
-                .then(response =>
+            case Action.NORMAL:
+            {
+                let dog = new DiscordObjectGetter();
+                let messages: Array<Message>;
+                if (params.username)
                 {
-                    let bar = new ProgressBar(response.size, "deleting messages");
-                    bar.start();
-
-                    let i = 1;
-                    response.forEach(() =>
+                    let username = params.username;
+                    if (params.deletePinned)
                     {
-                        bar.update(i);
-                        i++;
-                    });
-
-                    bar.stop();
-                })
-                .catch(() =>
+                        messages = await dog.fetchAndFilter(
+                            params.channel, 
+                            params.messages, 
+                            (message: Message) => message.author.tag == username, 
+                            { maxIterations: 5000, allowOverflow: false }
+                        );
+                    }
+                    else
+                    {
+                        messages = await dog.fetchAndFilter(
+                            params.channel, 
+                            params.messages, 
+                            (message: Message) => message.author.tag == username && !message.pinned, 
+                            { maxIterations: 5000, allowOverflow: false }
+                        );
+                    }
+                    
+                }
+                else if (!params.deletePinned)
                 {
-                    this.overrideDelete(channel, params)
-                        .catch(error =>
-                        {
-                            Printer.error("Bulk delete failed, switching to manual delete.");
-                            Printer.error(error.toString());
-                        });
-                });
-        }
-        // channel defined && username filled (username validation done before)
-        else if (params.channel != undefined && params.username) // target delete
-        {
-            Printer.args(
-                ["number of messages", "channel name", "method", "target user"],
-                [`${params.messages}`, `${params.channel.name}`, "target delete", `${params.username}`]);
+                    messages = await dog.fetchAndFilter(
+                        params.channel, 
+                        params.messages, 
+                        (message: Message) => !message.pinned, 
+                        { maxIterations: 5000, allowOverflow: false }
+                    );
+                }
+                else
+                {
+                    messages = await dog.fetch(params.channel, params.messages, { maxIterations: 5000, allowOverflow: false });
+                }
+                await this.overrideDelete(messages);
 
-            this.overrideDelete(params.channel, params);
+                break;
+            }    
+            case Action.ARG_LESS:
+                this.bulkDelete(params.channel, params.messages);
+                break;
+            case Action.BY_ID:
+            {
+                let ids = params.messageIDs;
+                let dog = new DiscordObjectGetter();
+                let messages = await dog.fetchAndFilter(
+                    params.channel, 
+                    params.messages, 
+                    (message: Message) => ids.indexOf(message.id) != -1, 
+                    { maxIterations: 5000, allowOverflow: false }
+                );
+                await this.overrideDelete(messages);
+
+                break;   
+            }
+            default:
+                break;
         }
+    }
+
+    private bulkDelete(channel: TextChannel, n: number): void 
+    {
+        channel.bulkDelete(n)
+            .then(response =>
+            {
+                let bar = new ProgressBar(response.size, "deleting messages");
+                bar.start();
+
+                let i = 1;
+                response.forEach(() =>
+                {
+                    bar.update(i);
+                    i++;
+                });
+
+                bar.stop();
+            })
+            .catch(async (pastErr) =>
+            {
+                Printer.error("Bulk delete failed, switching to manual delete.");
+                Printer.warn(pastErr.toString());
+                let dog = new DiscordObjectGetter();
+                try 
+                {
+                    await this.overrideDelete(await dog.fetch(channel, n, { maxIterations: 5000, allowOverflow: false }));
+                }
+                catch (e)
+                {
+                    Printer.error(e.toString());
+                }
+            });
     }
 
     /**
@@ -70,51 +131,20 @@ export class DeleteCommand extends Command
      * @param channel
      * @param params
      */
-    private async overrideDelete(channel: TextChannel, params: Params): Promise<void>
+    private async overrideDelete(messages: Array<Message>): Promise<void>
     {
-        let messages: Array<Message>;
-        let dog = new DiscordObjectGetter();
-
-        if (params.username)
-        {
-            let username = params.username;
-
-            let filter: (message: Message) => boolean;
-
-            if (params.deletePinned)
-            {
-                filter = (message: Message) => message.author.tag == username;
-            }
-            else
-            {
-                filter = (message: Message) => message.author.tag == username && !message.pinned;
-            }
-
-            messages = await dog.fetchAndFilter(channel, params.messages, filter, { overflow: false });
-        }
-        else if (!params.deletePinned)
-        {
-            messages = await dog.fetchAndFilter(channel, params.messages, (message: Message) => !message.pinned, { overflow: false });
-        }
-        else
-        {
-            messages = await dog.fetch(channel, params.messages, { overflow: false });
-        }
-
-        let bar = new ProgressBar(params.messages, "deleting messages");
+        let bar = new ProgressBar(messages.length, "deleting messages");
         bar.start();
         
         let alive = true;
         let timeout: NodeJS.Timeout = setTimeout(() =>
         {
             alive = false;
-            //readline.moveCursor(process.stdout, 64, -2);
             bar.stop();
             Printer.warn("deleting messages slower than planned, stopping");
-            //readline.moveCursor(process.stdout, 0, 1);
         }, 10000);
 
-        for (var i = 0; i < messages.length && i < params.messages && alive; i++)
+        for (var i = 0; i < messages.length && alive; i++)
         {
             if (messages[i].deletable)
             {
@@ -132,37 +162,86 @@ export class DeleteCommand extends Command
 
     private getParams(wrapper: MessageWrapper): Params
     {
-        let messages = 1;
+        if (wrapper.hasArgs())
+        {
+            let messages = 1;
         
-        if (!Number.isNaN(Number.parseInt(wrapper.get("n"))))
-        {
-            messages = Number.parseInt(wrapper.get("n")) + 1;
-        }
-
-        let username: string = undefined; 
-        if (wrapper.get("u"))
-        {
-            let value = wrapper.getValue(["u", "user", "username"]);
-            let res = /([A-Za-z0-9]+#+[0-9999])\w+/.exec(value);
-
-            if (res && res[0] == value)
+            if (!Number.isNaN(Number.parseInt(wrapper.get("n"))))
             {
-                username = wrapper.get("u");
+                messages = Number.parseInt(wrapper.get("n")) + 1;
+            }
+
+            let username: string = undefined; 
+            if (wrapper.get("u"))
+            {
+                let value = wrapper.getValue(["u", "user", "username"]);
+                let res = /([A-Za-z0-9]+#+[0-9999])\w+/.exec(value);
+
+                if (res && res[0] == value)
+                {
+                    username = wrapper.get("u");
+                }
+            }
+
+            let channel = this.resolveTextChannel(wrapper);
+
+            let deletePinned = wrapper.hasValue(["pins", "p"]);
+            
+            return { 
+                action: Action.NORMAL,
+                messages: messages, 
+                channel: channel, 
+                username: username, 
+                deletePinned: deletePinned 
+            };
+        }
+        else 
+        {
+            if (wrapper.commandContent.match(/([0-9]+,)+([0-9]+)$/))
+            {
+                let ids = wrapper.commandContent.split(',');
+                let parsedIds = new Array<number>();
+                for (let i = 0; i < ids.length; i++)
+                {
+                    if (!Number.isNaN(Number.parseInt(ids[i])))
+                    {
+                        parsedIds.push(Number.parseInt(ids[i]));
+                    }
+                }
+                
+                return { 
+                    action: Action.BY_ID,
+                    messages: ids.length, 
+                    channel: wrapper.message.channel as TextChannel,
+                    deletePinned: false,
+                    messageIDs: ids
+                };
+            }
+            else if (!Number.isNaN(Number.parseInt(wrapper.commandContent)))
+            {
+                let messages = Number.parseInt(wrapper.commandContent) + 1;
+                return { 
+                    action: Action.ARG_LESS,
+                    messages: messages, 
+                    channel: wrapper.message.channel as TextChannel,
+                    deletePinned: false
+                };
             }
         }
-
-        let channel = this.resolveTextChannel(wrapper);
-
-        let deletePinned = wrapper.hasValue(["pins", "p"]);
-        
-        return { messages, channel, username, deletePinned };
     }
+}
+
+enum Action 
+{
+    NORMAL, ARG_LESS, BY_ID, NOT_DEF
 }
 
 interface Params
 {
+    action: Action
     messages: number;
     channel: TextChannel;
-    username?: string;
     deletePinned: boolean;
+    username?: string;
+    messageIDs?: Array<string>
 }

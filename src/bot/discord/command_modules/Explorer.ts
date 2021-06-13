@@ -1,6 +1,6 @@
 import fetch = require('node-fetch');
 import { MessageEmbed } from 'discord.js';
-import { ExploreCommand } from '../../commands/commands/ExploreCommand';
+import { ExploreCommand } from '../commands/commands/ExploreCommand';
 
 export abstract class Explorer
 {

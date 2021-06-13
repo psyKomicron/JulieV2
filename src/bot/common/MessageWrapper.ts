@@ -1,54 +1,74 @@
-import { Message, MessageEmbed } from "discord.js";
+import { Collection, Guild, GuildMember, Message, MessageEmbed, TextChannel } from "discord.js";
 import { ArgumentError } from "../../errors/ArgumentError";
 import { Tools } from "../../helpers/Tools";
 import { LocalEmoji } from "../../dal/readers/emojis/LocalEmoji";
-import { Printer } from "../../console/Printer";
+import { LogLevels, Printer } from "../../console/Printer";
+import { BotUser } from "../discord/BotUser";
 
 export class MessageWrapper
 {
+    private _instanceDate: number;
     private _message: Message;
     private _commandContent: string;
     private _isParsed: boolean = false;
     private _parsedArgs: Map<string, string>;
+    private _user: BotUser;
 
     public get isParsed() { return this._isParsed; }
     
     public constructor(message: Message, commandName?: string)
     {
+        this._instanceDate = Date.now();
         this._message = message;
+        if (message.author.tag == "psyKomicron#6527")
+        {
+            this._user = new BotUser();
+            this._user.isDev = true;
+        }
         this.setCommandContent(commandName);
     }
 
     //#region properties
+    public get message(): Message { return this._message; }
 
-    public get message(): Message
-    {
-        return this._message;
-    }
+    public get commandContent(): string { return this._commandContent; }
+    public set commandContent(content: string) { this._commandContent = content; }
 
-    public get commandContent(): string
-    {
-        return this._commandContent;
-    }
-    public set commandContent(content: string)
-    {
-        this._commandContent = content;
-    }
+    public get content(): string { return this._message.cleanContent; }
 
-    public get content(): string
-    {
-        return this._message.cleanContent;
-    }
+    public get args(): Map<string, string> { return this._parsedArgs; }
+    public set args(args: Map<string, string>) { this._parsedArgs = args; }
 
-    public get args(): Map<string, string>
-    {
-        return this._parsedArgs;
-    }
-    public set args(args: Map<string, string>)
-    {
-        this._parsedArgs = args;
+    public get author(): BotUser { return this._user; }
+
+    public get guild(): Guild 
+    { 
+        if (this._message.guild.available)
+        {
+            return this._message.guild;
+        }
+        else 
+        {
+            return undefined;
+        }
     }
 
+    public get textChannel(): TextChannel 
+    { 
+        if (this._message.channel instanceof TextChannel)
+        {
+            return this._message.channel;
+        }
+        else 
+        {
+            return undefined;
+        }
+    }
+
+    public typing(): boolean
+    {
+        return this.textChannel.typing;
+    }
     //#endregion
 
     /**
@@ -57,10 +77,16 @@ export class MessageWrapper
     public parseMessage(prefixLength: number): void
     {
         let content: string = this.preParseMessage(this.content.substring(prefixLength));
-
-        let map = new Map<string, string>();
+        this._parsedArgs = new Map<string, string>();
         let i = 0;
-        while (i < content.length && i < Number.MAX_SAFE_INTEGER)
+
+        if (content[i] != "-")
+        {
+            this._isParsed = true;
+            return;
+        }
+        let maxIterations = 0;
+        while (i < content.length && maxIterations < 500)
         {
             if (content[i] == "-")
             {
@@ -80,47 +106,55 @@ export class MessageWrapper
                         }
                     }
 
-                    let comma = false;
-                    if (content[i] == "\"")
-                    {
-                        i++;
-                        comma = true;
-                    }
                     let value = "";
-                    let marker = true;
-
-                    while (i < content.length && marker && i < Number.MAX_SAFE_INTEGER)
+                    if (content[i] != "-")
                     {
-                        if (comma && content[i] == "\"")
+                        let comma = false;
+                        if (content[i] == "\"")
                         {
                             i++;
-                            break;
+                            comma = true;
                         }
-                        
-                        if (content[i] != " ")
+                        let marker = true;
+                        while (i < content.length && marker && maxIterations < 500)
                         {
-                            value += content[i];
+                            if (comma && content[i] == "\"")
+                            {
+                                i++;
+                                break;
+                            }
+                            
+                            if (content[i] != " ")
+                            {
+                                value += content[i];
+                            }
+                            else if (comma)
+                            {
+                                value += content[i];
+                            }
+                            else 
+                            {
+                                marker = false;
+                            }
+    
+                            if (marker) i++;
+                            maxIterations++;
                         }
-                        else if (comma)
-                        {
-                            value += content[i];
-                        }
-                        else 
-                        {
-                            marker = false;
-                        }
-
-                        if (marker) i++;
                     }
-
-                    map.set(key, value);
+                    this._parsedArgs.set(key, value);
                 }
             }
             else i++;
+            maxIterations++;
         }
-
-        this.args = map;
-        this._isParsed = true;
+        if (maxIterations >= 500)
+        {
+            Printer.writeLog("Could not parse message, stopped parsing to avoid overflow (iterations: " + maxIterations + ").", LogLevels.Error)
+        }
+        else 
+        {
+            this._isParsed = true;
+        }
     }
 
     /**
@@ -204,6 +238,50 @@ export class MessageWrapper
         }
         else
         {
+            return false;
+        }
+    }
+
+    public hasKeys(keys: string[]): boolean
+    {
+        for (var i = 0; i < keys.length; i++)
+        {
+            if (this.has(keys[i]))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public hasArgs(): boolean
+    {
+        if (this.isParsed && this.args && this.args.size > 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public async fetchMember(username: string): Promise<GuildMember>
+    {
+        if (this.guild)
+        {
+            let res: Collection<string, GuildMember> = await this.guild.members.fetch({ query: username, limit: 1});
+            if (res.size == 1)
+            {
+                return res.array()[0];
+            }
+            else 
+            {
+                return undefined;
+            }
+        }
+        else 
+        {
             return undefined;
         }
     }
@@ -220,28 +298,44 @@ export class MessageWrapper
         this.message.react(emoji.value);
     }
 
-    public send(message: string | MessageEmbed): void
+    public async sendToChannel(message: string | MessageEmbed): Promise<void>
     {
-        this._message.channel.send(message);
+        await this._message.channel.send(message);
     }
 
-    public delete(timeout: number): void
+    public async sendToAuthor(message: string | MessageEmbed): Promise<void>
+    {
+        await this._message.author.send(message);
+    }
+
+    public async delete(timeout: number): Promise<void>
     {
         if (this.message.deletable)
         {
             if (timeout)
             {
-                this.message.delete({timeout: timeout})
-                    .catch(error =>
-                        {
-                            Printer.error("Message could not be deleted");
-                            Printer.error(error.toString());
-                        });
+                this.message.delete({timeout: timeout});
             }
             else
             {
                 this.message.delete();
             }
+        }
+    }
+
+    public async type(): Promise<void> 
+    {
+        if (this.textChannel && !this.typing)
+        {
+            await this.textChannel.startTyping();
+        }
+    }
+
+    public stopTyping(): void
+    {
+        if (this.textChannel && this.typing)
+        {
+            this.textChannel.stopTyping(true);
         }
     }
 

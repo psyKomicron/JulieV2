@@ -1,19 +1,19 @@
 import readline = require('readline');
 import { TokenReader } from '../../dal/readers/TokenReader';
-import { Client, Message, User, TextChannel } from 'discord.js';
+import { Client, User, TextChannel, PresenceData, ActivityFlags } from 'discord.js';
 import { DefaultLogger } from './command_modules/logger/loggers/DefaultLogger';
 import { Logger } from './command_modules/logger/Logger';
-import { Printer } from '../../console/Printer';
-import { ExecutionError } from '../../errors/ExecutionError';
+import { LogLevels, Printer } from '../../console/Printer';
 import { CommandFactory } from '../../factories/CommandFactory';
 import { Tools } from '../../helpers/Tools';
 import { Config } from '../../dal/Config';
 import { ConfigurationError } from '../../errors/dal_errors/ConfigurationError';
 import { LoadingEffect } from '../../console/effects/LoadingEffect';
 import { Moderator } from './command_modules/moderation/Moderator';
-import { CommandError } from '../../errors/command_errors/CommandError';
 import { EventEmitter } from 'events';
 import { MessageWrapper } from '../common/MessageWrapper';
+import { ErrorTranslater } from "../../errors/ErrorTranslater";
+import { Command } from "./commands/Command";
 
 export class Bot extends EventEmitter
 {
@@ -26,28 +26,65 @@ export class Bot extends EventEmitter
     private moderator: Moderator;   
     private prefix: string;
     private _logger: Logger = new DefaultLogger();
+    private errorTranslater: ErrorTranslater = new ErrorTranslater();
+    private currentPresenceData: PresenceData;
 
     private constructor(effect: LoadingEffect)
     {
         super();
         this._client = new Client();
         this.moderator = Moderator.get(this);
-        try
-        {
-            // bot parameters
-            this.verbose = Config.getVerbose();
-            this.parents = Config.getAuthorizedUsers();
 
-            // events init & login
-            this.init(effect);
-        }
-        catch (error)
+        // bot parameters
+        this.verbose = Config.getVerbose();
+        this.parents = Config.getAuthorizedUsers();
+        this.prefix = Config.getPrefix();
+
+        // config changes
+        Config.onEvent("prefixChange", (newPrefix) => this.onPrefixChange(newPrefix));
+        Config.onEvent("addUser", (user) => this.onUserAdd(user));
+
+        // initiate bot
+        this._client.on("message", (message) => this.onMessage(new MessageWrapper(message)));
+        this._client.on("ready", () =>
         {
             effect.stop();
-            Printer.clear();
-            Printer.error(error.toString());
-            Printer.error("\nFatal error, application will not start. Press CTRL+C to stop");
-        }
+            readline.moveCursor(process.stdout, -3, 0);
+            process.stdout.write("Ready\n");
+            Printer.error(Printer.repeat("-", 34));
+            Printer.printConfig();
+        });
+        this._client.on("disconnect", (arg_0, arg_1: number) => 
+        {
+            console.log("Client disconnected :");
+            console.log(`${JSON.stringify(arg_0)}, ${arg_1}`);
+            Printer.writeLog("Bot disconnected. API message: " + JSON.stringify(arg_0) + ", " + arg_1, LogLevels.Warning);
+        });
+
+        // login
+        this._client.login(TokenReader.getToken("discord"))
+            .then((value: string) => 
+            {
+                // set status
+                this.currentPresenceData = {
+                    status: "dnd",
+                    afk: false,
+                    activity: {
+                        name: this.prefix + "help",
+                        type: "PLAYING",
+                        url: "https://github.com/psyKomicron/JulieV2/tree/dev"
+                    }
+                };
+                this._client.user.setPresence(this.currentPresenceData);
+                Printer.writeLog("Bot logged in with " + value, LogLevels.Info);
+            })
+            .catch((reason) => 
+            {
+                effect.stop();
+                Printer.clear();
+                Printer.error(reason.toString());
+                Printer.error("\nFatal error, application will not start. Press CTRL+C to stop");
+            });
     }
 
     // #region properties
@@ -78,57 +115,13 @@ export class Bot extends EventEmitter
     }
 
     // #region private methods
-    private init(id: LoadingEffect): void
+
+    private handleErrorForClient(error: Error, message: MessageWrapper): void
     {
-        this.prefix = Config.getPrefix();
-
-        // config changes
-        Config.onEvent("prefixChange", (newPrefix) => this.onPrefixChange(newPrefix));
-        Config.onEvent("addUser", (user) => this.onUserAdd(user));
-
-        // initiate bot
-        this._client.on("ready", () =>
+        if (this.verbose > 1)
         {
-            id.stop();
-            readline.moveCursor(process.stdout, -3, 0);
-            process.stdout.write("Ready\n");
-            Printer.error(Printer.repeat("-", 26));
-        });
-
-        this._client.on("message", (message) => this.onMessage(new MessageWrapper(message)));
-
-        this._client.on("disconnect", (arg_0, arg_1: number) => 
-        {
-            console.log("Client disconnected :");
-            console.log(`${JSON.stringify(arg_0)}, ${arg_1}`);
-        });
-
-        // login
-        this._client.login(TokenReader.getToken("discord"));
-    }
-
-    private handleErrorForClient(error: Error, message: Message): void
-    {
-        if (error instanceof ExecutionError && this.verbose > 2)
-        {
-            if (error instanceof CommandError)
-            {
-                message.author.send(error.message);
-            }
-            else
-            {
-                this.sendErrorMessage(message);
-            }
+            message.message.author.send(this.errorTranslater.translate(error, message));
         }
-        else
-        {
-            this.sendErrorMessage(message);
-        }
-    }
-
-    private sendErrorMessage(message: Message): void
-    {
-        message.author.send("Uh oh... Something went wrong ! Try again !");
     }
 
     private isAuthorized(user: User): boolean
@@ -139,8 +132,20 @@ export class Bot extends EventEmitter
     // #endregion
 
     // #region events handlers
-    private onMessage(wrapper: MessageWrapper): void 
+    private async onMessage(wrapper: MessageWrapper): Promise<void> 
     {
+        if (!Tools.isNullOrEmpty(Config.getGuild()) 
+            && wrapper.message.guild 
+            && wrapper.message.guild.available 
+            && wrapper.message.guild.name != Config.getGuild())
+        {
+            if (Config.getVerbose() > 2 && !wrapper.message.guild)
+            {
+                Printer.writeLog("#UNDEFINED_GUILD Received message from undefined guild, not handling", LogLevels.Info);
+            }
+            return;
+        }
+        
         wrapper.parseMessage(this.prefix.length);
         let content = wrapper.content;
 
@@ -149,7 +154,7 @@ export class Bot extends EventEmitter
             try
             {
                 // asynchronously moderates a message
-                this.moderator.execute(wrapper);
+                this.moderator.execute(wrapper); // does nothing for now
             }
             catch (error)
             {
@@ -158,15 +163,16 @@ export class Bot extends EventEmitter
 
             if (this.isAuthorized(wrapper.message.author))
             {
-                Printer.info("\ncommand requested by : " + wrapper.message.author.tag);
-
+                wrapper.type();
+                Printer.info("\n(" + new Date(Date.now()).toISOString() + ") command requested by : " + wrapper.message.author.tag);
                 if (this._logger)
                 {
                     let handled = this._logger.handle(wrapper);
 
                     if (!handled)
                     {
-                        let name = Tools.getCommandName(content);
+                        let name = Command.getCommandName(content);
+                        Printer.writeLog("Command requested by : " + wrapper.message.author.tag + " | command name: " + name, LogLevels.Info);
                         try
                         {
                             let command = CommandFactory.create(name.substr(this.prefix.length), this);
@@ -176,7 +182,8 @@ export class Bot extends EventEmitter
                                 .catch(error =>
                                 {
                                     Printer.error(error.toString());
-                                    this.handleErrorForClient(error, wrapper.message);
+                                    Printer.writeLog(error.toString() + "\n" + "Command content : " + wrapper.content, LogLevels.Error);
+                                    this.handleErrorForClient(error, wrapper);
                                 })
                                 .then(() =>
                                 {
@@ -189,10 +196,16 @@ export class Bot extends EventEmitter
                         catch (error)
                         {
                             Printer.error(error.toString());
-                            this.handleErrorForClient(error, wrapper.message);
+                            Printer.writeLog(error.toString() + "\n" + wrapper.content, LogLevels.Error);
+                            this.handleErrorForClient(error, wrapper);
                         }
                     }
                 }
+                wrapper.stopTyping();
+            }
+            else 
+            {
+                Printer.writeLog("Unauthorized use of bot by: " + wrapper.message.author.tag, LogLevels.Warning);
             }
         }
     }
@@ -202,6 +215,8 @@ export class Bot extends EventEmitter
         if (prefix.length > 0)
         {
             this.prefix = prefix;
+            this.currentPresenceData.activity.name = prefix + "help";
+            this.client.user.setPresence(this.currentPresenceData);
         }
         else
         {

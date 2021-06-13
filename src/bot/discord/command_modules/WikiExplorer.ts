@@ -1,8 +1,8 @@
 import { Explorer } from "./Explorer";
 import { DiscordAPIError } from 'discord.js';
-import { EmbedFactory } from "../../../../factories/EmbedFactory";
-import { EmbedResolvable } from "../../../../dtos/EmbedResolvable";
-import { Printer } from "../../../../console/Printer";
+import { EmbedFactory } from "../../../factories/EmbedFactory";
+import { EmbedResolvable } from "../../../dtos/EmbedResolvable";
+import { Printer } from "../../../console/Printer";
 
 export class WikiExplorer extends Explorer
 {
@@ -10,11 +10,12 @@ export class WikiExplorer extends Explorer
     {
         let res = await this.getHTML(this.urlize(`https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&utf8=1&srsearch=`, this.keyword, "%20"));
         let map = this.parseRes(res);
-        let embed = EmbedFactory.build(new EmbedResolvable()
-            .setDescription(`Search for "${this.keyword}"`)
-            .setFooter("Powered by Julie")
-            .setTitle("Wikipedia")
-        );
+        
+        let embed = EmbedFactory.build({
+            description: `Search for "${this.keyword}"`,
+            title: "Wikipedia"
+        });
+
         map.forEach((snippet, title) =>
         {
             if (title != "totalhits")
@@ -26,10 +27,12 @@ export class WikiExplorer extends Explorer
                 embed.addField("Total hits", snippet);
             }
         });
+
         try
         {
             embed.setURL(this.urlize(`https://en.wikipedia.org/wiki/`, embed.fields[1].name, "_"));
-        } catch (error)
+        } 
+        catch (error)
         {
             if (!(error instanceof DiscordAPIError))
             {

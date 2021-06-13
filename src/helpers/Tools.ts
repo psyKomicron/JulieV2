@@ -1,34 +1,18 @@
-import { Message } from "discord.js";
-import { isNullOrUndefined } from "util";
-
 export class Tools
 {
-    /**
-     * Iterates through the string to get the command name from a message received by the bot
-     * Will stop if the message is too long
-     * @param content
-     */
-    public static getCommandName(content: string): string
-    {
-        let substr = 0;
-        let name = "";
-        // replace with a regex
-        while (substr < 100 && substr < content.length && content[substr] != "-" && content[substr] != " ")
-        {
-            name += content[substr];
-            substr++;
-        }
-        return name;
-    }
-
     public static getUrlRegex(): RegExp
     {
-        return new RegExp(/(https?: \/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi);
+        return /(https?: \/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
     }
 
     public static getNumbersRegex(): RegExp
     {
-        return new RegExp(/([0-9]{2}|[0-9]{1}):([0-9]{2}|[0-9]{1})/g);
+        return /([0-9]{2}|[0-9]{1}):([0-9]{2}|[0-9]{1})/g;
+    }
+
+    public static getUserRegex(): RegExp
+    {
+        return /[A-Za-z0-9]+#+[0-9]{3,}/g;
     }
 
     public static isUrl(url: string): boolean
@@ -116,6 +100,14 @@ export class Tools
     public static slice<T>(array: Array<T>, end: number, start: number = 0)
     {
         return array.slice(start, end);
+    }
+
+    public static isSameDay(date1: Date, date2: Date): boolean
+    {
+        return (date1.getFullYear() == date2.getFullYear()
+            && date1.getMonth() == date2.getMonth()
+            && date1.getDate() == date2.getDate()
+            && date1.getDay() == date2.getDay());
     }
 }
 

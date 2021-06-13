@@ -14,8 +14,9 @@ export class EmbedFactory
         let messageEmbed: MessageEmbed = new MessageEmbed()
             .setTitle(resolvable.title)
             .setColor(resolvable.color ?? Math.floor(Math.random() * 16777215))
-            .setDescription(resolvable.description ?? "")
-            .setFooter(resolvable.footer ?? "made by Julie with " + EmojiReader.getEmoji("heart"));
+            .setDescription(resolvable.description)
+            .setFooter(resolvable.footer ?? "made by Julie with " + EmojiReader.getEmoji("heart").value);
+
         let fields = resolvable.fields;
         if (fields)
         {

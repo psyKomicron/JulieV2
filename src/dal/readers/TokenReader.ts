@@ -1,27 +1,21 @@
 import { EmptyTokenError } from "../../errors/dal_errors/EmptyTokenError";
+import { Config } from "../Config";
 
 export class TokenReader
 {
     public static getToken<K extends keyof typeof Token>(tokenName: K): string 
     {
-        let tokenValue = "";
         switch (tokenName)
         {
             case "youtube":
-                tokenValue = process.env.YOUTUBE_API_KEY;
-                break;
+                return Config.getKey("youtubeApiKey");
             case "release":
-                tokenValue = process.env.RELEASE_TYPE;
-                break;
+                return Config.getKey("release");
             case "discord":
-                tokenValue = process.env.DISCORD_BOT_TOKEN;
-                break;
+                return Config.getKey("discordBotKey");
         }
-        if (!tokenValue)
-        {
-            throw new EmptyTokenError("Could not get token from env variable. Token name : " + tokenName);
-        }
-        return tokenValue;
+        
+        throw new EmptyTokenError("Could not get token from env variable. Token name : " + tokenName);
     }
 }
 

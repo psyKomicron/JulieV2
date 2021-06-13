@@ -1,14 +1,19 @@
 /**Mother class for all errors of this application*/
-export abstract class ExecutionError extends Error
+export class ExecutionError extends Error
 {
-    protected constructor(message, name: string)
+    private _internalError: Error;
+
+    public constructor(message: string, name: string)
     {
         super(message);
         this.name = name;
     }
 
+    public get internalError(): Error { return this._internalError; }
+    public set internalError(error) { this._internalError = error; }
+
     public toString(): string
     {
-        return this.stack; 
+        return this.stack;
     }
 }

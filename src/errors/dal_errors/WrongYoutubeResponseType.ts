@@ -5,6 +5,6 @@ export class WrongYoutubeResponseType extends ExecutionError
 {
     public constructor(proxy: YoutubeProxy)
     {
-        super("Wrong return type from youtube", proxy.name);
+        super("Wrong return type from youtube", proxy?.name);
     }
 }

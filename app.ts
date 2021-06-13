@@ -4,12 +4,21 @@ import { StarEffect } from './src/console/effects/StarEffect';
 import { Bot } from './src/bot/discord/Bot';
 import { Config } from './src/dal/Config';
 import { TwitterBot } from './src/bot/twitter/TwitterBot';
+import { exit } from "process";
 
-Config.init();
-
+try 
+{
+    Config.init();
+}
+catch (e)
+{
+    Printer.error("Config failed initialisation. Details below:");
+    Printer.error(e.toString());
+    exit(-1);
+}
 Printer.startUp();
 
-let loadingEffect = new StarEffect([-12, -1]);
+let loadingEffect = new StarEffect([-16, -1]);
 loadingEffect.start();
 
 try
@@ -19,5 +28,7 @@ try
 }
 catch (e)
 {
+    loadingEffect.stop();
     Printer.error(e.toString());
+    exit(-1);
 }

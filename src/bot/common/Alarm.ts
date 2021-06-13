@@ -2,11 +2,10 @@ import { ArgumentError } from "../../errors/ArgumentError";
 import { EventEmitter } from "events";
 import { clearInterval } from "timers";
 import { AlarmError } from "../../errors/AlarmError";
-import { Printer } from "../../console/Printer";
 
 export class Alarm extends EventEmitter
 {
-    private readonly minTickInterval: number = 250;
+    private readonly minTickRate: number = 250;
     private readonly name: string;
     private started: boolean = false;
     private internalInterval: NodeJS.Timeout;
@@ -21,26 +20,26 @@ export class Alarm extends EventEmitter
      * @param name Friendly name of the alarm
      * @param autoStart Starts the alarm immediatly
      * @param autoRestart Alarm will repeats each time it sets off (default true)
-     * @param tickInterval How fast will the alarm check if the alarm date is reached in milliseconds (cannot be lower than 250ms)
+     * @param tickRate How fast will the alarm check if the alarm date is reached in milliseconds (cannot be lower than 250ms)
      */
-    public constructor(date: Date, name?: string, autoStart?: boolean, autoRestart?: boolean, tickInterval?: number)
+    public constructor(date: Date, name?: string, autoStart?: boolean, autoRestart?: boolean, tickRate?: number)
     {
         super();
         this.name = name;
         this.ringingDate = date;
         this.autoRestart = autoRestart ?? true;
 
-        if (tickInterval)
+        if (tickRate)
         {
-            if (tickInterval >= this.minTickInterval)
+            if (tickRate >= this.minTickRate)
             {
-                this.tickInterval = tickInterval;
+                this.tickInterval = tickRate;
             }
             else
             {
                 throw new ArgumentError(
                     "The given tick interval is too small, please provide an interval of more than "
-                    + (this.minTickInterval * 1000).toString() + "sec (" + this.minTickInterval.toString() + "ms)",
+                    + (this.minTickRate * 1000).toString() + "sec (" + this.minTickRate.toString() + "ms)",
                     "tickInterval");
             }
         }
@@ -102,7 +101,7 @@ export class Alarm extends EventEmitter
             now.getMinutes() == this.ringingDate.getMinutes() &&
             now.getSeconds() == this.ringingDate.getSeconds())
         {
-            this.emit("reachedEnd", this.name);
+            this.emit("reachedEnd", this.name, this.ringingDate);
             if (this.autoRestart)
             {
                 this.restart();
@@ -117,5 +116,5 @@ export class Alarm extends EventEmitter
 
 export interface AlarmEvents
 {
-    reachedEnd: [string];
+    reachedEnd: [string?, Date?]; // hold the name of this alarm
 }

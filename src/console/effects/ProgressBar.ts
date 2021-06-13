@@ -35,11 +35,11 @@ export class ProgressBar
         else throw new Error("Cannot start bar again");
     }
 
-    public update(value: number): void
+    public update(value?: number): void
     {
         if (this.started)
         {
-            let round = Math.round((value / this.max) * 100);
+            let round = Math.round(((value != undefined ? value : this.lastValue + 1) / this.max) * 100);
             let border = round < 100 ? round : 100;
             readline.moveCursor(process.stdout, 1, -1);
             let progress = "";

@@ -4,6 +4,7 @@ import { Bot } from "../../Bot";
 import { Printer } from "../../../../console/Printer";
 import { MessageWrapper } from "../../../common/MessageWrapper";
 import { CommandError } from "../../../../errors/command_errors/CommandError";
+import { NotImplementedError } from "../../../../errors/NotImplementedError";
 
 export class AddUserCommand extends Command
 {
@@ -16,7 +17,7 @@ export class AddUserCommand extends Command
     {
         Printer.title("add-user")
 
-        throw new CommandError(this, undefined, "Command not finished yet, give me a some time and try again !");
+        throw new CommandError(this, "Command not finished yet, give me a some time and try again !", new NotImplementedError());
         let users = Config.getAuthorizedUsers();
         Config.addAuthorizedUser(this.bot.client.user);
     }

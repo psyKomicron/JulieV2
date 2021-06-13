@@ -45,7 +45,7 @@ export class PlayLogger extends Logger
     {
         if (this.player.channel.guild == message.message.guild)
         {
-            this.player.message = message;
+            this.player.wrapper = message;
             let content = message.content;
             switch (true)
             {
