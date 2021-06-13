@@ -1,7 +1,7 @@
 import { Command } from "../Command";
 import { Message, TextChannel, User, EmbedField } from "discord.js";
 import { Bot } from "../../Bot";
-import { Printer } from "../../../../console/Printer";
+import { LogLevels, Printer } from "../../../../console/Printer";
 import { ProgressBar } from "../../../../console/effects/ProgressBar";
 import { DiscordObjectGetter } from "../../../common/DiscordObjectGetter";
 import { MessageWrapper } from "../../../common/MessageWrapper";
@@ -51,7 +51,7 @@ export class CleanChannelCommand extends Command
         }
         else 
         {
-            messages = await this.dog.fetch(channel, 300, { maxIterations: 500, chunk: Tools.sigmoid, allowOverflow: false });
+            messages = await this.dog.fetch(channel, 300, { maxIterations: 600, chunk: Tools.sigmoid, allowOverflow: false });
         }
         effect.stop();
         
@@ -63,7 +63,7 @@ export class CleanChannelCommand extends Command
         else 
         {
             let toDelete = new Array<Message>();
-            let bar = new ProgressBar(messages.length, "cleaning channel [" + channel.name + "]");
+            let bar = new ProgressBar(messages.length, "fetching messages [" + channel.name + "]");
             bar.start();
 
             // start sorting and selecting messages
@@ -108,56 +108,79 @@ export class CleanChannelCommand extends Command
 
             if (preview)
             {
-                message.message.channel.startTyping();
-
-                let embed = EmbedFactory.build({
-                    title: "Clean command preview",
-                    description: "List of messages that will be deleted"
-                });
-                let embedField = { name: "Messages", value: "", inline: false }
-                let ids = "";
-
-                for (i = 0; i < toDelete.length; i++)
+                if (toDelete.length != 0)
                 {
-                    const shorten = Printer.shorten(toDelete[i].cleanContent) + "\n";
-                    if (embedField.value.length + shorten.length >= 1024)
+                    let embed = EmbedFactory.build({
+                        title: "Clean command preview",
+                        description: "List of messages that will be deleted"
+                    });
+                    let embedField = { name: "Messages", value: "", inline: false }
+                    let ids = "";
+    
+                    for (i = 0; i < toDelete.length; i++)
                     {
-                        embed.fields.push(embedField);
-                        embedField = { name: "-", value: shorten, inline: true };
+                        const shorten = Printer.shorten(toDelete[i].cleanContent) + "\n";
+                        if (embedField.value.length + shorten.length >= 1024)
+                        {
+                            embed.fields.push(embedField);
+                            embedField = { name: "-", value: shorten, inline: true };
+                        }
+                        else 
+                        {
+                            embedField.value += shorten;
+                        }
+    
+                        ids += toDelete[i].id;
+                    }
+                    ids = ids.substring(0, ids.length - 1);
+                    embed.fields.push(embedField);
+                    
+                    if (ids.length + 3 > 1024)
+                    {
+                        let size = Math.ceil(ids.length / 1022);
+                        for (i = 0; i < size; i++)
+                        {
+                            let idsField = { name: "IDs (" + (i + 1) + ")", value: undefined, inline: false };
+                            idsField.value = "`" + ids.substr(0, ids.length > 1021 ? 1021 : ids.length) + "`,";
+                            embed.fields.push(idsField);
+                            ids = ids.substring(idsField.value.length);
+                        }
                     }
                     else 
                     {
-                        embedField.value += shorten;
+                        embed.fields.push({ name: "IDs", value: "`" + ids + "`", inline: false });
                     }
 
-                    ids += toDelete[i].id;
-                }
-                ids = ids.substring(0, ids.length - 1);
-                embed.fields.push(embedField);
-                
-                if (ids.length + 3 > 1024)
-                {
-                    let size = Math.ceil(ids.length / 1022);
-                    for (i = 0; i < size; i++)
+                    try 
                     {
-                        let idsField = { name: "IDs (" + (i + 1) + ")", value: undefined, inline: false };
-                        idsField.value = "`" + ids.substr(0, ids.length > 1021 ? 1021 : ids.length) + "`,";
-                        embed.fields.push(idsField);
-                        ids = ids.substring(idsField.value.length);
+                        await message.sendToChannel(embed);
+                    }
+                    catch (err)
+                    {
+                        Printer.error(err.toString());
+                        Printer.writeLog("Failed to send embed (clean-channel command). Error " + err.toString(), LogLevels.Error);
                     }
                 }
                 else 
                 {
-                    embed.fields.push({ name: "IDs", value: "`" + ids + "`", inline: false });
+                    message.reply("No messages to delete ! Channel is clean.");
                 }
-                message.sendToChannel(embed);
             }
             else 
             {
+                bar.stop();
+                bar = new ProgressBar(toDelete.length, "deleting messages[" + channel.name + "]");
                 for (i = 0; i < toDelete.length; i++)
                 {
-                    messages[i].delete({timeout: 100, reason: "Cleaned from channel by bot."})
-                        .catch(error => Printer.error(error.toString()));
+                    try 
+                    {
+                        await messages[i].delete({timeout: 100, reason: "Cleaned from channel by bot."});
+                        bar.update();
+                    }
+                    catch (error)
+                    {
+                        Printer.error(error.toString());
+                    }
                 }
             }
         }
