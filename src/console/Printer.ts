@@ -203,7 +203,7 @@ export class Printer
     {
         console.error(this.pRed(content));
         this.lines++;
-        this.writeLog(content, LogLevels.Error);
+        //this.writeLog(content, LogLevels.Error);
     }
 
     public static hideCursor(): void
@@ -272,18 +272,7 @@ export class Printer
 
     public static writeLog(message: string, level: LogLevels)
     {
-        switch (level)
-        {
-            case LogLevels.Log:
-                fs.appendToFile(`${this.filepath}${this.logFileName}`, "[LOG]" + "(" + new Date(Date.now()).toISOString() + ") " + message);
-                break;
-            case LogLevels.Warning:
-                fs.appendToFile(`${this.filepath}${this.logFileName}`, "[WARNING]" + "(" + new Date(Date.now()).toISOString() + ") " + message);
-                break;
-            case LogLevels.Log:
-                fs.appendToFile(`${this.filepath}${this.logFileName}`, "[ERROR]" + "(" + new Date(Date.now()).toISOString() + ") " + message);
-                break;
-        }
+        fs.appendToFile(`${this.filepath}${this.logFileName}.log`, this.formatLog(message,level))
     }
 
     //#region colors
@@ -345,6 +334,24 @@ export class Printer
         this.lines += 4;
         return this.pRed(str);
     }
+
+    private static formatLog(message: string, logLevel: LogLevels): string
+    {
+        let output: string = logLevel.toString() + "(" + new Date(Date.now()).toISOString() + ") ";
+        let indent: number = output.length - 1; 
+        for (let i = 0; i < message.length; i++)
+        {
+            if (message[i] == "\n")
+            {
+                output += message[i] + "~" + Printer.repeat(" ", indent);
+            }
+            else 
+            {
+                output += message[i];
+            }
+        }
+        return output + "\n";
+    }
 }
 
 enum EscapeCodes
@@ -371,7 +378,7 @@ enum Colors
 
 export enum LogLevels 
 {
-    Log,
-    Error,
-    Warning
+    Info    = "[INFO]   ",
+    Error   = "[ERROR]  ",
+    Warning = "[WARNING]"
 }

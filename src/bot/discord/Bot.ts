@@ -58,6 +58,7 @@ export class Bot extends EventEmitter
         {
             console.log("Client disconnected :");
             console.log(`${JSON.stringify(arg_0)}, ${arg_1}`);
+            Printer.writeLog("Bot disconnected. API message: " + JSON.stringify(arg_0) + ", " + arg_1, LogLevels.Warning);
         });
 
         // login
@@ -75,6 +76,7 @@ export class Bot extends EventEmitter
                     }
                 };
                 this._client.user.setPresence(this.currentPresenceData);
+                Printer.writeLog("Bot logged in with " + value, LogLevels.Info);
             })
             .catch((reason) => 
             {
@@ -139,7 +141,7 @@ export class Bot extends EventEmitter
         {
             if (Config.getVerbose() > 2 && !wrapper.message.guild)
             {
-                Printer.writeLog("[UNDEFINED_GUILD] received message from undefined guild, not handling\n", LogLevels.Log);
+                Printer.writeLog("#UNDEFINED_GUILD Received message from undefined guild, not handling", LogLevels.Info);
             }
             return;
         }
@@ -170,7 +172,7 @@ export class Bot extends EventEmitter
                     if (!handled)
                     {
                         let name = Command.getCommandName(content);
-                        Printer.writeLog("command requested by : " + wrapper.message.author.tag + " | command name: " + name + "\n", LogLevels.Log);
+                        Printer.writeLog("Command requested by : " + wrapper.message.author.tag + " | command name: " + name, LogLevels.Info);
                         try
                         {
                             let command = CommandFactory.create(name.substr(this.prefix.length), this);
@@ -180,8 +182,7 @@ export class Bot extends EventEmitter
                                 .catch(error =>
                                 {
                                     Printer.error(error.toString());
-                                    Printer.writeLog(wrapper.content + " | ", LogLevels.Error);
-                                    Printer.writeLog(error.toString() + "\n", LogLevels.Error);
+                                    Printer.writeLog(error.toString() + "\n" + "Command content : " + wrapper.content, LogLevels.Error);
                                     this.handleErrorForClient(error, wrapper);
                                 })
                                 .then(() =>
@@ -195,8 +196,7 @@ export class Bot extends EventEmitter
                         catch (error)
                         {
                             Printer.error(error.toString());
-                            Printer.writeLog(wrapper.content + " | ", LogLevels.Error);
-                            Printer.writeLog(error.toString() + "\n", LogLevels.Error);
+                            Printer.writeLog(error.toString() + "\n" + wrapper.content, LogLevels.Error);
                             this.handleErrorForClient(error, wrapper);
                         }
                     }
@@ -205,7 +205,7 @@ export class Bot extends EventEmitter
             }
             else 
             {
-                Printer.writeLog("[UNKNOWN PREFIX] unknown prefix, not handling message (message: " + wrapper.content + ")\n", LogLevels.Warning);
+                Printer.writeLog("Unauthorized use of bot by: " + wrapper.message.author.tag, LogLevels.Warning);
             }
         }
     }
