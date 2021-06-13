@@ -2,7 +2,7 @@ import { Collection, Guild, GuildMember, Message, MessageEmbed, TextChannel } fr
 import { ArgumentError } from "../../errors/ArgumentError";
 import { Tools } from "../../helpers/Tools";
 import { LocalEmoji } from "../../dal/readers/emojis/LocalEmoji";
-import { Printer } from "../../console/Printer";
+import { LogLevels, Printer } from "../../console/Printer";
 import { BotUser } from "../discord/BotUser";
 
 export class MessageWrapper
@@ -147,8 +147,14 @@ export class MessageWrapper
             else i++;
             maxIterations++;
         }
-
-        this._isParsed = true;
+        if (maxIterations >= 500)
+        {
+            Printer.writeLog("Could not parse message, stopped parsing to avoid overflow (iterations: " + maxIterations + ").", LogLevels.Error)
+        }
+        else 
+        {
+            this._isParsed = true;
+        }
     }
 
     /**
