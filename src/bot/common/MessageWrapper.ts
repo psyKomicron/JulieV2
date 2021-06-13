@@ -85,8 +85,8 @@ export class MessageWrapper
             this._isParsed = true;
             return;
         }
-
-        while (i < content.length && i < Number.MAX_SAFE_INTEGER)
+        let maxIterations = 0;
+        while (i < content.length && maxIterations < 500)
         {
             if (content[i] == "-")
             {
@@ -116,8 +116,7 @@ export class MessageWrapper
                             comma = true;
                         }
                         let marker = true;
-    
-                        while (i < content.length && marker && i < Number.MAX_SAFE_INTEGER)
+                        while (i < content.length && marker && maxIterations < 500)
                         {
                             if (comma && content[i] == "\"")
                             {
@@ -139,12 +138,14 @@ export class MessageWrapper
                             }
     
                             if (marker) i++;
+                            maxIterations++;
                         }
                     }
                     this._parsedArgs.set(key, value);
                 }
             }
             else i++;
+            maxIterations++;
         }
 
         this._isParsed = true;
