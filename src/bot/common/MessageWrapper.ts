@@ -291,30 +291,23 @@ export class MessageWrapper
         this.message.react(emoji.value);
     }
 
-    public sendToChannel(message: string | MessageEmbed): void
+    public async sendToChannel(message: string | MessageEmbed): Promise<void>
     {
-        this._message.channel.send(message)
-            .catch(error => Printer.error(error.toString()));
+        await this._message.channel.send(message);
     }
 
-    public sendToAuthor(message: string | MessageEmbed): void
+    public async sendToAuthor(message: string | MessageEmbed): Promise<void>
     {
-        this._message.author.send(message)
-            .catch(error => Printer.error(error.toString()));
+        await this._message.author.send(message);
     }
 
-    public delete(timeout: number): void
+    public async delete(timeout: number): Promise<void>
     {
         if (this.message.deletable)
         {
             if (timeout)
             {
-                this.message.delete({timeout: timeout})
-                    .catch(error =>
-                        {
-                            Printer.error("Message could not be deleted");
-                            Printer.error(error.toString());
-                        });
+                this.message.delete({timeout: timeout});
             }
             else
             {
@@ -325,7 +318,7 @@ export class MessageWrapper
 
     public async type(): Promise<void> 
     {
-        if (this.textChannel)
+        if (this.textChannel && !this.typing)
         {
             await this.textChannel.startTyping();
         }
@@ -335,7 +328,7 @@ export class MessageWrapper
     {
         if (this.textChannel && this.typing)
         {
-            this.textChannel.stopTyping();
+            this.textChannel.stopTyping(true);
         }
     }
 
