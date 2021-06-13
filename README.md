@@ -16,7 +16,7 @@ Chosen prefix is `/`, but it can change based on your own bot configuration.
 |Command      | Command name  | Description |
 |:------------|:-------------:|:------------|
 | [Delete messages](#Delete)  |`delete`, `d` | Deletes a given number of messages in a given channel. If `-u` is used, deletes only the messages send by the specified user.|
-| [Download files from a channel](#Downloads) |`download`, `dl` | Downloads a given number of a given type of files in a given channel.|
+| [Download files from a channel](#Download) |`download`, `dl` | Downloads a given number of a given type of files in a given channel.|
 | [Creates an embed](#Embed)    | `embed` | Creates a `MessageEmbed` (look at discordjs documentation) from a json file attached to the message. The channel in wich the message will be sent can be specified & the message can be deleted after execution adding `-d` to the command.|
 | [Help](#Help)     | `help` | Shows a link to this github repository :tf: .|
 | [Vote](#Vote) | `vote`, `v` | Creates a poll/vote. You can set the vote title, how long the vote will be active, where the vote message will be sent or on wich message to create the vote. |
@@ -97,7 +97,7 @@ Sends an embed with a link to the right README section (`/help vote` will send y
 ## Embed
 **Planning on removing it or heavily changing it's behavior, so for now it's help page will remain blank**
 
-## Downloads
+## Download
 - `dl`, `download` : Downloads n image files (.png, .jpg, .gif, .bmp) from a channel.
 ### Arguments
 - `-n` : Number of files to download.
