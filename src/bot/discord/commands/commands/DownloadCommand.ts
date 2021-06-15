@@ -16,7 +16,7 @@ export class DownloadCommand extends Command
 
     public constructor(bot: Bot)
     {
-        super("download", bot);
+        super("download", bot, false);
     }
 
     public async execute(wrapper: MessageWrapper): Promise<void> 
