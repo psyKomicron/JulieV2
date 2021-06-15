@@ -115,7 +115,7 @@ export class CleanChannelCommand extends Command
                         description: "List of messages that will be deleted"
                     });
                     let embedField = { name: "Messages", value: "", inline: false }
-                    let ids = "";
+                    let idArray = new Array<string>();
     
                     for (i = 0; i < toDelete.length; i++)
                     {
@@ -130,26 +130,30 @@ export class CleanChannelCommand extends Command
                             embedField.value += shorten;
                         }
     
-                        ids += toDelete[i].id;
+                        idArray.push(toDelete[i].id);
                     }
-                    ids = ids.substring(0, ids.length - 1);
                     embed.fields.push(embedField);
-                    
-                    if (ids.length + 3 > 1024)
+                   
+                    embedField = { name: "Messages IDs", value: "", inline: false };
+                    for (i = 0; i < idArray.length; i++)
                     {
-                        let size = Math.ceil(ids.length / 1022);
-                        for (i = 0; i < size; i++)
+                        if (embedField.value.length + idArray[i].length > 1021)
                         {
-                            let idsField = { name: "IDs (" + (i + 1) + ")", value: undefined, inline: false };
-                            idsField.value = "`" + ids.substr(0, ids.length > 1021 ? 1021 : ids.length) + "`,";
-                            embed.fields.push(idsField);
-                            ids = ids.substring(idsField.value.length);
+                            // split embed field
+                            embed.fields.push(embedField);
+                            embedField = { name: "Message IDs", value: "", inline: false };
                         }
+                        embedField.value += "`" + idArray[i] + "`,";
                     }
-                    else 
-                    {
-                        embed.fields.push({ name: "IDs", value: "`" + ids + "`", inline: false });
-                    }
+                    embed.fields.push(embedField);
+
+                    // for (i = 0; i < size; i++)
+                    // {
+                    //     let idsField = { name: "IDs (" + (i + 1) + ")", value: undefined, inline: false };
+                    //     idsField.value = "`" + ids.substr(0, ids.length > 1021 ? 1021 : ids.length) + "`,";
+                    //     embed.fields.push(idsField);
+                    //     ids = ids.substring(idsField.value.length);
+                    // }
 
                     try 
                     {
@@ -170,6 +174,7 @@ export class CleanChannelCommand extends Command
             {
                 bar.stop();
                 bar = new ProgressBar(toDelete.length, "deleting messages[" + channel.name + "]");
+                bar.start();
                 for (i = 0; i < toDelete.length; i++)
                 {
                     try 
@@ -182,6 +187,7 @@ export class CleanChannelCommand extends Command
                         Printer.error(error.toString());
                     }
                 }
+                bar.stop();
             }
         }
     }
@@ -208,6 +214,6 @@ export class CleanChannelCommand extends Command
 
         channel = this.resolveTextChannel(wrapper);
 
-        return [maxMessages, channel, !wrapper.hasKeys(["a", "all"]), wrapper.has("p")];
+        return [maxMessages, channel, !wrapper.hasKeys(["a", "all"]), !wrapper.has("p")];
     }
 }
