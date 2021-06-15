@@ -4,6 +4,7 @@ import { Tools } from "../../helpers/Tools";
 import { LocalEmoji } from "../../dal/readers/emojis/LocalEmoji";
 import { LogLevels, Printer } from "../../console/Printer";
 import { BotUser } from "../discord/BotUser";
+import { ExecutionError } from "../../errors/ExecutionError";
 
 export class MessageWrapper
 {
@@ -147,9 +148,10 @@ export class MessageWrapper
             else i++;
             maxIterations++;
         }
+
         if (maxIterations >= 500)
         {
-            Printer.writeLog("Could not parse message, stopped parsing to avoid overflow (iterations: " + maxIterations + ").", LogLevels.Error)
+            throw new ExecutionError("Could not parse message, stopped parsing to avoid overflow (iterations: " + maxIterations + ").", "ExecutionError");
         }
         else 
         {
