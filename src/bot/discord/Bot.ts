@@ -146,68 +146,56 @@ export class Bot extends EventEmitter
             return;
         }
         
-        wrapper.parseMessage(this.prefix.length);
-        let content = wrapper.content;
-
-        if (content.startsWith(this.prefix))
+        try 
         {
-            try
+            wrapper.parseMessage(this.prefix.length);
+            let content = wrapper.content;
+
+            if (content.startsWith(this.prefix))
             {
                 // asynchronously moderates a message
                 this.moderator.execute(wrapper); // does nothing for now
-            }
-            catch (error)
-            {
-                Printer.error(error.toString());
-            }
 
-            if (this.isAuthorized(wrapper.message.author))
-            {
-                wrapper.type();
-                Printer.info("\n(" + new Date(Date.now()).toISOString() + ") command requested by : " + wrapper.message.author.tag);
-                if (this._logger)
+                if (this.isAuthorized(wrapper.message.author))
                 {
-                    let handled = this._logger.handle(wrapper);
-
-                    if (!handled)
+                    wrapper.type();
+                    Printer.info("\n(" + new Date(Date.now()).toISOString() + ") command requested by : " + wrapper.message.author.tag);
+                    if (this._logger)
                     {
-                        let name = Command.getCommandName(content);
-                        Printer.writeLog("Command requested by : " + wrapper.message.author.tag + " | command name: " + name, LogLevels.Info);
-                        try
+                        let handled = this._logger.handle(wrapper);
+
+                        if (!handled)
                         {
+                            let name = Command.getCommandName(content);
+
+                            Printer.writeLog("Command requested by : " + wrapper.message.author.tag + " | command name: " + name + " | content: " + wrapper.commandContent, LogLevels.Info);
+                            
                             let command = CommandFactory.create(name.substr(this.prefix.length), this);
                             wrapper.parseMessage(this.prefix.length);
 
-                            command.execute(wrapper)
-                                .catch(error =>
-                                {
-                                    Printer.error(error.toString());
-                                    Printer.writeLog(error.toString() + "\n" + "Command content : " + wrapper.content, LogLevels.Error);
-                                    this.handleErrorForClient(error, wrapper);
-                                })
-                                .then(() =>
-                                {
-                                    if (command.deleteAfterExecution)
-                                    {
-                                        wrapper.delete(300);
-                                    }
-                                });
-                        }
-                        catch (error)
-                        {
-                            Printer.error(error.toString());
-                            Printer.writeLog(error.toString() + "\n" + wrapper.content, LogLevels.Error);
-                            this.handleErrorForClient(error, wrapper);
+                            await command.execute(wrapper);
+                            if (command.deleteAfterExecution)
+                            {
+                                wrapper.delete(300);
+                            }
                         }
                     }
+                    wrapper.stopTyping();
                 }
-                wrapper.stopTyping();
-            }
-            else 
-            {
-                Printer.writeLog("Unauthorized use of bot by: " + wrapper.message.author.tag, LogLevels.Warning);
+                else 
+                {
+                    Printer.writeLog("Unauthorized use of bot by: " + wrapper.message.author.tag, LogLevels.Warning);
+                }
             }
         }
+        catch (error)
+        {
+            Printer.error(error.toString());
+            Printer.writeLog(error.toString() + "\n" + "Received: \"" + wrapper.content + "\" from " + wrapper.message.author.tag, LogLevels.Error);
+            this.handleErrorForClient(error, wrapper);
+        }
+
+        
     }
 
     private onPrefixChange(prefix: string): void
