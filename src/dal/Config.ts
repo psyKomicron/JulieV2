@@ -40,7 +40,7 @@ export class Config extends EventEmitter
     private static readonly path = "./config/config.json";
     private static readonly emojisFilePath: string = "./config/emojis.json";
     private static readonly downloadPath: string = "./files/downloads/";
-    private static readonly gitRepoPath: string = "https://github.com/psyKomicron/Julie/"
+    private static readonly gitRepoPath: string = "https://github.com/psyKomicron/JulieV2/"
 
     // #region getters
     public static init()

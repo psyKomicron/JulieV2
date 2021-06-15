@@ -46,7 +46,7 @@ export class HelpCommand extends Command
         {
             commandName = Config.getGitRepoPath() + "blob/master/README.md#" + content.substring(i);
         }
-        else if (!isNullOrUndefined(content.substring(i).match(/(life|live|me)/gi)))
+        else if (content.substring(i).match(/(life|live|me)/gi) == null)
         {
             commandName = "https://www.wikihow.com/Live";
         }
