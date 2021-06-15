@@ -2,7 +2,6 @@
 node_modules
 
 # Typescript
-*.js
 *.js.map
 
 # program generated
