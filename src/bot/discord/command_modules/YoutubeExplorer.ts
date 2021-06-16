@@ -4,9 +4,10 @@ import { TokenReader } from "../../../dal/readers/TokenReader";
 import { EmptyTokenError } from "../../../errors/dal_errors/EmptyTokenError";
 import { Printer } from "../../../console/Printer";
 import { EmbedFactory } from "../../../factories/EmbedFactory";
-import { EmbedResolvable } from "../../../dtos/EmbedResolvable";
 
-/**Class to display results from a search on Youtube for a discord user */
+/**
+ * Class to display results from a search on Youtube for a discord user 
+ */
 export class YTExplorer extends Explorer
 {
     public async explore(): Promise<void> 

@@ -3,10 +3,8 @@ import { YoutubeInput } from '../../../../dtos/YoutubeInput';
 import { YoutubeProxy } from '../../../../helpers/proxies/YoutubeProxy';
 import { TokenReader } from '../../../../dal/readers/TokenReader';
 import { YoutubeOutput } from '../../../../dtos/YoutubeOuput';
-import { Printer } from '../../../../console/Printer';
 import { YoutubePlaylistInput } from "../../../../dtos/YoutubePlaylistInput";
 import { YoutubePlaylistOutput } from "../../../../dtos/YoutubePlaylistOutput";
-import { ExecutionError } from "../../../../errors/ExecutionError";
 
 /**Class to interact with the Youtube API */
 export class YoutubeModule
