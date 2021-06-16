@@ -15,27 +15,41 @@ Each command starts with what is called a prefix (by default for this bot it's "
 Chosen prefix is `/`, but it can change based on your own bot configuration.
 |Command      | Command name  | Description |
 |:------------|:-------------:|:------------|
-| [Delete messages](#Delete)  |`delete`, `d` | Deletes a given number of messages in a given channel. If `-u` is used, deletes only the messages send by the specified user.|
-| [Download files from a channel](#Downloads) |`download`, `dl` | Downloads a given number of a given type of files in a given channel.|
-| [Creates an embed](#Embed)    | `embed` | Creates a `MessageEmbed` (look at discordjs documentation) from a json file attached to the message. The channel in wich the message will be sent can be specified & the message can be deleted after execution adding `-d` to the command.|
-| [Help](#Help)     | `help` | Shows a link to this github repository :tf: .|
-| [Vote](#Vote) | `vote`, `v` | Creates a poll/vote. You can set the vote title, how long the vote will be active, where the vote message will be sent or on wich message to create the vote. |
-| [Play](#Play) | `play` | Plays a youtube video in a given channel, with of course a provided youtube link. Good to use with the explore command to search for a video. |
-| [Explore](#Explore) | `explore`, `search`, `e` | Start a search on a Wikipedia or Youtube on a keyword and display the result of the search in the channel. The search on Youtube will be made using YouTube search algorithm. |
-| [Show authorized users](<#Show users>) | `showusers` | Sends a embed (formatted message) to the channel showing every user authorized to use the bot. Other users can be added using the `adduser` command or by editing the .json configuration file (`./config/config.json` -> field "`authorizedUsers`")|
-| [Add user](<#Add user>) | `adduser` | Add a user to the authorized user list (those who can use the bot and it's commands).|
-| [Change prefix](#Prefix) | `changeprefix`, `prefix` | Change the prefix for the bot commands |
-| [Clean channel](<#Clean channel>) | `clean`, `c` | "Cleans" a channel. If you have a channel dedicated for pictures/files and should have a maximum amount of text messages to avoid clogging the channel, `clean` will clean those unwanted text messages. |
+| [Delete messages](#delete)  |`delete`, `d` | Deletes a given number of messages in a given channel. If `-u` is used, deletes only the messages send by the specified user.|
+| [Download files from a channel](#download) |`download`, `dl` | Downloads a given number of a given type of files in a given channel.|
+| [Creates an embed](#embed)    | `embed` | Creates a `MessageEmbed` (look at discordjs documentation) from a json file attached to the message. The channel in wich the message will be sent can be specified & the message can be deleted after execution adding `-d` to the command.|
+| [Help](#help)     | `help` | Shows a link to this github repository :tf: .|
+| [Vote](#vote) | `vote`, `v` | Creates a poll/vote. You can set the vote title, how long the vote will be active, where the vote message will be sent or on wich message to create the vote. |
+| [Play](#play) | `play` | Plays a youtube video in a given channel. Can be used with either a link or a keyword |
+| [Explore](#explore) | `explore`, `search`, `e` | Start a search on a Wikipedia or Youtube on a keyword and display the result of the search in the channel. The search on Youtube will be made using YouTube search algorithm. |
+| [Show authorized users](<#show-users>) | `showusers` | Sends a embed (formatted message) to the channel showing every user authorized to use the bot. Other users can be added using the `adduser` command or by editing the `.json` configuration file |
+| [Add user](<#add-user>) | `adduser` | Add a user to the authorized user list (those who can use the bot and it's commands).|
+| [Change prefix](#prefix) | `changeprefix`, `prefix` | Change the prefix for the bot commands |
+| [Clean channel](#clean-channel) | `clean`, `c` | "Cleans" a channel. If you have a channel dedicated for pictures/files and should have a maximum amount of text messages to avoid clogging the channel, `clean` will clean those unwanted text messages. |
 
 ## Help
 - `help`
-Sends an embed with a link to this github page (or not...).
+Sends an embed with a link to this github page (sometimes it does not). Provide the command with the name of another command and it will send you to the right section of this document. 
 
-- `help [command name]`
-Sends an embed with a link to the right README section (`/help vote` will send you to [Vote](#Vote))
+
+### Arguments
+- `[command name]` : Name of the command you need help with.
+### Example(s)
+Sends an embed with a link to the right README section i.e. it will send you to [Vote](#vote))
+```sh
+/help vote
+```
+Others examples :
+```sh
+/help delete
+/help download
+/help vote
+/help ...
+```
 
 ## Vote
-- `vote` Creates a poll system using a `Discord.MessageEmbed` and `Discord.ReactionCollector`.
+- `vote` Creates a poll/vote system using a `Discord.MessageEmbed` and `Discord.ReactionCollector`. When you create a vote, the bot will send a message (an embed) to the current channel (unless instructed otherwise). Users vote by interacting with the embed, adding reactions/emojis/emoticons to it. Votes have a time limit, by default 1 minute, but it can be extended with the `-n` timeout option. Every vote has a identifier (located in the footer of the embed), this identifier can be used to terminate the vote early with the `end` command.
+ If the `-displayusers` option has been added, at the end of the vote the users will be shown with their respective votes.
 
 ### Arguments
 - `-r`, `-title` : title of the poll (title of the embed generated by the command).
@@ -43,7 +57,7 @@ Sends an embed with a link to the right README section (`/help vote` will send y
 - `-c`, `-channel` : channel id to send the vote message to.
 - `-m`, `-message` : message id to attach the vote to. The message must be an embed, and must have been sent by the bot (if it hasn't been sent by the bot, the bot cannot edit it).
 - `-e`, `-reactions` : the only reactions to be interpreted as votes, must be surrounded by quotes and separeted by spaces. Those reactions will be added to the vote embed.
-- `-displayusers` : argument can be set to `true`, `yes`, `y` or just append it to display users that voted (with their usernames) at the end of the vote.
+- `-displayusers` : argument can be set to `true`, `yes`, `y` (and their respective opposites) or just append it to display users that voted (with their usernames) at the end of the vote.
 
 ## Delete
 - `delete` Deletes a given number of messages in a channel, can be set to delete a specified user's messages. If the `-c` argument is provided the bot will delete messages in the given channel (channel id can be obtained by right clicking the channel's name in Discord).
@@ -97,7 +111,7 @@ Sends an embed with a link to the right README section (`/help vote` will send y
 ## Embed
 **Planning on removing it or heavily changing it's behavior, so for now it's help page will remain blank**
 
-## Downloads
+## Download
 - `dl`, `download` : Downloads n image files (.png, .jpg, .gif, .bmp) from a channel.
 ### Arguments
 - `-n` : Number of files to download.
