@@ -1,12 +1,11 @@
 import { Printer } from "../../../../console/Printer";
 import { Config } from "../../../../dal/Config";
-import { CommandError } from "../../../../errors/command_errors/CommandError";
 import { Bot } from "../../Bot";
 import { EmbedFactory } from "../../../../factories/EmbedFactory";
-import { EmbedResolvable } from "../../../../dtos/EmbedResolvable";
 import { Command } from "../Command";
 import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyntaxError";
 import { MessageWrapper } from "../../../common/MessageWrapper";
+import { Tools } from "../../../../helpers/Tools";
 
 export class ChangePrefixCommand extends Command
 {
@@ -20,6 +19,10 @@ export class ChangePrefixCommand extends Command
         Printer.title("changing prefix");
         let prefix = undefined;
         let value = message.getValue(["p", "prefix"]);
+        if (Tools.isNullOrEmpty(value))
+        {
+            prefix = message.commandContent;
+        }
 
         if (value.length <= 10 && value.length > 0)
         {
@@ -28,7 +31,7 @@ export class ChangePrefixCommand extends Command
 
         Printer.args(["prefix"], [prefix]);
 
-        if (prefix)
+        if (!prefix.match(/[-\",\[\]]/))
         {
             Printer.info("new prefix valid, updating current prefix");
             Config.setPrefix(prefix);
@@ -40,7 +43,7 @@ export class ChangePrefixCommand extends Command
                     { name: "New prefix : ", value: prefix, inline: true },
                     {
                         name: "Info",
-                        value: "You can always change the prefix again. For prefix examples look at the help page (accessible with /help) section \"Prefix\""
+                        value: "You can always change the prefix again. For prefix examples look at the help page (accessible with `" + prefix + "help`) section \"Prefix\""
                     }
                 ]
             }));
