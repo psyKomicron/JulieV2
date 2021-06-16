@@ -3,8 +3,13 @@ import { CommandError } from "./CommandError";
 
 export class CommandArgumentError extends CommandError
 {
-    public constructor(command: Command, message: string, parameterName: string)
+    private _argumentName: string;
+
+    public constructor(command: Command, message: string, argumentName: string)
     {
-        super(command, message + "\nParameter name: " + parameterName);
+        super(command, message + "\nParameter name: " + argumentName);
+        this._argumentName = argumentName;
     }
+
+    public get argumentName() { return this._argumentName; }
 }

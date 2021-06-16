@@ -4,11 +4,16 @@ import { Command } from "../../bot/discord/commands/Command";
 /**Use this class to send friendly error messages to the client.*/
 export class CommandError extends ExecutionError
 {
+    private command: Command;
+
     public constructor(command: Command, message?: string, internalError: Error = null)
     {
         super(message ?? "Command " + command.name + " failed. Check details below.", command.name);
         this.internalError = internalError;
+        this.command = command;
     }
+
+    public get commandName() { return this.command.name; }
 
     public toString(): string
     {
