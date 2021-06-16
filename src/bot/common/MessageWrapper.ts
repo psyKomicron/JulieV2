@@ -170,7 +170,7 @@ export class MessageWrapper
         if (this._isParsed)
         {
             let filled: boolean = false;
-            let res: string = "";
+            let res: string = undefined;
 
             for (var i = 0; i < keys.length; i++)
             {
