@@ -8,15 +8,12 @@ import
 import { YoutubeModule } from '../../command_modules/youtube/YoutubeModule';
 import { PlayLogger } from '../../command_modules/logger/loggers/PlayLogger';
 import { Printer } from '../../../../console/Printer';
-import { EmbedResolvable } from '../../../../dtos/EmbedResolvable';
 import { CommandSyntaxError } from '../../../../errors/command_errors/CommandSyntaxError';
 import { YoutubeOutput } from '../../../../dtos/YoutubeOuput';
 import { TokenReader } from '../../../../dal/readers/TokenReader';
 import { EmbedFactory } from '../../../../factories/EmbedFactory';
 import { Command } from '../Command';
-import { ArgumentError } from '../../../../errors/ArgumentError';
 import internal = require("stream");
-import { CommandError } from "../../../../errors/command_errors/CommandError";
 import { MessageWrapper } from "../../../common/MessageWrapper";
 import { Playlist } from "../../command_modules/Playlist";
 import { CommandArgumentError } from "../../../../errors/command_errors/CommandArgumentError";
@@ -294,10 +291,13 @@ export class PlayCommand extends Command
     private setArgParams(wrapper: MessageWrapper): void
     {
         let playlist: Playlist = this.playlist;
-        let channel: VoiceChannel;
         let keyword: string;
 
         let u = wrapper.getValue(["u", "url"]);
+        if (u == undefined)
+        {
+            throw new CommandArgumentError(this, "Url argument does not have a value (i.e. a link).", "u,url");
+        }
         if (u)
         {
             let urls = u.split(" ");
@@ -316,7 +316,18 @@ export class PlayCommand extends Command
         }
         else 
         {
-            throw new CommandSyntaxError(this, "No value was provided (keyword or url)");
+            if (wrapper.hasKeys(["u", "url"]))
+            {
+                
+            }
+            else if (wrapper.hasKeys(["k", "keyword"]))
+            {
+                throw new CommandArgumentError(this, "Keyword argument does not have a value (either a link or a video name)", "k,keyword");
+            }
+            else 
+            {
+                throw new CommandSyntaxError(this, "No keyword or url was provided (-k/keyword, -u/url)");
+            }
         }
 
         let c = wrapper.getValue(["c", "channel"]);
