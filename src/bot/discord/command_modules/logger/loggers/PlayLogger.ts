@@ -1,5 +1,4 @@
 import { Logger } from "../Logger";
-import { Message } from "discord.js";
 import { Printer } from "../../../../../console/Printer";
 import { PlayCommand } from "../../../commands/commands/PlayCommand";
 import { MessageWrapper } from "../../../../common/MessageWrapper";

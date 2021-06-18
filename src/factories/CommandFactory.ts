@@ -27,61 +27,46 @@ export class CommandFactory
                 case "add":
                     case "adduser":
                         return new AddUserCommand(bot);
-
             case "c":
                 case "clean":
                     return new CleanChannelCommand(bot);
-
             case "collect":
                 return new CollectCommand(bot);
-
             case "changeprefix":
                 case "prefix":
                     return new ChangePrefixCommand(bot);
-
             case "dl":
                 case "download":
                     return new DownloadCommand(bot);
-
             case "d":
                 case "delete":
                     return new DeleteCommand(bot);
-
             case "embed":
                 return new EmbedCommand(bot);
-
             case "explore":
                 case "search":
                     case "e":
                         return new ExploreCommand(bot);
-
             case "g":
                 case "gamble":
                     return new GambleCommand(bot);
-
             case "h":
                 case "help":
                     return new HelpCommand(bot);
-
             case "remind":
                 return new RemindUserCommand(bot);
-
             case "su":
                 case "showusers":
                     return new ShowUsersCommand(bot);
-
             case "p":
                 case "play":
                     return new PlayCommand(bot);
-
             case "t":
                 case "test":
                     return new TestCommand(bot);
-
             case "v":
                 case "vote":
                     return new VoteCommand(bot);
-
             default:
                 return new DefaultCommand(bot);
         }
