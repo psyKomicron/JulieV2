@@ -5,6 +5,7 @@ import { LocalEmoji } from "../../dal/readers/emojis/LocalEmoji";
 import { LogLevels, Printer } from "../../console/Printer";
 import { BotUser } from "../discord/BotUser";
 import { ExecutionError } from "../../errors/ExecutionError";
+import { Config } from "../../dal/Config";
 
 export class MessageWrapper
 {
@@ -258,14 +259,7 @@ export class MessageWrapper
 
     public hasArgs(): boolean
     {
-        if (this.isParsed && this.args && this.args.size > 0)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return (this.isParsed && this.args && this.args.size > 0);
     }
 
     public async fetchMember(username: string): Promise<GuildMember>
@@ -298,6 +292,22 @@ export class MessageWrapper
     public react(emoji: LocalEmoji): void
     {
         this.message.react(emoji.value);
+    }
+
+    /**
+     * Sends a message to the channel if the verbose level is above 1, else sends to the author.
+     * @param message Message to send
+     */
+    public async send(message: string | MessageEmbed): Promise<void>
+    {
+        if (Config.getVerbose() > 1)
+        {
+            await this.sendToChannel(message);
+        }
+        else 
+        {
+            await this.sendToAuthor(message);
+        }
     }
 
     public async sendToChannel(message: string | MessageEmbed): Promise<void>
