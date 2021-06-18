@@ -7,6 +7,7 @@ import { FileSystem as fs } from '../../../../dal/FileSystem';
 import { Message, TextChannel} from 'discord.js';
 import { ArgumentError } from '../../../../errors/ArgumentError';
 import { MessageWrapper } from '../../../common/MessageWrapper';
+import { NotImplementedError } from '../../../../errors/NotImplementedError';
 
 export class EmbedCommand extends Command
 {
@@ -82,6 +83,11 @@ export class EmbedCommand extends Command
             );
             throw new Error("No valid uri/url for the json file");
         }
+    }
+
+    public help(wrapper: MessageWrapper): string
+    {
+        throw new NotImplementedError();
     }
 
     private getParams(wrapper: MessageWrapper): [TextChannel, boolean]

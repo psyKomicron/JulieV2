@@ -42,4 +42,8 @@ export class ShowUsersCommand extends Command
         message.reply(embed);
     }
 
+    public help(wrapper: MessageWrapper): string
+    {
+        return "Shows the users authorized to use this bot.";
+    }
 }

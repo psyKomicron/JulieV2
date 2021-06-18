@@ -7,6 +7,7 @@ import { EmojiReader } from '../../../../dal/readers/EmojiReader';
 import { CommandError } from '../../../../errors/command_errors/CommandError';
 import { MessageWrapper } from '../../../common/MessageWrapper';
 import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyntaxError";
+import { Tools } from '../../../../helpers/Tools';
 
 export class VoteCommand extends Command
 {
@@ -71,6 +72,46 @@ export class VoteCommand extends Command
             {
                 throw new CommandSyntaxError(this);
             }
+        }
+    }
+
+    public help(wrapper: MessageWrapper): string
+    {
+        let arg = wrapper.commandContent;
+        if (!Tools.isNullOrEmpty(arg))
+        {
+            let message = "";
+            switch (arg)
+            {
+                case "r":
+                    case "title":
+                        message = "Sets the title of the vote. Default title is Yes/No"
+                        break;
+                case "n":
+                    case "timeout":
+                        message = "Sets how long the vote will last (in seconds). \nFor example if you want your vote to last for 5min you will put 300.\nIf you don't want the vote to end after n amount of time, you can set the argument to `notlimit`.";
+                        break;
+                case "m":
+                    case "message":
+                        message = "If there is a embed that the bot has already sent in the channel, use this argument to make the bot use this embed instead of creating a new one.";
+                        break;
+                case "e":
+                    case "reactions":
+                        message = "Add the emojis (separated by a space if multiple) to the embed that the bot will create for the vote. You can use it to make it easier for users to react to the vote with specific emojis.";
+                        break;
+                case "displayusers":
+                    message = "Append it to the command (you don't need to set it to any value) to display the users that voted. By default voting users will not be shown.\nYou can however set a value for this argument. Look at the help page for more details.";
+                    break;
+                case "notify":
+                    case "notifyusers":
+                        message = "Notify users (with their @ separated with commas), or roles that a vote has started. To notify users that a vote has ended, you can use the displayusers option (it will ping the users who voted).\nThis option is still in test (2021-06-17)";
+                        break;
+            }
+            return message;
+        }
+        else 
+        {
+            return "Starts a vote with all default parameters:\n - Title: Yes/No\n - Timeout: 1 minute\n - Channel: current channel\n - No additional starting emojis\n - Do not display users on vote end";
         }
     }
 

@@ -10,6 +10,7 @@ import { DeprecatedCommandError } from "../../../../errors/command_errors/Deprec
 import { EmptyTokenError } from "../../../../errors/dal_errors/EmptyTokenError";
 import { WrongYoutubeResponseType } from "../../../../errors/dal_errors/WrongYoutubeResponseType";
 import { YoutubeProxy } from "../../../../helpers/proxies/YoutubeProxy";
+import { NotImplementedError } from '../../../../errors/NotImplementedError';
 
 export class TestCommand extends Command
 {
@@ -48,6 +49,11 @@ export class TestCommand extends Command
         });
 
         wrapper.sendToChannel(this.getTestCommands());
+    }
+
+    public help(wrapper: MessageWrapper): string
+    {
+        throw new NotImplementedError();
     }
 
     private getTestCommands(): string

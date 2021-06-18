@@ -10,6 +10,7 @@ import { EmojiReader } from "../../../../dal/readers/EmojiReader";
 import { Tools } from "../../../../helpers/Tools";
 import { EmbedFactory } from "../../../../factories/EmbedFactory";
 import { StarEffect } from "../../../../console/effects/StarEffect";
+import { NotImplementedError } from "../../../../errors/NotImplementedError";
 
 /**
  * @command-syntax clean
@@ -36,7 +37,11 @@ export class CleanChannelCommand extends Command
         {
             throw new CommandSyntaxError(this, "Missing number per user argument (u)");
         }
+    }
 
+    public help(wrapper: MessageWrapper): string
+    {
+        throw new NotImplementedError();
     }
 
     private async cleanChannel(message: MessageWrapper, numberPerUser: number, channel: TextChannel, onlyToday: boolean,

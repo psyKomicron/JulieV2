@@ -4,8 +4,8 @@ import { MessageEmbed } from 'discord.js';
 import { EmojiReader } from '../../../../dal/readers/EmojiReader';
 import { CommandFactory } from '../../../../factories/CommandFactory';
 import { Config } from '../../../../dal/Config';
-import { isNullOrUndefined } from 'util';
 import { MessageWrapper } from '../../../common/MessageWrapper';
+import { Tools } from '../../../../helpers/Tools';
 
 export class HelpCommand extends Command
 {
@@ -23,9 +23,22 @@ export class HelpCommand extends Command
             .setColor(0xff0000)
             .setDescription("Help page")
             .setURL(url)
-            .addFields({ name: "Link", value: url });
+            .addField("Link", url);
 
         wrapper.sendToChannel(embed);
+    }
+
+    public help(wrapper: MessageWrapper): string
+    {
+        if (Tools.isNullOrEmpty(wrapper.commandContent))
+        {
+            return "Use this command to know more about the options and how to use a specific command. You can also read the help document for this bot at " + Config.getGitRepoPath() + "blob/master/README.md. To get help for a specific command use the following syntax: " + Config.getPrefix() + "`help [command name]` or" + Config.getPrefix() + " `help [command name] [command option]`.";
+        }
+        else 
+        {
+            this.execute(wrapper);
+            return "👆";
+        }
     }
 
     private getUrl(wrapper: MessageWrapper): string

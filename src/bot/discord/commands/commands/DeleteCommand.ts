@@ -6,6 +6,9 @@ import { ProgressBar } from '../../../../console/effects/ProgressBar';
 import { Command } from '../Command';
 import { DiscordObjectGetter } from '../../../common/DiscordObjectGetter';
 import { MessageWrapper } from '../../../common/MessageWrapper';
+import { Tools } from '../../../../helpers/Tools';
+import { CommandArgumentError } from '../../../../errors/command_errors/CommandArgumentError';
+import { Config } from '../../../../dal/Config';
 
 export class DeleteCommand extends Command
 {
@@ -89,6 +92,35 @@ export class DeleteCommand extends Command
             }
             default:
                 break;
+        }
+    }
+
+    public help(wrapper: MessageWrapper): string
+    {
+        let opt = wrapper.commandContent;
+        if (!Tools.isNullOrEmpty(opt))
+        {
+            let message = "";
+            switch (opt)
+            {
+                case "n":
+                    message = "How many messages you want to delete.";
+                    break;
+                case "u":
+                    message = "Use this option to delete only the messages sent by a specific user. You need to set how many messages you want to delete `-n` option.";
+                    break;
+                case "p":
+                    case "pins":
+                        message = "Append this option to delete even pinned messages (by default the bot will not delete pinned messages)."
+                        break;
+                default:
+                    throw new CommandArgumentError(this, "Option not recognized", opt);
+            }
+            return message;
+        }
+        else 
+        {
+            return "When using the command with no options you have two ways of using it. You can use it to delete a number of messages in the current channel by simply giving how many messages you want to delete: `" + Config.getPrefix() + "d 10` will delete 10 messages. Or give a list of message IDs (separated by commas) to delete only those messages (usually you will use this command after having used the CleanChannel command with the preview option `-p`).\n*The bot will not delete pinned messages*";
         }
     }
 

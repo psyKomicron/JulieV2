@@ -17,4 +17,9 @@ export class DefaultCommand extends Command
         Printer.writeLog("Unknown command used (message: " + message.content + ")", LogLevels.Warning);
         message.reply("Unknown command! Use " + Config.getPrefix() + "help to get the list of available commands.");
     }
+
+    public help(wrapper: MessageWrapper): string
+    {
+        return "This command is when the user does not know what he is doing. I would personally advise to **R.T.F.M.**";
+    }
 }

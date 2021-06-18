@@ -21,4 +21,9 @@ export class AddUserCommand extends Command
         let users = Config.getAuthorizedUsers();
         Config.addAuthorizedUser(this.bot.client.user);
     }
+
+    public help(wrapper: MessageWrapper): string
+    {
+        throw new NotImplementedError();
+    }
 }

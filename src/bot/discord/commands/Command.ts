@@ -1,6 +1,5 @@
 import { EventEmitter } from "events";
-import { FileSystem as fs } from "../../../dal/FileSystem";
-import { TextChannel, GuildChannel, GuildChannelManager } from 'discord.js';
+import { TextChannel, GuildChannel, GuildChannelManager, MessageEmbed } from 'discord.js';
 import { Bot } from "../Bot";
 import { MessageWrapper } from "../../common/MessageWrapper";
 
@@ -27,8 +26,10 @@ export abstract class Command extends EventEmitter
         this._deleteAfterExecution = deleteAfterExecution;
     }
 
-    /**Execute the command async */
+    /** Execute the command async */
     public abstract execute(wrapper: MessageWrapper): Promise<void>;
+    /** Help (for the different options for this command) */
+    public abstract help(wrapper: MessageWrapper): string;
 
     /**
      * Resolve a text channel through the Discord API. Returns the channel in wich the message

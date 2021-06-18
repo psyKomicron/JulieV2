@@ -6,6 +6,7 @@ import { Command } from "../Command";
 import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyntaxError";
 import { MessageWrapper } from "../../../common/MessageWrapper";
 import { Tools } from "../../../../helpers/Tools";
+import { NotImplementedError } from "../../../../errors/NotImplementedError";
 
 export class ChangePrefixCommand extends Command
 {
@@ -53,5 +54,10 @@ export class ChangePrefixCommand extends Command
             Printer.warn("new prefix invalid, not updating current prefix");
             new CommandSyntaxError(this, "New prefix invalid (" + prefix + "), not updating current prefix");
         }
+    }
+
+    public help(wrapper: MessageWrapper): string
+    {
+        throw new NotImplementedError();
     }
 }

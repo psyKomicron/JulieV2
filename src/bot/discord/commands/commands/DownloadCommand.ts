@@ -9,6 +9,7 @@ import { Command } from '../Command';
 import { Tools } from '../../../../helpers/Tools';
 import { MessageWrapper } from '../../../common/MessageWrapper';
 import { CommandArgumentError } from "../../../../errors/command_errors/CommandArgumentError";
+import { Config } from '../../../../dal/Config';
 
 export class DownloadCommand extends Command
 {
@@ -57,6 +58,11 @@ export class DownloadCommand extends Command
                 wrapper.react(EmojiReader.getEmoji("green_check"));
                 wrapper.delete(2000);
             });
+    }
+
+    public help(wrapper: MessageWrapper): string
+    {
+        return Config.getGitRepoPath() + "/blob/master/README.md#download";
     }
 
     private async initiateDownload(numberOfFiles: number, channel: Channel): Promise<void>

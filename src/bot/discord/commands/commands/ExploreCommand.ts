@@ -2,7 +2,7 @@ import { Bot } from "../../Bot";
 import { Printer } from "../../../../console/Printer";
 import { YTExplorer } from "../../command_modules/YoutubeExplorer";
 import { WikiExplorer } from "../../command_modules/WikiExplorer";
-import { Message, MessageEmbed, TextChannel } from 'discord.js';
+import { MessageEmbed } from 'discord.js';
 import { CommandSyntaxError } from "../../../../errors/command_errors/CommandSyntaxError";
 import { Command } from "../Command";
 import { Explorer } from "../../command_modules/Explorer";
@@ -14,7 +14,7 @@ export class ExploreCommand extends Command
 
     public constructor(bot: Bot)
     {
-        super("explore", bot, false);
+        super("explore", bot);
     }
 
     public async execute(wrapper: MessageWrapper): Promise<void>
@@ -30,16 +30,43 @@ export class ExploreCommand extends Command
         let e: Explorer;
         switch (domain)
         {
-            case Domain.YOUTUBE:
+            case Domain.Youtube:
                 e = new YTExplorer(keyword, this);
                 break;
-            case Domain.WIKIPEDIA:
+            case Domain.Wikipedia:
                 e = new WikiExplorer(keyword, this);
                 break;
         }
         e.explore();
+    }
 
-        wrapper.delete(1000);
+    public help(wrapper: MessageWrapper): string
+    {
+        let option = wrapper.commandContent;
+        if (option)
+        {
+            let message = "";
+            switch (option)
+            {
+                case "k":
+                    case "keyword":
+                        break;
+                case "yt":
+                    case "youtube":
+                        break;
+                case "wiki":
+                    case "wikipedia":
+                        break;
+                default:
+                    message = "Unknow option, look the help page for this command to get a list of options.";
+                    break;
+            }
+            return message;
+        }
+        else 
+        {
+            return "ExploreCommand cannot be used without arguments (options).";
+        }
     }
 
     /**
@@ -63,18 +90,18 @@ export class ExploreCommand extends Command
 
         if (wrapper.hasValue(["yt", "youtube"]))
         {
-            domain = Domain.YOUTUBE;
+            domain = Domain.Youtube;
         }
 
         if (wrapper.hasValue(["w", "wiki"]))
         {
             if (!domain)
             {
-                throw new CommandSyntaxError(this, "Duplicate domain name use. You can set the search to be on Youtube or Wikipedia but not both");
+                throw new CommandSyntaxError(this, "Duplicate domain name use. You can set the search to be on Youtube or Wikipedia but not both.");
             }
             else
             {
-                domain = Domain.WIKIPEDIA;
+                domain = Domain.Wikipedia;
             }
         }
 
@@ -84,8 +111,8 @@ export class ExploreCommand extends Command
 
 enum Domain
 {
-    YOUTUBE = "youtube",
-    WIKIPEDIA = "wikipedia"
+    Youtube = "youtube",
+    Wikipedia = "wikipedia"
 }
 
 interface Params

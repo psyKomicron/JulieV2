@@ -17,6 +17,8 @@ import internal = require("stream");
 import { MessageWrapper } from "../../../common/MessageWrapper";
 import { Playlist } from "../../command_modules/Playlist";
 import { CommandArgumentError } from "../../../../errors/command_errors/CommandArgumentError";
+import { Tools } from "../../../../helpers/Tools";
+import { Config } from "../../../../dal/Config";
 
 export class PlayCommand extends Command
 {
@@ -75,6 +77,39 @@ export class PlayCommand extends Command
         else
         {
             throw new CommandSyntaxError(this, "No songs are in the playlist.");
+        }
+    }
+
+    public help(wrapper: MessageWrapper): string
+    {
+        if (!Tools.isNullOrEmpty(wrapper.commandContent))
+        {
+            let message = "";
+            switch (wrapper.commandContent)
+            {
+                case "u":
+                    case "url":
+                        message = "The url of a youtube video or playlist (something starting with http://www.youtube.com/watch?v=). If the link has reserved characters like a dash or a quote surround the link with quotes.\nIf the command fail saying the url or keyword is not valued, surround your link with quotes and try again.";
+                        message += "\n*This options cannot be used with the keyword option (k or keyword)*";
+                        break;
+                case "k":
+                    case "keyword":
+                        message = "Same as if you were typing in the youtube search bar. If the search gives more than one result the bot will send an embed with the results. Use the correct link and type the command again or use it with no args (" + Config.getPrefix() + "help #play for more information)";
+                        message += "\n*This options cannot be used with the url option (u or url)*";
+                        break;
+                case "c":
+                    case "channel":
+                        message = "Use this option to specify a specific channel to connect to play the audio. You need to give the voice channel ID (right click on the channel, `Copy ID`)";
+                        break;
+                default:
+                    message = "Unrecognized option, look at the help page for a list of available options `" + Config.getPrefix() + "help play`";
+                    break;
+            }
+            return message;
+        }
+        else 
+        {
+            return "When you use the command with no options you can give a video url, a playlist url or a keyword. The bot will connect to the same voice channel as the user who used the command, and will play the requested video. You can put multiple links in the command, in that case you need to put a space between each url. Each url will be queue up in the same order as they were in the command.";
         }
     }
 
@@ -153,7 +188,7 @@ export class PlayCommand extends Command
         {
             this.stream = await ytdl(url, { highWaterMark: 1 << 27, filter: "audioonly" });
 
-            this.dispacher = this.connection.play(this.stream, { type: "opus", bitrate: 96000 });
+            this.dispacher = this.connection.play(this.stream, { type: "opus", bitrate: this.voiceChannel.bitrate });
 
             this.dispacher.on("error", (error) =>
             {

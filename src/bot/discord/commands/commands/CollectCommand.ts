@@ -6,6 +6,7 @@ import { CommandError } from "../../../../errors/command_errors/CommandError";
 import { ArgumentError } from "../../../../errors/ArgumentError";
 import { MessageWrapper } from "../../../common/MessageWrapper";
 import { CommandArgumentError } from "../../../../errors/command_errors/CommandArgumentError";
+import { NotImplementedError } from "../../../../errors/NotImplementedError";
 
 /**Asks the TwitterBot to collect images from a channel.*/
 export class CollectCommand extends Command
@@ -25,6 +26,11 @@ export class CollectCommand extends Command
         {
             this.bot.emit("collect", undefined, false);
         }
+    }
+
+    public help(wrapper: MessageWrapper): string
+    {
+        throw new NotImplementedError();
     }
 
     private parseDate(date: string): Date
