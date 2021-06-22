@@ -5,6 +5,7 @@ import { Printer } from "../../../../console/Printer";
 import { MessageWrapper } from "../../../common/MessageWrapper";
 import { CommandError } from "../../../../errors/command_errors/CommandError";
 import { NotImplementedError } from "../../../../errors/NotImplementedError";
+import { Tools } from "../../../../helpers/Tools";
 
 export class AddUserCommand extends Command
 {
@@ -25,5 +26,12 @@ export class AddUserCommand extends Command
     public help(wrapper: MessageWrapper): string
     {
         throw new NotImplementedError();
+
+        if (Tools.isNullOrEmpty(wrapper.commandContent))
+        {
+        }
+        else 
+        {
+        }
     }
 }
