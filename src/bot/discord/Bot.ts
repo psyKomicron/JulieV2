@@ -2,7 +2,7 @@ import readline = require('readline');
 import { TokenReader } from '../../dal/readers/TokenReader';
 import { Client, User, TextChannel, PresenceData, ActivityFlags } from 'discord.js';
 import { DefaultLogger } from './command_modules/logger/loggers/DefaultLogger';
-import { Logger } from './command_modules/logger/Logger';
+import { CommandLogger } from './command_modules/logger/CommandLogger';
 import { LogLevels, Printer } from '../../console/Printer';
 import { CommandFactory } from '../../factories/CommandFactory';
 import { Tools } from '../../helpers/Tools';
@@ -25,7 +25,7 @@ export class Bot extends EventEmitter
     private readonly verbose: number;
     private moderator: Moderator;   
     private prefix: string;
-    private _logger: Logger = new DefaultLogger();
+    private _logger: CommandLogger = new DefaultLogger();
     private errorTranslater: ErrorTranslater = new ErrorTranslater();
     private currentPresenceData: PresenceData;
 
@@ -72,7 +72,7 @@ export class Bot extends EventEmitter
                     activity: {
                         name: this.prefix + "help",
                         type: "PLAYING",
-                        url: "https://github.com/psyKomicron/JulieV2/tree/dev"
+                        url: "https://github.com/psyKomicron/JulieV2"
                     }
                 };
                 this._client.user.setPresence(this.currentPresenceData);
@@ -89,10 +89,8 @@ export class Bot extends EventEmitter
 
     // #region properties
     public get prefixLength(): number { return this.prefix.length; }
-
     public get client(): Client { return this._client; }
-
-    public get logger(): Logger { return this._logger; }
+    public get logger(): CommandLogger { return this._logger; }
     // #endregion
 
     public static get(effect: LoadingEffect): Bot
