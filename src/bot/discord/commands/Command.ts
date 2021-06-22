@@ -10,13 +10,6 @@ export abstract class Command extends EventEmitter
     private readonly _deleteAfterExecution: boolean;
     private readonly _name: string;
 
-    public static get commands(): number { return this._commands; }
-
-    public get name(): string { return this._name; }
-    public get deleteAfterExecution(): boolean { return this._deleteAfterExecution; }
-
-    protected get bot(): Bot { return this._bot; }
-
     protected constructor(name: string, bot: Bot, deleteAfterExecution: boolean = true)
     {
         super();
@@ -25,6 +18,12 @@ export abstract class Command extends EventEmitter
         this._name = name;
         this._deleteAfterExecution = deleteAfterExecution;
     }
+
+    public static get commands(): number { return this._commands; }
+
+    public get name(): string { return this._name; }
+    public get deleteAfterExecution(): boolean { return this._deleteAfterExecution; }
+    public get bot(): Bot { return this._bot; }
 
     /** Execute the command async */
     public abstract execute(wrapper: MessageWrapper): Promise<void>;
